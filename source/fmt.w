@@ -1028,7 +1028,7 @@ justification of the number in a field of specified minimum width.
 ·{·%
 # Sets the justificaton width (number of characters),
 # mode (:right, :left, :center or :internal, which is 
-like left but with the sign...) and filling character.
+# like left but with the sign...) and filling character.
 def width(w,adj=:right,ch=' ')
   @width = w
   @fill_char = ch

@@ -1,0 +1,56 @@
+renaming/refactoring
+debug gem generation
+add rdoc comments, hide support classes...
+implement rakefile packaging (in addition to  gem & ruby code) for:
+  source code (.w)
+  source doc (pdf)
+
+test in linux
+
+decide what to do with Fmt repository
+
+--renaming:
+  
+[x] Goi -> Nio
+[x] Goi::NFmt -> Nio::Fmt
+[x] Goi::NFmt.convert -> Nio::Fmt.convert
+[x] Goi::Tolerance -> Nio::Tolerance
+[x] Goi::BigTolerance -> Nio::BigTolerance
+[x] Goi::Tol -> Nio::Tol
+[x]   *#writeFmt -> *#nio_write
+[x]   *#readFmt -> *#nio_write
+[x]  *#to_r -> nio_r
+[x]  *#to_xr -> nio_xr
+BigDec -> Nio.BigDec module?
+
+
+Sintactic sugar:
+[x]  Nio.convert (non module function) -> Nio::Fmt.convert
+[x]  Nio.nio_convert (module function)  -> Nio::Fmt.convert
+
+[x]  fmt << x => x.nio_write(fmt)
+[x]  fmt.write(x) => x.nio_wite(fmt)
+[x]  Nio::Fmt << x => x.nio_write
+[x]  Nio::Fmt.write(x) => x.nio_write
+[x]  fmt >> [cls, txt] => cls.nio_read(txt,fmt)
+[x]  fmt.read(cls, txt) => cls.nio_read(txt,fmt)
+[x]  Nio::Fmt >> [cls, txt]  cls.nio_read(txt)
+  
+[x]  cls << [txt, fmt] => cls.nio_read(txt, fmt) ??
+[x]  cls << txt => cls.nio_read(txt) ??
+
+[x]  *#to_r => *#nio_r
+[x]  *#to_xr => *#nio_xr
+
+  Nio::Fmt(...) -> Nio::Fmt.mode(...)
+
+clean up Fmt API
+  e.g. set_xxxx => xxxx=...
+  Fmt.mode(...) =>
+
+
+
+note to build under win:
+PATH %PATH%;C:\cygwin\bin
+
+

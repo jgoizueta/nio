@@ -1,0 +1,16 @@
+The Ruby code in this project is generated from the source code
+in directory source by the Rake task *tangle*.
+There's also a task named *weave* which generates
+a documented form of the source code in PDF format
+which is saved to the directory source/pdf.
+This tasks requires the program nuweb which converts
+the nuweb sources (files with extension .w) in
+directory source to either ruby files or
+LaTeX files for the documentated source.
+For the weave task latex and dvipdfm are also necessary.
+ 
+The necessary nuweb tool is available for windows
+here: http://perso.wanadoo.es/jgoizueta/dev/tools/nuweb-win32.zip
+For other systems the source code and an necessary patch
+can be obtained here: http://www.goizueta.info/javier/index.html?pg=dev/req.en.html
+

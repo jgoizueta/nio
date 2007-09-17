@@ -1495,11 +1495,17 @@ end
 
 To facilitate the addition of formatting capabilities
 to numerical classes, we'll define a mix-in module \c{Formattable}
-that will also serve as a repository of common formats
-and a default format.
+.
 
 ·d Nio classes
 ·{·%
+# This is a mix-in module to add formatting capabilities no numerical classes.
+# A class that includes this module should provide the methods
+# nio_write_neutral(fmt):: an instance method to write the value to
+#                          a neutral numeral. The format is passed so that
+#                          the base, for example, is available.
+# nio_read_neutral(neutral):: a class method to create a value from a neutral
+#                             numeral.
 module Formattable
   ·<Formattable mix-in·>  
 end
@@ -1528,7 +1534,7 @@ neutral numerals.
 
 This will be an instance method in the numeric class to convert the number
 to formatted text; the numeric class must provide
-the instance method \cd{write\_neutral}; this method is passed the 
+the instance method \cd{nio\_write\_neutral}; this method is passed the 
 format as a parameter because some information about the destination
 format, such as the base, may be needed.
 
@@ -1804,7 +1810,7 @@ method rounds correctly but it's slow.
 
 ·d Nio private functions
 ·{·%
-module Clinger
+module Clinger # :nodoc: all
 module_function
 ·<Clinger functions·>
 end
@@ -1999,7 +2005,7 @@ paper, the second seems to be more efficient in Ruby.
 
 ·d Nio private functions
 ·{·%
-module BurgerDybvig
+module BurgerDybvig # :nodoc: all
 module_function
 ·<Burger-Dybvig functions·>
 end

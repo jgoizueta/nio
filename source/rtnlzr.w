@@ -66,6 +66,7 @@ We will support tolerances for the floating point types
 ·<rdoc commentary for flttol.rb·>
 ·<flttol Required Modules·>
 ·<flttol definitions·>
+·<Nio constructor methods rdoc·>
 module Nio
   ·<flttol classes·>
   module_function
@@ -825,16 +826,8 @@ end
 
 ·D flttol functions
 ·{·%
-# This is a shortcut to define a BigDecimal without using quotes
-# and a general conversion to BigDecimal method. 
-#
-# The second parameter can be :exact to try for an exact conversion
-#
-# Conversions from Float have issues that should be understood; :exact
-# conversion will use the exact internal value of the Float, and when
-# no precision is specified, a value as simple as possible expressed as
-# a fraction will be used.
-def Tol(x)
+·<rdoc for Tol·>
+def Tol(x) # :doc:
   case x
     when Tolerance
       x
@@ -851,12 +844,8 @@ def Tol(x)
   end
 end
 
-# This module function will convert its argument to a Noi::Tolerance
-# or a Noi::BigTolerance depending on its argument;
-#
-# Values of type Tolerance,Float,Integer (for Tolerance) or
-# BigTolerance,BigDecimal (for BigTolerance) are accepted.
-def BigTol(x)
+·<rdoc for BigTol·>
+def BigTol(x) # :doc:
   case x
     when BigTolerance
       x
@@ -1034,16 +1023,8 @@ applied to a Float argument.
 
 ·d flttol functions
 ·{·%
-  # This is a short-cut to define a BigDecimal without using quotes
-  # and a general conversion to BigDecimal method. 
-  #
-  # The second parameter can be :exact to try for an exact conversion
-  #
-  # Conversions from Float have issues that should be understood; :exact
-  # conversion will use the exact internal value of the Float, and when
-  # no precision is specified, a value as simple as possible expressed as
-  # a fraction will be used.
-  def BigDec(x,prec=nil)
+  ·<rdoc for BigDec·>
+  def BigDec(x,prec=nil) # :doc:
     if x.respond_to?(:to_str)
       x = BigDecimal(x.to_str, prec||0)
     else
@@ -1577,6 +1558,54 @@ end
 
 ·d rdoc commentary for nio\_xr
 ·{# Conversion to Rational preserving the exact value of the number.·}
+
+
+The constructor methods are module functions with capitalized names that need to
+be documented apart.
+
+·d Nio constructor methods rdoc
+·{
+# This module contains some constructor-like module functions
+# to help with the creation of tolerances and big-decimals.
+#
+# =BidDec
+·<rdoc for BigDec·>
+#
+# =Tol
+·<rdoc for Tol·>
+#
+# =BigTol
+·<rdoc for BigTol·>·}
+
+
+
+·d rdoc for BigDec
+·{#   BigDec(x) -> a BigDecimal
+#   BigDec(x,precision) -> a BigDecimal
+#   BigDec(x,:exact) -> a BigDecimal
+# This is a shortcut to define a BigDecimal without using quotes
+# and a general conversion to BigDecimal method. 
+#
+# The second parameter can be :exact to try for an exact conversion
+#
+# Conversions from Float have issues that should be understood; :exact
+# conversion will use the exact internal value of the Float, and when
+# no precision is specified, a value as simple as possible expressed as
+# a fraction will be used.·}
+
+·d rdoc for Tol
+·{#  Tol(x) -> a Tolerance
+# This module function will convert its argument to a Noi::Tolerance
+# or a Noi::BigTolerance depending on its argument;
+#
+# Values of type Tolerance,Float,Integer (for Tolerance) or
+# BigTolerance,BigDecimal (for BigTolerance) are accepted.·}
+
+·d rdoc for BigTol
+·{#  BigTol(x) -> a BigTolerance
+# This module function will convert its argument to a Noi::BigTolerance
+#
+# Values of type BigTolerance or Numeric are accepted.·}
 
 
 

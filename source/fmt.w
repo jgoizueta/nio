@@ -273,6 +273,7 @@ equally near from either the lower and upper integers.
 of the sign of the number).
 \item \cd{:even}; ties are rounded towards the nearest even number 
 (banker's rounding).
+\item \cd{:zero}; round to zero is also supported althoug it is not common.
 \end{itemize}
 
 A method will be added for non-mutable operation:
@@ -359,12 +360,12 @@ if dv==:hi
 elsif dv==:tie
   if dir==:inf # towards nearest +/-infinity
     adj = +1
-  elsif dir==:even # banker's rule
+  elsif dir==:even # to nearest even digit (IEEE unbiased rounding)
     adj = +1 if (dig_value(n-1)%2)!=0
   elsif dir==:zero # towards zero
-    # adj=0
-  else #:odd 
-    adj = +1 unless (dig_value(n-1)%2)!=0
+    adj=0
+#  elsif dir==:odd 
+#    adj = +1 unless (dig_value(n-1)%2)!=0
   end
 end    
 ·}
@@ -652,13 +653,22 @@ details of formating numbers. It represents a particular format.
 ·{·%
 # Fmt defines a numeric format
 #
-# The aspects managed by Fmt are:
-# * separators (see #sep and #grouping)
-# * mode and precision #prec(), #mode(), #sci_digits , ...
-# * repeating numerasl 
+# The formatting aspects managed by Fmt are:
+# * separators
+#   - see #sep() and #grouping()
+# * mode and precision
+#   - #prec() and #mode() set the main paramters
+#   - see also #show_all_digits(), #approx_mode(), #non_significative_digits(),
+#     #sci_digits() and #show_plus()
+# * repeating numerals 
+#   - #rep()
 # * field justfification
+#   - #width() and the shortcut #pad0s()
+# * numerical base
+#   - #base()
 class Fmt
   include StateEquivalent
+  @@default_rounding_mode = :even
   def initialize()
     ·<Initialize Fmt·>  
   end
@@ -672,6 +682,7 @@ end
 
 The default format corresponds to the format used in
 ruby for numerals (\cd{to\_s}); which is a plain english format.
+
 We will handle these aspects:
 
 Separators: decimal separator and grouping separators; 
@@ -702,7 +713,12 @@ this variable as \cd{[3]}.
 # The second argument is the group separator. It defaults
 # at comma or point (whatever is not used for the radix point).
 #
-# Finally, the third argument is an array, [3] by default that
+# Finally, the third argument is an array that defines the groups
+# of digits to separate.
+# By default it's [],
+# which means that no grouping will be produced on output
+# (but the group separator defined will be ignored in input)
+# to produce the common thousands separation [3] would be use.
 # defines the groups of digits to separate.
 def sep(dec_sep,grp_sep=nil,grp=[])
   @dec_sep = dec_sep
@@ -779,7 +795,7 @@ define the value.
 ·{·%
 @ndec = :exact
 @mode=:gen
-@round=:inf
+@round=Fmt.default_rounding_mode
 @all_digits = false
 @approx = :only_sig
 @non_sig = '' # marker for non-significant digits of inexact values e.g. '#','0'
@@ -798,19 +814,19 @@ define the value.
 #   :exact:: means that as many digits as necessary to unambiguosly define the
 #            value are used; this is the default.
 # - rounding mode applied to conversions (this is relevant for both input and output)
-#   :inf:: rounds towards infinite (the default) 0.5 is rounded to 1
-#   :inf_neg:: rounds towards -infinite means truncation
-#   :even:: rounds to the nearest even digit 0.5 rounds to 0, 1.5 to 2
+#   :inf:: rounds towards infinite; 1.5 is rounded to 2, -1.5 to -2
+#   :zero:: rounds towards zero; 1.5 is rounded to 1, -1.5 to 2
+#   :even:: rounds to the nearest even digit 1.5 rounds to 2, 2.5 to 2
 # - approximate mode
 #   :only_sig:: (the default) treats the value as an approximation and only
 #               significative digits (those that cannot take an arbitrary value without changing the specified value)
 #               are shown.
 #   :exact::    the value is interpreted as exact, there's no distinction between significative and unsignificative digits.
 #   :simplify:: the value is simplified, if possible to a simpler (rational) value.
-def mode(mode,ndec=:exact,round=:inf,all_dig=nil,apprx=:only_sig)
+def mode(mode,ndec=:exact,round=nil,all_dig=nil,apprx=:only_sig)
   @mode = mode
   @ndec = ndec
-  @round = round
+  @round = round || Fmt.default_rounding_mode
   if all_dig.nil?
     @all_digits = ndec!=:exact && mode!=:gen
   else
@@ -825,10 +841,10 @@ end
 ·{·%
 # Defines the formatting mode (like #mode) using a different
 # order of parameters, which is useful to change the precision only
-def prec(ndec,mode=:gen,round=:inf,all_dig=nil,apprx=:only_sig)
+def prec(ndec,mode=:gen,round=nil,all_dig=nil,apprx=:only_sig)
   @mode = mode
   @ndec = ndec
-  @round = round
+  @round = round || Fmt.default_rounding_mode
   if all_dig.nil?
     @all_digits = ndec!=:exact && mode!=:gen
   else
@@ -842,12 +858,36 @@ end
 ·d class Fmt
 ·{·%
 # This is a shortcut to create a new Fmt object and define the formatting mode.
-def Fmt.mode(mode,ndec=:exact,round=:inf,all_dig=nil,apprx=:only_sig)
+def Fmt.mode(mode,ndec=:exact,round=nil,all_dig=nil,apprx=:only_sig)
   Fmt.new.mode(mode,ndec,round,all_dig,apprx)
 end
 # This is a shortcut to create a new Fmt object and define the precision.
-def Fmt.prec(ndec,mode=:gen,round=:inf,all_dig=nil,apprx=:only_sig)
+def Fmt.prec(ndec,mode=:gen,round=nil,all_dig=nil,apprx=:only_sig)
   Fmt.new.prec(ndec,mode,round,all_dig,apprx)
+end
+·}
+
+Default rounding mode: this is the rounding mode used when no explicitely defined for
+a format.
+To avoid some apparent mismatches between Float values and decimal represention
+it is advisable to use for Float reading and writing the same rounding as performed
+by the ruby interpreter when it parses floating point literals  
+(which will generally be :even which is the one used by IEEE floating point)
+
+The coincidence of the interpreter rounding and Nio rounding
+will make \verb|1E23.nio_write| produce "1E23" rather 
+than "9.999999999999999E22" or "1.0000000000000001E23".
+
+·d class Fmt
+·{·%
+# Rounding mode used when not specified otherwise
+def Fmt.default_rounding_mode
+  @@default_rounding_mode
+end
+# The default rounding can be changed here; it starts with the value :even.
+# See the modes available in method #mode().
+def Fmt.default_rounding_mode=(m)
+  @@default_rounding_mode=m
 end
 ·}
 
@@ -1026,9 +1066,13 @@ justification of the number in a field of specified minimum width.
 
 ·d class Fmt
 ·{·%
-# Sets the justificaton width (number of characters),
-# mode (:right, :left, :center or :internal, which is 
-# like left but with the sign...) and filling character.
+# Sets the justificaton width, mode and fill character
+#
+# The mode accepts these values:
+# :right:: (the default) justifies to the right (adds padding at the left)
+# :left:: justifies to the left (adds padding to the right)
+# :internal:: like :right, but the sign is kept to the left, outside the padding.
+# :center:: centers the number in the field
 def width(w,adj=:right,ch=' ')
   @width = w
   @fill_char = ch
@@ -1854,7 +1898,7 @@ def ratio_float(u,v,k,round_mode,beta=Float::RADIX,n=Float::MANT_DIG)
     z
   elsif r>v_r
     nextfloat z
-  elsif (round_mode==:even && q.even?) || (round_mode==:inf_neg)
+  elsif (round_mode==:even && q.even?) || (round_mode==:zero)
     z
   else
     nextfloat z
@@ -1988,13 +2032,6 @@ neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, inexact, fmt.get_round
 ·d set rounding mode
 ·{·%
 rounding = ·2
-if ·1
-  if rounding == :inf_pos
-    rounding = :inf_neg
-  elsif rounding== :inf_neg
-    rounding = :inf_pos
-  end   
-end
 ·}
 
 
@@ -2042,15 +2079,20 @@ Note that we handle only non-negative numbers.
 The rounding mode is the one that is used in the floating
 point numbers.
 
+The rounding used here are symmetrical around zero; if we'd wanted to use
+asymetrical rounding, such as to $-\infty$ or to $+\infty$, we would have
+to chose the variables \cd{roundl} and \cd{roundh} according to the round
+mode and the sign of the number.
+
 ·d set rounding low and high flags
 ·{·%
 case round_mode
   when :even
     roundl = roundh = f.even?
-  when :inf_pos, :inf
+  when :inf
     roundl = true
     roundh = false
-  when :inf_neg
+  when :zero
     roundl = false
     roundh = true
   else
@@ -2857,9 +2899,34 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     
     # note: 1E23 is equidistant from 2 Floats; one or the other will be chosen based on the rounding mode
     x = Float.nio_read('1E23',Fmt.prec(:exact,:gen,:even))
-    assert_equal "1E23",x.nio_write(Fmt.prec(:exact,:gen,:inf_neg))
+    assert_equal "1E23",x.nio_write(Fmt.prec(:exact,:gen,:zero))
     assert_equal "9.999999999999999E22",x.nio_write(Fmt.prec(:exact,:gen,:inf))
-    assert_equal "1E23",x.nio_write(Fmt.prec(:exact,:gen,:inf_neg))    
+    assert_equal "1E23",x.nio_write(Fmt.prec(:exact,:gen,:even))    
+
+    x = Float.nio_read('1E23',Fmt.prec(:exact,:gen,:zero))
+    assert_equal "1E23",x.nio_write(Fmt.prec(:exact,:gen,:zero))
+    assert_equal "9.999999999999999E22",x.nio_write(Fmt.prec(:exact,:gen,:inf))
+    assert_equal "1E23",x.nio_write(Fmt.prec(:exact,:gen,:even))    
+
+    x = Float.nio_read('1E23',Fmt.prec(:exact,:gen,:inf))
+    assert_equal "1E23",x.nio_write(Fmt.prec(:exact,:gen,:inf))
+    assert_equal "1.0000000000000001E23",x.nio_write(Fmt.prec(:exact,:gen,:zero))
+    assert_equal "1.0000000000000001E23",x.nio_write(Fmt.prec(:exact,:gen,:even))    
+
+    x = Float.nio_read('-1E23',Fmt.prec(:exact,:gen,:even))
+    assert_equal "-1E23",x.nio_write(Fmt.prec(:exact,:gen,:zero))
+    assert_equal "-9.999999999999999E22",x.nio_write(Fmt.prec(:exact,:gen,:inf))
+    assert_equal "-1E23",x.nio_write(Fmt.prec(:exact,:gen,:even))    
+
+    x = Float.nio_read('-1E23',Fmt.prec(:exact,:gen,:zero))
+    assert_equal "-1E23",x.nio_write(Fmt.prec(:exact,:gen,:zero))
+    assert_equal "-9.999999999999999E22",x.nio_write(Fmt.prec(:exact,:gen,:inf))
+    assert_equal "-1E23",x.nio_write(Fmt.prec(:exact,:gen,:even))    
+
+    x = Float.nio_read('-1E23',Fmt.prec(:exact,:gen,:inf))
+    assert_equal "-1E23",x.nio_write(Fmt.prec(:exact,:gen,:inf))
+    assert_equal "-1.0000000000000001E23",x.nio_write(Fmt.prec(:exact,:gen,:zero))
+    assert_equal "-1.0000000000000001E23",x.nio_write(Fmt.prec(:exact,:gen,:even))    
     
     # note: for 64.1 there's only one closest Float; 
     #   but it can be univocally expressed in decimal either as 64.09999999999999 or 64.1

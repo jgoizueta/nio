@@ -53,4 +53,16 @@ clean up Fmt API
 note to build under win:
 PATH %PATH%;C:\cygwin\bin
 
+To make UTF-8 compatible:
+ 1 test writing with UTF-8 seps, rep-seps (should work)
+ 2. modifiy:
+      nio_read_formatted to accept mutibyte seps (not digits)
+      (e.g. txt.tr!(@non_sig,zer) -> txt.gsub...)
+      this in turn implies rewriting RepDec#parse
+          --> one approach: replace all seps by one-byte canonical representats
+              (this would not work if other UTF-8 chars in the string include
+               the canonical bytes)
+ 3. test reading with UTF-8 seps
+ 4. implement UTF-8 digits
 
+  

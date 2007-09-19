@@ -21,11 +21,16 @@ script/generate.cmd
 script/txt2html
 script/txt2html.cmd
 setup.rb
+tasks/nuweb.rake
 tasks/deployment.rake
 tasks/environment.rake
 tasks/website.rake
+test/data.yaml
 test/test_helper.rb
-test/test_nio.rb
+test/test_tools.rb
+test/test_repdec.rb
+test/test_rtnlzr.rb
+test/test_fmt.rb
 website/index.html
 website/index.txt
 website/javascripts/rounded_corners_lite.inc.js

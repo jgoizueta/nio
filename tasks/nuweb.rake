@@ -50,8 +50,8 @@ def w_to_pdf(s)
     2.times do
       puts "nuweb -o -l #{fn}.w"
       puts `nuweb -o -l #{fn}.w`
-      puts "latex #{fn}.tex"
-      puts `latex #{fn}.tex` # problem: stdout disappears...
+      puts "latex -halt-on-error #{fn}.tex"
+      puts `latex -halt-on-error #{fn}.tex`
       puts "dvipdfm -o #{rep_dir(doc_dir,fn)}.pdf #{fn}.dvi"
      puts `dvipdfm -o #{rep_dir(doc_dir,fn)}.pdf #{fn}.dvi`
     end

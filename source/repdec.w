@@ -844,14 +844,10 @@ def setQ(x,y, opt=DEF_OPT)
   i = 0;
   ended = false;
 
-  while x>0 && @rep_i==nil && (opt.max_d<=0 || i<opt.max_d)
-    for j in 0...k.length
-      if k[j]==x then
-        @rep_i = j;
-        break;
-      end      
-    end
-    if @rep_i == nil then
+  max_d = opt.max_d
+  while x>0 && @rep_i==nil && (max_d<=0 || i<max_d)
+    @rep_i = k.index(x)
+    if @rep_i.nil? then
       k.push x;
       x *= @radix
       @d.push x.div(y) # x/y;
@@ -889,7 +885,7 @@ def getQ(opt=DEF_OPT)
   y = @radix**n
   y -= @radix**@rep_i if @rep_i!=nil
 
-  d = GCD(x,y)
+  d = Nio.gcd(x,y)
   x /= d
   y /= d
  
@@ -906,13 +902,13 @@ greatest common divisor of two integers in order to simplify quotients.
 
 ·d Nio functions
 ·{·%
-def GCD(a,b)
+def gcd(a,b)
   while b!=0 do
     a,b = b, a.modulo(b)
   end
   return a.abs;  
 end
-·| GCD ·}
+·| gcd ·}
 
 \section{Tests}
 

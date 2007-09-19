@@ -1017,9 +1017,9 @@ end
 ·}
 
 We will define here also a utility to define BigDecimals; when applied to a Float value
-this uses the method Nio.nio_float_to_bigdecimal, defined in rtnlzr.rb; that file is not required
-here to avoid circular references, but should have been brought in before using BigDec
-applied to a Float argument.
+this uses the method \verb|Nio.nio_float_to_bigdecimal|, defined in rtnlzr.rb;
+that file is not required here to avoid circular references, but should have been
+brought in before using BigDec applied to a Float argument.
 
 ·d flttol functions
 ·{·%
@@ -1568,7 +1568,7 @@ be documented apart.
 # This module contains some constructor-like module functions
 # to help with the creation of tolerances and big-decimals.
 #
-# =BidDec
+# =BigDec
 ·<rdoc for BigDec·>
 #
 # =Tol

@@ -186,7 +186,7 @@ common case (in all Ruby platforms I know of, at least).
 
 well, that seems pretty clear... but let's complicate things a little:
   
-  0.1.nio_write(Fmt.prec(:exact).show_all_digits(true)) -> 0.10000000000000001
+  0.1.nio_write(Fmt.prec(:exact).show_all_digits) -> 0.10000000000000001
 
 Mmmm where does that last one came from? Now we're seen a little more exactly what
 the actual value stored in the Float (the closest Float to 0.1) looks like.
@@ -234,7 +234,7 @@ after it and adding the ellipsis (so the repeated sequence appears three times, 
 uses three points rather than a a real ellipsis characters).
 This allow Nio to recognize the repeating sequence on input.
 We can use a more economical notation by just marking the repeating sequence, rather thar repeating it:
-  Rational(1,3).nio_write(Fmt.new.rep(:rep=>0)) -> 0.<3>
+  Rational(1,3).nio_write(Fmt.rep(:nreps=>0)) -> 0.<3>
 We just requested for 0 as the number of repetitions (the default is 2) and got the sequence delimited by <> 
 (we can change those characters; we can even use just a left separator).
 This is shorter and would allow to show the number better with special typography
@@ -336,9 +336,25 @@ If the Ruby interpreter doesn't support any of the roundings of Nio, or if it do
 round, the best solution would be to avoid using Float literals and use Float#nio_read instead.
 
 ==Conversions
+
+Accurate conversion between numerical types can be performed with Nio.convert.
+It takes three arguments: the value to convert, the class to convert it to (Float,BigDecimal,
+Integer or Rational) and the conversion mode, either :exact, which is..., well, quite exact,
+and :approx which tries to find a simpler value (e.g. 0.1 rather than 0.10000000000000001...)
+within the accuray of the original value.
+The :approx mode may be pretty slow in some cases.
+
+   Nio.convert(0.1,BigDecimal,:exact)    -> 0.1000000000 0000000555 1115123125 ...
+   Nio.convert(0.1,BigDecimal,:approx)   -> 0.1
  
-    Nio.convert(BigDec('1.234567890123456'),Float,:exact)==1.234567890123456
-In the implementations I've checked (win32 & linux), up to 1.8.6 BigDecimal#to_f does a poor job: (ok in bccwin32)
-    # BigDecimal('1.234567890123456').to_f != 1.234567890123456 
-    # BigDecimal("355")/BigDecimal("226") != (355.0/226.0)
+We can check out the accuracy of the conversions:
+ 
+    Nio.convert(BigDec('1.234567890123456'),Float)==1.234567890123456 -> true
+    Nio.convert(BigDec(355)/226,Float)==(355.0/226)                   -> true
+    
+Thay may not look very impressive, but is much more accurate than BigDecimal#to_f 
+(at least in Ruby versions up to 1.8.6, mswin32 (specially) and linux) for which:
+
+     BigDecimal('1.234567890123456').to_f == 1.234567890123456  -> false
+     (BigDecimal("355")/226).to_f == (355.0/226.0)              -> false
  

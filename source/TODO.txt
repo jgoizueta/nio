@@ -85,3 +85,10 @@ Idea to consider:
 :dot_th
 :comma_th
 :code (Ruby C SQL etc)
+
+sin completar:
+  interface para el sufijo/prefijo de base
+  pruebas de esto y de show_plus, etc
+  interface para el modo de sci (:hp)
+
+OPTIMIZAR RedDec (la salida de racionales es muy lenta)

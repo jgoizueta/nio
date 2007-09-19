@@ -652,21 +652,37 @@ details of formating numbers. It represents a particular format.
 
 ·d Nio classes
 ·{·%
-# Fmt defines a numeric format
+# A Fmt object defines a numeric format.
 #
 # The formatting aspects managed by Fmt are:
-# * separators
-#   - see #sep() and #grouping()
 # * mode and precision
-#   - #prec() and #mode() set the main paramters
+#   - #mode() and #orec() set the main paramters
 #   - see also #show_all_digits(), #approx_mode(), #non_significative_digits(),
 #     #sci_digits() and #show_plus()
-# * repeating numerals 
-#   - #rep()
+# * separators
+#   - see #sep() and #grouping()
 # * field justfification
 #   - #width() and the shortcut #pad0s()
 # * numerical base
-#   - #base()
+#   - #base()
+# * repeating numerals 
+#   - #rep()
+#
+# Note that for every aspect there are also corresponding _mutator_
+# methos (its name ending with a bang) that modify an object in place,
+# instead of returning an altered copy.
+#
+# This class also contains class methods for numeric conversion:
+# * Fmt.convert
+# and for default and other predefined formats:
+# * Fmt.default / Fmt.default=
+# * Fmt.[] / Fmt.[]=
+#
+# The actual formatted reading and writting if performed by
+# * #nio_write() (Nio::Formattable#nio_write)
+# * #nio_read() (Nio::Formattable::ClassMethods#nio_read)
+# Finally numerical objects can be rounded according to a format:
+# * #nio_round() (Nio::Formattable#nio_round)
 class Fmt
   include StateEquivalent
   ·<Fmt error classes·>
@@ -684,22 +700,31 @@ end
 
 ·d Fmt error classes
 ·{·%
-class Error < StandardError
+class Error < StandardError # :nodoc:
 end
-class InvalidOption < Error
+class InvalidOption < Error # :nodoc:
 end
 ·}
 
 \subsection{Format options}
+
+To define the aspects of the format we will have a set of bang methods
+that alter the object state and corresponding non-bang methods
+that return an altered copy of the object.
+
+All those methods will collect the properties that must be changed
+in a hash and pass it to either \cd{set} or \verb|set!| that 
+apply the modifications.
 
-The public methods that alter aspects of the format will create a new object
-based on self and alter that object. To define the properties that must change
-they will use this protected method:
+These methods also take care of detecting invalid properties
+and accept some name aliases for the properties.
+It is here also that some properties are adjusted
+revealing some interdependence between them.
 
 ·d Fmt protected
 ·{·%
 @@valid_properties = nil
-ALIAS_PROPERTIES = { # :nodoc:
+ALIAS_PROPERTIES = {
   :show_all_digits=>:all_digits,
   :rounding_mode=>:round,
   :approx_mode=>:approx,
@@ -713,7 +738,7 @@ ALIAS_PROPERTIES = { # :nodoc:
 }
 def set!(properties={}) # :nodoc:
 
- ·<initialize valid_properties·>
+ ·<initialize valid properties·>
  
  properties.each do |k,v|
    al = ALIAS_PROPERTIES[k]
@@ -735,7 +760,7 @@ def set!(properties={}) # :nodoc:
 end
 ·}
 
-·d initialize valid_properties
+·d initialize valid properties
 ·{·%
 @@valid_properties ||= instance_variables.collect{|v| v[1..-1].to_sym}
 ·}
@@ -747,7 +772,6 @@ def set(properties={}) # :nodoc:
   self.dup.set!(properties)
 end
 ·}
-
 
 
 \subsection{Format aspects}
@@ -782,20 +806,18 @@ this variable as \cd{[3]}.
 # The first argument is the radix point separator (usually
 # a point or a comma; by default it is a point.)
 #
-# The second argument is the group separator. It defaults
-# at comma or point (whatever is not used for the radix point).
+# The second argument is the group separator.
 #
 # Finally, the third argument is an array that defines the groups
 # of digits to separate.
-# By default it's [],
-# which means that no grouping will be produced on output
-# (but the group separator defined will be ignored in input)
-# to produce the common thousands separation [3] would be use.
-# defines the groups of digits to separate.
+# By default it's [], which means that no grouping will be produced on output
+# (but the group separator defined will be ignored in input.)
+# To produce the common thousands separation a value of [3] must be passed,
+# which means that groups of 3 digits are used.
 def sep(dec_sep,grp_sep=nil,grp=nil)
   dup.sep!(dec_sep,grp_sep,grp)
 end
-# This is like #sep() but modifying object to which is applied
+# This is the mutator version of #sep().
 def sep!(dec_sep,grp_sep=nil,grp=nil)
   set! :dec_sep=>dec_sep, :grp_sep=>grp_sep, :grp=>grp
 end
@@ -810,11 +832,11 @@ end
 
 ·d class Fmt
 ·{·%
-# This defines the grouping of digits (which can also be defined in #sep)
+# This defines the grouping of digits (which can also be defined in #sep()
 def grouping(grp=[3],grp_sep=nil)
   dup.grouping!(grp,grp_sep)
 end
-# This is like #grouping() but modifying object to which is applied
+# This is the mutator version of #grouping().
 def grouping!(grp=[3],grp_sep=nil)
   set! :grp_sep=>grp_sep, :grp=>grp
 end
@@ -825,11 +847,13 @@ for each aspect:
 
 ·d class Fmt
 ·{·%
-# This is a shortcut to create a new Fmt object and define the separators.
+# This is a shortcut to return a new default Fmt object 
+# and define the separators as with #sep().
 def Fmt.sep(dec_sep,grp_sep=nil,grp=nil)
   Fmt.default.sep(dec_sep,grp_sep,grp)
 end
-# This is a shortcut to create a new Fmt object and define the grouping.
+# This is a shortcut to return a new default Fmt object 
+# and define the grouping as with #grouping().
 def Fmt.grouping(grp=[3],grp_sep=nil)
   Fmt.default.grouping(grp,grp_sep)
 end
@@ -882,31 +906,52 @@ define the value.
 
 ·d class Fmt
 ·{·%
-# Define the formatting mode using these parameters:
-# - mode (only relevant for output)
-#   :gen:: (general) chooses automatically the shortes format
-#   :fix:: (fixed precision) is a simple format with a fixed number of digits after the point
-#   :sig:: (significative precision) is like :fix but using significative digits
-#   :sci:: (scientific) is the exponential form 1.234E2
-# - precision (number of digits or :exact, onle relevant for output)
-#   :exact:: means that as many digits as necessary to unambiguosly define the
-#            value are used; this is the default.
-# - other parameters can be passed in a hash
-#   - :round rounding mode applied to conversions (this is relevant for both input and output)
-#     :inf:: rounds towards infinite; 1.5 is rounded to 2, -1.5 to -2
-#     :zero:: rounds towards zero; 1.5 is rounded to 1, -1.5 to 2
-#     :even:: rounds to the nearest even digit 1.5 rounds to 2, 2.5 to 2
-#   - :approx approximate mode
-#     :only_sig:: (the default) treats the value as an approximation and only
-#                 significative digits (those that cannot take an arbitrary value without changing the specified value)
-#                 are shown.
-#     :exact::    the value is interpreted as exact, there's no distinction between significative and unsignificative digits.
-#     :simplify:: the value is simplified, if possible to a simpler (rational) value.
-def mode(mode,ndig=nil,options={})
-  dup.mode!(mode,ndig,options)
+# Define the formatting mode. There are two fixed parameters:
+# - <tt>mode</tt> (only relevant for output)
+#   [<tt>:gen</tt>]
+#      (general) chooses automatically the shortes format
+#   [<tt>:fix</tt>]
+#      (fixed precision) is a simple format with a fixed number of digits
+#      after the point
+#   [<tt>:sig</tt>]
+#      (significative precision) is like :fix but using significative digits
+#   [<tt>:sci</tt>]
+#      (scientific) is the exponential form 1.234E2
+# - <tt>precision</tt> (number of digits or :exact, only used for output)
+#   [<tt>exact</tt>]
+#      means that as many digits as necessary to unambiguosly define the
+#      value are used; this is the default.
+#
+# Other paramters can be passed in a hash after <tt>precision</tt>
+# - <tt>:round</tt> rounding mode applied to conversions
+#   (this is relevant for both input and output). It must be one of:
+#   [<tt>:inf</tt>]
+#     rounds towards infinite; 1.5 is rounded to 2, -1.5 to -2
+#   [<tt>:zero</tt>]
+#     rounds towards zero; 1.5 is rounded to 1, -1.5 to 2
+#   [<tt>:even</tt>]
+#     rounds to the nearest even digit 1.5 rounds to 2, 2.5 to 2
+# - <tt>:approx</tt> approximate mode
+#   [<tt>:only_sig</tt>]
+#     (the default) treats the value as an approximation and only
+#     significative digits (those that cannot take an arbitrary value without
+#     changing the specified value) are shown.
+#   [<tt>:exact</tt>]
+#     the value is interpreted as exact, there's no distinction between
+#     significative and unsignificative digits.
+#   [<tt>:simplify</tt>]
+#     the value is simplified, if possible to a simpler (rational) value.
+# - <tt>:show_all_digits</tt> if true, this forces to show digits that 
+#   would otherwise not be shown in the <tt>:gen</tt> format: trailing
+#   zeros of exact types or non-signficative digits of inexact types.
+# - <tt>:nonsignficative_digits</tt> assigns a character to display
+#   nonsignificative digits, # by default
+def mode(mode,precision=nil,options={})
+  dup.mode!(mode,precision,options)
 end
-def mode!(mode,ndig=nil,options={})
-  set! options.merge(:mode=>mode, :ndig=>ndig)
+# This is the mutator version of #mode().
+def mode!(mode,precision=nil,options={})
+  set! options.merge(:mode=>mode, :ndig=>precision)
 end
 ·}
 
@@ -922,23 +967,27 @@ end
 
 ·d class Fmt
 ·{·%
-# Defines the formatting mode (like #mode) using a different
-# order of parameters, which is useful to change the precision only
-def prec(ndig,mode=nil, options={})
-  dup.prec! ndig, mode, options
+# Defines the formatting mode like #mode() but using a different
+# order of the first two parameters parameters, which is useful
+# to change the precision only. Refer to #mode().
+def prec(precision,mode=nil, options={})
+  dup.prec! precision, mode, options
 end  
-def prec!(ndig,mode=:gen, options={})
-  set! options.merge(:mode=>mode, :ndig=>ndig)
+# This is the mutator version of #prec().
+def prec!(precision,mode=:gen, options={})
+  set! options.merge(:mode=>mode, :ndig=>precision)
 end
 ·}
 
 ·d class Fmt
 ·{·%
-# This is a shortcut to create a new Fmt object and define the formatting mode.
+# This is a shortcut to return a new default Fmt object 
+# and define the formatting mode as with #mode()
 def Fmt.mode(mode,ndig=nil,options={})
   Fmt.default.mode(mode,ndig,options)
 end
-# This is a shortcut to create a new Fmt object and define the precision.
+# This is a shortcut to return a new default Fmt object 
+# and define the formatting mode as with #prec()
 def Fmt.prec(ndig,mode=nil,options={})
   Fmt.default.prec(ndig,mode,options)
 end
@@ -962,7 +1011,7 @@ def Fmt.default_rounding_mode
   @@default_rounding_mode
 end
 # The default rounding can be changed here; it starts with the value :even.
-# See the modes available in method #mode().
+# See the rounding modes available in the description of method #mode().
 def Fmt.default_rounding_mode=(m)
   @@default_rounding_mode=m
   Fmt.default = Fmt.default.round(m)
@@ -988,11 +1037,12 @@ shown.
 # This controls the display of the digits that are not necessary
 # to specify the value unambiguosly (e.g. trailing zeros).
 # 
-# The true value forces the display of the requested number of digits
+# The true (default) value forces the display of the requested number of digits
 # and false will display only necessary digits.
 def show_all_digits(ad=true)
   dup.show_all_digits! ad
 end
+# This is the mutator version of #show_all_digits().
 def show_all_digits!(ad=true)
   set! :all_digits=>ad
 end
@@ -1001,6 +1051,7 @@ end
 def approx_mode(mode)
   dup.approx_mode! mode
 end
+# This is the mutator version of #approx_mode().
 def approx_mode!(mode)
   set! :approx=>mode
 end
@@ -1010,6 +1061,7 @@ end
 def non_significative_digits(ch='#')
   dup.non_significative_digits! ch
 end
+# This is the mutator version of #non_significative_digits().
 def non_significative_digits!(ch='#')
   ch ||= ''
   set! :non_sig=>ch
@@ -1027,6 +1079,7 @@ end
 def sci_digits(n=-1)
   dup.sci_digits! n
 end
+# This is the mutator version of #sci_digits().
 def sci_digits!(n=-1)
   set! :sci_format=>n
 end
@@ -1055,6 +1108,7 @@ This value forces the presentation of $+$ for positive numbers.
 def show_plus(sp=true)
   dup.show_plus! sp
 end
+# This is the mutator version of #show_plus().
 def show_plus!(sp=true)
   set! :show_plus=>sp
 end
@@ -1096,17 +1150,21 @@ changed to 2 becaouse as a default it seems more natural.
 ·d class Fmt
 ·{·%
 # Defines the handling and notation for repeating numerals. The parameters
-# are passed in a hash.
-# :autoch:: is the suffix used to indicate a implicit repeating decimal (...)
-# :begch:: is the beginning delimiter of repeating section (<)
-# :endch:: is the ending delimiter of repeating section (>)
-# :read:: (true/false) determines if repeating decimals are recognized on input (true)
-# :rep:: if this parameter is greater than zero, on output the repeating section
-#        is repeated the indicated number of times followed by the suffix; 
-#        otherwise the delimited notation is used.
+# can be passed in order or in a hash:
+# [<tt>:begin</tt>] is the beginning delimiter of repeating section (<)
+# [<tt>:end</tt>] is the ending delimiter of repeating section (<)
+# [<tt>:suffix</tt>] is the suffix used to indicate a implicit repeating decimal
+# [<tt>:rep</tt>]
+#    if this parameter is greater than zero, on output the repeating section
+#    is repeated the indicated number of times followed by the suffix; 
+#    otherwise the delimited notation is used.
+# [<tt>:read</tt>]
+#    (true/false) determines if repeating decimals are
+#    recognized on input (true)
 def rep(*params)
   dup.rep!(*params)
 end
+# This is the mutator version of #rep().
 def rep!(*params)  
   ·<extract rep parameters·>
   set! params
@@ -1115,6 +1173,8 @@ end
 
 ·d class Fmt
 ·{·%
+# This is a shortcut to return a new default Fmt object 
+# and define the repeating decimals mode as with #rep()
 def Fmt.rep(*params)
   Fmt.default.rep(*params)
 end
@@ -1150,13 +1210,14 @@ justification of the number in a field of specified minimum width.
 # Sets the justificaton width, mode and fill character
 #
 # The mode accepts these values:
-# :right:: (the default) justifies to the right (adds padding at the left)
-# :left:: justifies to the left (adds padding to the right)
-# :internal:: like :right, but the sign is kept to the left, outside the padding.
-# :center:: centers the number in the field
+# [<tt>:right</tt>] (the default) justifies to the right (adds padding at the left)
+# [<tt>:left</tt>] justifies to the left (adds padding to the right)
+# [<tt>:internal</tt>] like :right, but the sign is kept to the left, outside the padding.
+# [<tt>:center</tt>] centers the number in the field
 def width(w,adj=nil,ch=nil)
   dup.width! w,adj,ch
 end
+# This is the mutator version of #width().
 def width!(w,adj=nil,ch=nil)
   set! :width=>w, :adjust=>adj, :fill_char=>ch
 end
@@ -1165,14 +1226,17 @@ end
 def pad0s(w)
   dup.pad0s w
 end
+# This is the mutator version of #pad0s().
 def pad0s!(w)
   width! w, :internal, '0'
 end
 # This is a shortcut to create a new Fmt object and define the width
+# parameters as with #widht()
 def Fmt.width(w,adj=nil,ch=nil)
   Fmt.default.width(w,adj,ch)
 end
-# This is a shortcut to create a new Fmt object and define 0-padded field
+# This is a shortcut to create a new Fmt object and define numeric
+# padding as with #pad0s()
 def Fmt.pad0s(w)
   Fmt.default.pad0s(w)
 end
@@ -1201,6 +1265,7 @@ To do: allow prefix/suffix for base indicators and generic radix
 def base(b, uppercase=nil)
   dup.base! b, uppercase
 end
+# This is the mutator version of #base().
 def base!(b, uppercase=nil)
   set! :base_radix=>b, :base_uppercase=>uppercase
 end
@@ -1209,7 +1274,7 @@ def Fmt.base(b, uppercase=nil)
   Fmt.default.base(b, uppercase)
 end
 # returns the exponent char used with the specified base
-def get_exp_char(base)
+def get_exp_char(base) # :nodoc:
   base ||= @base_radix
   base<=10 ? 'E' : '^'
 end
@@ -1232,11 +1297,11 @@ Because of that we'll need to know the base of a format specification.
 ·d class Fmt
 ·{·%
 # returns the base
-def get_base
+def get_base # :nodoc:
   @base_radix
 end
 # returns the digit characters used for a base
-def get_base_digits(b=nil)
+def get_base_digits(b=nil) # :nodoc:
   (b.nil? || b==@base_radix) ? @base_digits : DigitsDef.base(b,!@base_uppercase)
 end
 # returns true if uppercase digits are used
@@ -1250,19 +1315,19 @@ Well, after all we need to access know other formatting details as well...
 ·d class Fmt
 ·{·%
 # returns the formatting mode
-def get_mode
+def get_mode # :nodoc:
   @mode
 end
 # returns the precision (number of digits)
-def get_ndig
+def get_ndig # :nodoc:
   @ndig
 end
 # return the show_all_digits state
-def get_all_digits?
+def get_all_digits? # :nodoc:
   @all_digits
 end
 # returns the approximate mode
-def get_approx
+def get_approx # :nodoc:
   @approx
 end
 ·}
@@ -1271,7 +1336,7 @@ end
 ·d class Fmt
 ·{·%
 # returns the rounding mode
-def get_round
+def get_round # :nodoc:
   @round
 end
 ·}
@@ -1298,7 +1363,7 @@ to add only translation to and from the neutral format.
 ·d class Fmt
 ·{·%
 # Method used internally to format a neutral numeral
-def nio_write_formatted(neutral)
+def nio_write_formatted(neutral) # :nodoc:
   str = ''     
   if neutral.special?
     str << neutral.sign
@@ -1331,7 +1396,7 @@ end
 ·d class Fmt
 ·{·%
 # round a neutral numeral according to the format options
-def round!(neutral)
+def round!(neutral) # :nodoc:
   neutral.round! @ndig, @mode, @round
 end
 ·}
@@ -1537,7 +1602,7 @@ end
 
 ·d class Fmt
 ·{·%
-def nio_read_formatted(txt)
+def nio_read_formatted(txt) # :nodoc:
   txt = txt.dup
   num = nil
    
@@ -1595,7 +1660,7 @@ using the formatting definitions.
 
 ·d Fmt protected
 ·{·%
-def getRepDecOpt(base=nil)
+def getRepDecOpt(base=nil) # :nodoc:
   rd_opt = RepDec::Opt.new
   rd_opt.begin_rep = @rep_begin
   rd_opt.end_rep = @rep_end
@@ -1620,7 +1685,7 @@ available in \cd{RepDec}.
 
 ·d Fmt protected
 ·{·%
-def group(digits)
+def group(digits) # :nodoc:
   RepDec.group_digits(digits, getRepDecOpt)
 end
 ·}
@@ -1675,6 +1740,9 @@ format, such as the base, may be needed.
 
 ·d Formattable mix-in
 ·{·%
+# This is the method available in all formattable objects
+# to format the value into a text string according
+# to the optional format passed.
 def nio_write(fmt=Fmt.default)
   neutral = nio_write_neutral(fmt)
   fmt.nio_write_formatted(neutral)
@@ -1689,6 +1757,9 @@ the numerical class must provide the class method \cd{read\_neutral}.
 ·d Formattable mix-in
 ·{·%
 module ClassMethods
+  # This is the method available in all formattable clases
+  # to read a formatted value from a text string into 
+  # a value the class, according to the optional format passed.
   def nio_read(txt,fmt=Fmt.default)
     neutral = fmt.nio_read_formatted(txt)
     nio_read_neutral neutral      
@@ -1700,6 +1771,8 @@ end
 We'll add a method to round a number using a given format's rounding options.
 ·d Formattable mix-in
 ·{·%
+# Round a formattable object according to the rounding mode and
+# precision of a format.
 def nio_round(fmt=Fmt.default)
   neutral = nio_write_neutral(fmt)
   fmt.round! neutral
@@ -1712,7 +1785,7 @@ Finally we need some trickery to add the class method to the numerical class.
   
 ·d Formattable mix-in
 ·{·%
-def self.append_features(mod)
+def self.append_features(mod) # :nodoc:
   super
   mod.extend ClassMethods
 end
@@ -1743,6 +1816,7 @@ mantain a formats repository:
 @@fmts = {
   :def=>Fmt.new.freeze
 }
+# Returns the current default format.
 def self.default
   d = self[:def]
   if block_given?
@@ -1751,19 +1825,15 @@ def self.default
   end
   d
 end
+# Defines the current default format.
 def self.default=(fmt)
   self[:def] = fmt
 end
-def self.define(tag,fmt_def)
-  @@fmts[tag.to_sym]=fmt_def.freeze
-end
-def self.get(tag)
-  @@fmts[tag.to_sym]
-end
-
+# Assigns a format to a name in the formats repository.
 def self.[]=(tag,fmt_def)
   @@fmts[tag.to_sym]=fmt_def.freeze
 end
+# Retrieves a named format from the repository.
 def self.[](tag)
   @@fmts[tag.to_sym]
 end
@@ -1780,10 +1850,6 @@ shoul be used:
 \end{verbatim}
 
 \subsubsection{Common Formats}
-
-:dot, :comma, :dot_th, :comma_th, :code (Ruby/C/Fortran/SQL...)
-
-Spanish decimal separator:
 
 ·d Nio classes
 ·{·%
@@ -2697,7 +2763,8 @@ class Fmt
   # The third parameter is the kind of conversion:
   # [<tt>:approx</tt>]
   #     Tries to find an approximate simpler value if possible for inexact
-  #     numeric types. This is the default.
+  #     numeric types. This is the default. This is slower in general and
+  #     may take some seconds in some cases.
   # [<tt>:exact</tt>]
   #     Performs a conversion as exact as possible.
   # The third parameter is true for approximate
@@ -3098,13 +3165,13 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     x_f = Float.nio_read(x_txt)
     assert_equal 1.234567890123456, x_f
     assert_equal BigDecimal(x_txt), x_d
-    assert_equal Nio.convert(x_d,Float,:exact)==x_f
-    assert_equal Nio.convert(x_d,Float,:approx)==x_f
+    assert_equal Nio.convert(x_d,Float,:exact), x_f
+    assert_equal Nio.convert(x_d,Float,:approx), x_f
     
     x_d = BigDec(355)/226
     x_f = Float(355)/226
-    assert_equal Nio.convert(x_d,Float,:exact)==x_f
-    assert_equal Nio.convert(x_d,Float,:approx)==x_f
+    assert_equal Nio.convert(x_d,Float,:exact), x_f
+    assert_equal Nio.convert(x_d,Float,:approx), x_f
     
   end
 ·}

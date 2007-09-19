@@ -1,27 +1,28 @@
 =Description
 
-Nio (Numeric input/output) is a Ruby package
-for formatting and conversion of scalar
-numeric types.
+Nio (Numeric input/output) is a Ruby package for text-formatted input/output
+and conversion of scalar numeric types.
 
 It handles formatting and conversion for the
 types Integer, Rational, BigDecimal and Float and
 adds some utilities.
 
-Nio offers low level services; formatting is only in positional
-notation and for scalar types.
-(It does not handle composite types such as Complex,
-or fraction notation for rationals; those are higher level
-services that could be implemented using Nio).
+Nio offers low level services; formats supported are
+only positional notation and types are only scalar.
+That means that composite types such as Complex are not supported
+an that fraction notation (X/Y) is not supported for rationals;
+those are higher level services that could be implemented using Nio
+but are not the subject of this package.
 
 The implementaion of Nio is pure Ruby, and not specially fast;
-it is complete and accurate, though.
+but it is complete and accurate.
 
-Nio has some interesting features:
+Nio has some interesting features, though:
 
-* Correctly rounded conversions of all types to and from
+* Correctly rounded conversions of all supported types to and from
   positional numerals in any base.
-* Handling of digit repetitions (repeating decimals or, in general, repeating numerals).
+* Handling of digit repetitions (repeating decimals or, in general, <i>repeating numerals</i>).
+  With this method rational numbers can be represented exactly as numerals.
 * Discrimitation of significative digits of the representation of Float in any base.
   (nonsignificative digits are those that can take any value without altering the
    Float value they specify.)
@@ -51,6 +52,8 @@ For a general introduction and some details, read on below.
 
 See the the API to the Nio::Fmt object for all the formatting options.
 
+For type conversions see Fmt.convert().
+
 For some notational shortcuts see nio/sugar.rb[link:files/lib/nio/sugar_rb.html].
 
 To extend the formatting to other types see the documentation for the
@@ -58,23 +61,112 @@ module Nio::Formattable.
 
 If you want to use the floating point tolerance see
 the classes Nio::Tolerance and Nio::BigTolerance, 
-which can be defined with <tt>Nio::Tol()</tt> and <tt>Nio::BigTol()</tt> too
+which can be defined with <tt>Nio::Tol()</tt> and <tt>Nio::BigTol()</tt>
 (described in the module Nio).
 
 The functions BigDec() is a shortcut to define/convert BigDecimals, also
-described in Nio.
+described in module Nio.
 
 =Examples of use
+
   require 'nio'
   require 'nio/sugar'
   include Nio
+
   x = Math.sqrt(2.0)
   x.nio_write => ...
   x.nio_write(Fmt.prec(20))
   ...etc see :sci, :fix, :gen, width options, base opticos, etc et.
 
+The default format Fmt.default is used when no format is specified;
+it can be changed by assigning to it:
+
+  Fmt.default = Fmt.default.sep(',')
+  puts 1.23456.nio_write              -> 1,23456
+  puts 1.23456.nio_write(Fmt.prec(3)) -> 1,23
+
+But note that Fmt.new doesn't use the current default (it's
+the hard-wired default at which Fmt.default starts):
+
+  puts 1.23456.nio_write(Fmt.new.prec(3)) -> 1.23
+
+There are also other named prefined formats:
+
+  puts 123456.78.nio_write(Fmt[:dot]) -> 123456.78
+  puts 123456.78.nio_write(Fmt[:dot_th]) -> 123,456.78
+  puts 123456.78.nio_write(Fmt[:comma]) -> 123456,78
+  puts 123456.78.nio_write(Fmt[:code]) -> 123456,78
+
+The _th indicates that thousands separators are used; 
+the :code format is intended for programming languages
+such as Ruby, C, SQL, etc.
+This formats can be changed by assigning to them, and also
+other named formats can be defined:
+  
+  Fmt[:code] = Fmt.new.prec(1)
+  puts 123456.78.nio_write(Fmt[:code]) -> 123456,8
+  Fmt[:locale] = ...
+  Fmt[:locale_money] = ...
 
 =Details
+
+==Defining formats
+
+Say you want a numeric format based on the current default but with some aspects
+changed, e.g. using comma as the decimal separator and with only 3 digits
+of precision, we could do:
+
+  fmt = Fmt.default
+  fmt = fmt.sep(',')
+  fmt = fmt.prec(3)
+
+That wasn't very nice. Fmt is a mutable class and have methods to modify 
+its state that end with a bang. We can use them to make this look better, 
+but note that we must create a copy of the default format before we
+modify it:
+
+  fmt = Fmt.default.dup
+  fmt.sep! ','
+  fmt.prec! 3
+
+Note that we had to make a duplicate of the default format in
+order to modifify it or we would have got an error
+(if you want to modify the default format
+you have to assign to it).
+
+Now we can simplify this a little passing a block to Fmt.default:
+
+  fmt = Fmt.default { |f|
+    f.sep! ','
+    f.prec! 3
+  }
+
+But there's a more concise way to define the format by avoiding
+the bang-methods and chaining all modifications:
+
+  fmt = Fmt.default.sep(',').prec(3)
+
+Or even (using shortcut methods such as Fmt.sep or Fmt.prec):
+
+  fmt = Fmt.sep(',').prec(3)
+
+If we don't want to base the new format on the current default, but use
+the initial default instead, we would substitute new for default above,
+except in the last case which always uses the default. 
+For example:
+
+  fmt = Fmt.new { |f|
+    f.sep! ','
+    f.prec! 3 
+  }
+
+  fmt = Fmt.new.sep(',').prec(3)
+
+If a particular case needs a format similar to fmt but with some modification
+we would use, for example:
+
+  puts 0.1234567.nio_write(fmt.prec(5)) -> 0.12346
+  puts 0.1234567.nio_write(fmt)         -> 0.123
 
 ==Exact and aproximate values
  
@@ -96,19 +188,21 @@ well, that seems pretty clear... but let's complicate things a little:
   
   0.1.nio_write(Fmt.prec(:exact).show_all_digits(true)) -> 0.10000000000000001
 
-Mmmm where does that last one came from? Now we're seem a little more exactly what
+Mmmm where does that last one came from? Now we're seen a little more exactly what
 the actual value stored in the Float (the closest Float to 0.1) looks like.
-Why didn't see the second one in the
-first try? We requested "exact" precision! We didn't get it because it is not needed
-to specify exactly the inner value of Float(1.0); when whe convert 0.1 and round it to
-the nearest Float we get the same value than when we use 0.10000000000000001. 
-since we didn't request to see "all digits", we got as few as possible.
+
+But why didn't we see the second one in the first try?
+We requested "exact" precision! 
+Well, we didn't get it because it is not needed to specify exactly the inner value
+of Float(1.0); when whe convert 0.1 and round it to the nearest Float we get the
+same value than when we use 0.10000000000000001. 
+Since we didn't request to see "all digits", we got only as few as possible.
 
   0.1.nio_write(Fmt.prec(:exact).approx_mode(:exact)) -> 0.1000000000000000055511151231257827021181583404541015625
 
 Hey! Where did all that stuff came from? Now we're really seeing the "exact" value of Float. (We told the conversion
 to consider the Float an exactly defined value, rather than an approximation to some other value).
-But, why didn't we get all those digits when we asked for "all digits". Because most are not significative;
+But, why didn't we get all those digits when we asked for "all digits"?. Because most are not significative;
 the default "approx_mode" is to consider Float an approximate value and show only significative digits.
 We define unsignificative digits as those that can be replace by any other digit without altering the Float
 value when the number is rounded to the nearest float. By looking at our example we see that the 17 first digits
@@ -120,55 +214,60 @@ digits (first unsignificative, a 5) can be replaced by any other digit d (from 0
 
 ==Repeating Numerals
 
-The common term is "repeating decimals" or "recurring decimal", but since Nio support them for any base, we'll
-call then repeating numerals.
+The common term is <b>repeating decimal</b> or <b>recurring decimal</b>, but since Nio support them for any base,
+we'll call then <i>repeating numerals</i>.
 
   Rational(1,3).nio_write -> 0.333...
  
-We usually see that way of writing the decimal expansion of 1/3, but that doesn't seem very accurate for
+We usually find that notation for the decimal expansion of 1/3 in texts, but that doesn't seem very accurate for
 a conversion library, or is it?
 
   Rational.nio_read('0.333...') -> Rational(1,3)
 
-It work the other way! In fact the seemingly loose 0.333... was an exact representation for Nio.
+It works the other way! In fact the seemingly loose 0.333... was an exact representation for Nio.
 
 All Rational numbers can be expressed as a repeating numeral in any base. Repeating numerals may have an infinite
 number of digits, but from some point on they're just repetitions of the same (finite) sequence of digits.
 
-By default Nio expresses that kind repetition by showing repeating three times the repeating sequence and adding
-an ellipsis (three points, rather). This allow Nio to recognize the repeating sequence on input.
-We can use a more economical notation by just marking the repeating sequence, rather thar repeating it and adding
-a suffix:
+By default Nio expresses that kind repetition by appending two repetitions of the repeating sequence
+after it and adding the ellipsis (so the repeated sequence appears three times, and, by the way Nio
+uses three points rather than a a real ellipsis characters).
+This allow Nio to recognize the repeating sequence on input.
+We can use a more economical notation by just marking the repeating sequence, rather thar repeating it:
   Rational(1,3).nio_write(Fmt.new.rep(:rep=>0)) -> 0.<3>
 We just requested for 0 as the number of repetitions (the default is 2) and got the sequence delimited by <> 
-(we can change those characters; even use just a left separator). This is shorter and would allow to show the
-number better with special typography (e.g. a bar over the repeated digits, a different color, etc.)
-
+(we can change those characters; we can even use just a left separator).
+This is shorter and would allow to show the number better with special typography
+(e.g. a bar over the repeated digits, a different color, etc.)
 
 ==BigDec()
 
-BigDec() is a handy convenience to define BigDecimals; it allow for example
-to use BigDec(1) instead of BigDecimal('1') (I find specially tedious to type all those quotes.)
+BigDec() is a handy convenience to define BigDecimals; it permits us
+to use BigDec(1) instead of BigDecimal('1')
+(I find tedious to type all those quotes.)
 It can also be used with Float arguments, e.g.:
   BigDec(0.5)
-This is a questionable use (it has been disregarded in Python Decimal)
-but is allowed here because BigDec's purpose is to be a shortcut notation
+But this is a questionable use (for example it has been disregarded in Python Decimal.)
+It is allowed here because BigDec's purpose is to be a shortcut notation
 (BigDecimal() on the other hand should probably not accept Floats).
 
 Users must be aware of the problems and details of the implementation.
-Currently BigDec(x) for float x doesn't try to convert the exact value of x
-which can be achieved with BigDec(0.1,:exact)  but tries instead to produce
-a simple value  --which defines x--
-[dilemma: leav BigDec as now (simplify) o change to use default fmt conversion
-a) => BigDec(1.0/3) == BigDec(Rational(1)/3)
-b) => BigDec(1.0/3) == BigDec("0.3333333333333333")
-in a, can we assure that NFmt.convert(BigDec(x),Float)==x ?
+Currently BigDec(x) for float x doesn't try to convert the exact value of x,
+which can be achieved with <tt>BigDec(0.1,:exact)</tt>,  but tries instead to produce
+a simple value
+
+--
+  Dilemma: leav BigDec as now (simplify) o change to use default fmt conversion
+  a) => BigDec(1.0/3) == BigDec(Rational(1)/3)
+  b) => BigDec(1.0/3) == BigDec("0.3333333333333333")
+  in a, can we assure that NFmt.convert(BigDec(x),Float)==x ?
+++
 
 Since a floating point literal will, in general, convert to a Float of slightly different value,
-and several distinct lieterals can convert to the same value, there will always some compromise.
-Here we've chosen to simplify values so that BigDec(0.1)==BigDecimal('0.1'),
-but it means that, for example, BigDecimal('0.10000000000000001') cannot be defined with BigDec(),
-because Float(0.10000000000000001)==Float(0.1).
+and several distinct literals can convert to the same value, there will always some compromise.
+Here we've chosen to simplify values so that <tt>BigDec(0.1)==BigDecimal('0.1')</tt>,
+but this implies that, for example, <tt>BigDecimal('0.10000000000000001')</tt> cannot be defined
+with BigDec(), because <tt>Float(0.10000000000000001)==Float(0.1)</tt>.
 
 In any case using BigDec on Floats have some risks because it relies on the Ruby interpreter
 to parse floating point literal, and its behaviour is not stricly specified; in the usual case
@@ -181,9 +280,8 @@ Rounding is performed on both input and output.
 When a value is formatted for output the number is rounded to the number of digits
 that has been specified.
 
-But also when a value must be read from text rounding is necessary to choose the nearest
+But also when a value must be read from text rounding it is necessary to choose the nearest
 numeric representation (e.g. Float value).
-
 
 Nio supports three rounding modes which determine how to round _ties_:
 [<tt>:inf</tt>]
@@ -219,22 +317,20 @@ We assume the common implementation of float (<tt>Float::RADIX==2 && Float::MANT
 In that case, we can use the value 1E23, which is equidistant form two Floats
 to check which kind of roundig does the interpreter use.
 If it's round-to-even (the common case) we'll have:
-  1E23 == Float.nio_read('1E23',Nio::Fmt.mode(:gen,:exact,:even) --> true
-  1E23 == Float.nio_read('1E23',Nio::Fmt.mode(:gen,:exact,:zero) --> true
+  1E23 == Float.nio_read('1E23',Nio::Fmt.mode(:gen,:exact,:round=>:even) --> true
+  1E23 == Float.nio_read('1E23',Nio::Fmt.mode(:gen,:exact,:round=>:zero) --> true
 But if rounding is to infinity the previous check will be false and this will hold:
-  1E23 == Float.nio_read('1E23',Nio::Fmt.mode(:gen,:exact,:inf) --> true
+  1E23 == Float.nio_read('1E23',Nio::Fmt.mode(:gen,:exact,:round=>:inf) --> true
 (Well, with this example we can't really distinguish :even from :zero, but :zero is most probably not used)
 
 Now, if we're using the same default rounding for Nio we will have:
   1E23.nio_write == "1E23" --> true
 Which will make you feel warm an fuzzy. But if the system rounding is different 
 we will get one of these ugly values:
-   fmt_inf = Nio::Fmt.mode(:gen,:exact,:inf)
-   fmt_even = Nio::Fmt.mode(:gen,:exact,:even)
+   fmt_inf = Nio::Fmt.mode(:gen,:exact,:round=>:inf)
+   fmt_even = Nio::Fmt.mode(:gen,:exact,:round=>:even)
    Float.nio_read('1E23',fmt_inf).nio_write(fmt_even) -> "1.0000000000000001E23"
    Float.nio_read('1E23',fmt_even).nio_write(fmt_inf) -> "9.999999999999999E22"
 
 If the Ruby interpreter doesn't support any of the roundings of Nio, or if it doesn't correctly
 round, the best solution would be to avoid using Float literals and use Float#nio_read instead.
-
-    

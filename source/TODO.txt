@@ -66,3 +66,22 @@ To make UTF-8 compatible:
  4. implement UTF-8 digits
 
   
+Idea to consider:
+  Make Fmt inmutable (methods such as Fmt#mode would return a new Fmt, not self)
+  implement a Format repository in Fmt:
+  class Fmt
+    @@fmts = { }
+    # define a format
+    def []=(tag,fmt)
+      @@fmts[tag.to_sym] = fmt
+    end
+    def [](tag) 
+      @@fmts[tag.to_sym]
+    end
+  end 
+  
+:dot
+:comma
+:dot_th
+:comma_th
+:code (Ruby C SQL etc)

@@ -334,3 +334,11 @@ we will get one of these ugly values:
 
 If the Ruby interpreter doesn't support any of the roundings of Nio, or if it doesn't correctly
 round, the best solution would be to avoid using Float literals and use Float#nio_read instead.
+
+==Conversions
+ 
+    Nio.convert(BigDec('1.234567890123456'),Float,:exact)==1.234567890123456
+In the implementations I've checked (win32 & linux), up to 1.8.6 BigDecimal#to_f does a poor job: (ok in bccwin32)
+    # BigDecimal('1.234567890123456').to_f != 1.234567890123456 
+    # BigDecimal("355")/BigDecimal("226") != (355.0/226.0)
+ 

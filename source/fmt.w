@@ -100,7 +100,7 @@ decimal position. So this is effectively a floating point notation, and we can h
 floating point numbers representation efficiently, not having to store innecesary digits.
 
 Note: NeutralNum and RepDec maybe should be merged into a single class.
-If that class uses the NeutralNum of not storing the integer part,
+If that class uses the NeutralNum convention of not storing the integer part,
 but storing only digits, some things would be simplified.
 
 I've added an {\emph inexact} flag to distinguish numerals
@@ -835,8 +835,6 @@ def Fmt.grouping(grp=[3],grp_sep=nil)
 end
 ·}
 
-% To do: more clear and complete explanation
-
 Precision: number of digits, rounding mode and presentation format.
 An \cd{:exact} value for the number of digits will format the numbers 
 so that its exact value can be recovered from the output.
@@ -979,7 +977,7 @@ also all significant digits will be output, rather than only those
 necessary.
 
 Non-significative-digits sets a symbol to stand for
-non-significative digits o inexact values. Showing non-significative
+non-significative digits of inexact values. Showing non-significative
 digits with an special character implies showing all digits.
 
 Scientific format digits sets the number of integral digits to be
@@ -1018,12 +1016,14 @@ def non_significative_digits!(ch='#')
 end
 # Defines the number of significan digits before the radix separator
 # in scientific notation. A negative value will set all significant digits
-# before the radix separator.
+# before the radix separator. The special value <tt>:eng</tt> activates
+# _engineering_ mode, in which the exponents are multiples of 3.
 #
 # For example:
-#   0.1234.nio_write(NFmt.mode(:sci,4).sci_digits(0) ->  0.1234E0
-#   0.1234.nio_write(NFmt.mode(:sci,4).sci_digits(3) ->  123.4E-3
-#   0.1234.nio_write(NFmt.mode(:sci,4).sci_digits(-1) -> 1234.E-4
+#   0.1234.nio_write(Fmt.mode(:sci,4).sci_digits(0)    ->  0.1234E0
+#   0.1234.nio_write(Fmt.mode(:sci,4).sci_digits(3)    ->  123.4E-3
+#   0.1234.nio_write(Fmt.mode(:sci,4).sci_digits(-1)   ->  1234.E-4
+#   0.1234.nio_write(Fmt.mode(:sci,4).sci_digits(:eng) ->  123.4E-3
 def sci_digits(n=-1)
   dup.sci_digits! n
 end
@@ -1362,12 +1362,21 @@ the alternatives are the traditional C (printf) style and that used in HP calcul
 @@sci_fmt = nil
 ·}
 
+Note the use of two hard-coded constants here:
+\begin{itemize}
+\item 10 is the maximum number of trailing zeros before the radix point that we will be shown
+for \cd{:exact} precision; if more were to be shown exponential notation is used.
+\item -4 is the maximum number of leading zeros after the radix that will be shown;
+if more were to be shown, exponential notation is used. This is not used if the
+alternative (\cd{:hp}) method is used.
+\end{itemize}
+
 ·d Fmt protected
 ·{·%
 def use_scientific?(neutral,exp) # :nodoc:
-  nd = @ndig.kind_of?(Numeric) ? @ndig : neutral.digits.length
+  nd = @ndig.kind_of?(Numeric) ? @ndig : [neutral.digits.length,10].max
   if @@sci_fmt==:hp
-    # revisar, no funciona bien    
+    puts "  #{nd} ndpos=#{neutral.dec_pos} ndlen=#{neutral.digits.length}"
     neutral.dec_pos>nd || ([neutral.digits.length,nd].min-neutral.dec_pos)>nd
   else
     exp<-4 || exp>=nd 
@@ -1458,8 +1467,6 @@ if @show_base && @base_prefix
 end
 ·}
 
-Esto no funciona bien: produce errores...
-
 ·d show base suffix
 ·{·%
 if @show_base && !@base_prefix
@@ -1467,13 +1474,6 @@ if @show_base && !@base_prefix
   str << b_prefix if b_prefix
 end
 ·}
-
-\begin{verbatim}
-# to do: mantissa options:
-# 1/base <= m < base (0 integral digits)
-# 1 <= m < base (1 integral digits)
-# m integer
-\end{verbatim}
 
 ·d Format neutral :sci
 ·{·%
@@ -2133,7 +2133,7 @@ rounding = ·2
 
 
 Burger and Dybvig free formatting algorithm, translated directly from Scheme;
-after some testing, of the three different implementations in its
+after some testing, of the three different implementations in their 
 paper, the second seems to be more efficient in Ruby.
 
 
@@ -2607,7 +2607,7 @@ end
 Using the Burger-Dybvig method with BigDecimal doesn't seem to be a good
 idea: BigDecimal has variable precision but we must set a fixed precision
 to apply the method. If use a higher precision than the current precision
-used in the number we might be ussing non-significative digits
+used in the number we might be using non-significative digits
 (e.g. for $x=1/3$). But the actual precision might be very low
 for conversion (e.g. for $x=0.1$) even though in decimal the 
 representation is exact.
@@ -2677,22 +2677,34 @@ converted = true if neutral.digits.length<prc
 
 \subsection{Numerical type conversion}
 
-El \ex{mixing} \cd{Precision} permite la conversión de un tipo numérico a otro 
-usando \cd{x.prec(type)}, por ejemplo \cd{3.prec(Float)}.
-Pero no todos los tipos numéricos lo implementan de forma completa: \cd{Rational} incluye
-el mixin, y \cd{BigDecimal} sólo de forma parcial.
-Usando texto como formato intermedio podemos usar \cd{Fmt} para realizar la conversión
-entre dos tipos que implementen \cd{Formattable}. En lugar de tratar de completar
-el uso de \cd{Precision} vamos a añadir un interfaz a \cd{Fmt} para realizar estas conversiones.
+The \cd{Precision} mix-in module from the Ruby core allows for conversion
+between numerical types by using using \cd{x.prec(type)}, 
+e.g. \cd{3.prec(Float)}.
+But this is not completely implemented by all numeric types.
+We will provide alternate conversions in \cd{Fmt} using formatted text as an intermediate
+representation to convert between types that implement \cd{Formattable}.
 
 ·d Nio classes
 ·{·%
 class Fmt
-  # formato intermedio de conversión:
+  # Intermediate conversion format for simplified conversion
   CONV_FMT = Fmt.prec(:exact).rep('<','>','...',0).approx_mode(:simplify)
+  # Intermediate conversion format for exact conversion
   CONV_FMT_STRICT = Fmt.prec(:exact).rep('<','>','...',0).approx_mode(:exact)
-  def Fmt.convert(x, type, aprx=true)
-    fmt = aprx ? CONV_FMT : CONV_FMT_STRICT
+  # Numerical conversion: converts the quantity +x+ to an object
+  # of class +type+.
+  #
+  # The third parameter is the kind of conversion:
+  # [<tt>:approx</tt>]
+  #     Tries to find an approximate simpler value if possible for inexact
+  #     numeric types. This is the default.
+  # [<tt>:exact</tt>]
+  #     Performs a conversion as exact as possible.
+  # The third parameter is true for approximate
+  # conversion (inexact values are simplified if possible) and false
+  # for conversions as exact as possible.
+  def Fmt.convert(x, type, mode=:approx)
+    fmt = mode==:approx ? CONV_FMT : CONV_FMT_STRICT
     # return x.prec(type)
     if !(x.is_a?(type))
       # return type.nio_read(x.nio_write(fmt),fmt)
@@ -2720,9 +2732,9 @@ that will be used by BigDec which is defined in rtnlzr.rb
 ·{·%
 def nio_float_to_bigdecimal(x,prec) # :nodoc:
   if prec.nil?
-    x = Nio.convert(x,BigDecimal,true)          
+    x = Nio.convert(x,BigDecimal,:approx)          
   elsif prec==:exact
-    x = Nio.convert(x,BigDecimal,false) 
+    x = Nio.convert(x,BigDecimal,:exact) 
   else
     x = BigDecimal(x.nio_write(Nio::Fmt.new.prec(prec,:sig)))
   end
@@ -3077,6 +3089,26 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     
   end
 ·}
+
+·D Tests
+·{·%
+  def test_conversions
+    x_txt = '1.234567890123456'
+    x_d = BigDecimal.nio_read(x_txt)
+    x_f = Float.nio_read(x_txt)
+    assert_equal 1.234567890123456, x_f
+    assert_equal BigDecimal(x_txt), x_d
+    assert_equal Nio.convert(x_d,Float,:exact)==x_f
+    assert_equal Nio.convert(x_d,Float,:approx)==x_f
+    
+    x_d = BigDec(355)/226
+    x_f = Float(355)/226
+    assert_equal Nio.convert(x_d,Float,:exact)==x_f
+    assert_equal Nio.convert(x_d,Float,:approx)==x_f
+    
+  end
+·}
+
 
 
 \begin{thebibliography}{Rtnlzr}

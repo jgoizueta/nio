@@ -442,7 +442,7 @@ end
 The handling of bases, added late in the development is a little messy;
 here is how it works: Now the options \verb|RepDec::Opt| contain
 information in \cd{digits} about the numerical base (radix) and
-the digits used. Them \verb|RepDec| class itself contain information
+the digits used. The \verb|RepDec| class itself contains information
 about the base (radix) used in it. This base, 10 by default, can
 be set in the constructor, but it is overriden by the radix defined
 by the options passed to \cd{setS} and \cd{setQ} which persistently establish
@@ -669,16 +669,6 @@ def to_s()
   getS
 end
 ·}
-
-Apart from indeterminate and infinities, we will handle zeros specially.
-·d Write special values HAVE TO LOOK AT THIS
-·{·%
-if ip==0 && d.length==''
-  str = opt.digits.digit_char(0).chr
-  return str;
-end
-·}
-
 
 
 ·d Auxiliary functions

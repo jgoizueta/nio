@@ -1,94 +1,19 @@
-renaming/refactoring
-debug gem generation
-add rdoc comments, hide support classes...
-implement rakefile packaging (in addition to  gem & ruby code) for:
-  source code (.w)
-  source doc (pdf)
+* Implement rakefile packaging for:
+  - source (nuweb source: what's on SVN)
+  - source-doc (source/pdf)
 
-test in linux
+* Become UTF-8 compatible
+  1. Test writing with UTF-8 seps, rep-seps (should work)
+  2. Modifications:
+     - nio_read_formatted to accept mutibyte seps (not digits)
+       (e.g. txt.tr!(@non_sig,zer) -> txt.gsub...)
+     - This in turn implies rewriting RepDec#parse.
+       A possible approch: replace all seps by one-byte canonical representats
+       (but this would not work if other UTF-8 chars in the string may include
+       the canonical bytes)
+  3. Test reading with UTF-8 seps
+  4. implement UTF-8 digits
 
-decide what to do with Fmt repository
+* Create an interface in Fmt for base suffix/prefix control and for sci format (:hp)
 
---renaming:
-  
-[x] Goi -> Nio
-[x] Goi::NFmt -> Nio::Fmt
-[x] Goi::NFmt.convert -> Nio::Fmt.convert
-[x] Goi::Tolerance -> Nio::Tolerance
-[x] Goi::BigTolerance -> Nio::BigTolerance
-[x] Goi::Tol -> Nio::Tol
-[x]   *#writeFmt -> *#nio_write
-[x]   *#readFmt -> *#nio_write
-[x]  *#to_r -> nio_r
-[x]  *#to_xr -> nio_xr
-BigDec -> Nio.BigDec module?
-
-
-Sintactic sugar:
-[x]  Nio.convert (non module function) -> Nio::Fmt.convert
-[x]  Nio.nio_convert (module function)  -> Nio::Fmt.convert
-
-[x]  fmt << x => x.nio_write(fmt)
-[x]  fmt.write(x) => x.nio_wite(fmt)
-[x]  Nio::Fmt << x => x.nio_write
-[x]  Nio::Fmt.write(x) => x.nio_write
-[x]  fmt >> [cls, txt] => cls.nio_read(txt,fmt)
-[x]  fmt.read(cls, txt) => cls.nio_read(txt,fmt)
-[x]  Nio::Fmt >> [cls, txt]  cls.nio_read(txt)
-  
-[x]  cls << [txt, fmt] => cls.nio_read(txt, fmt) ??
-[x]  cls << txt => cls.nio_read(txt) ??
-
-[x]  *#to_r => *#nio_r
-[x]  *#to_xr => *#nio_xr
-
-  Nio::Fmt(...) -> Nio::Fmt.mode(...)
-
-clean up Fmt API
-  e.g. set_xxxx => xxxx=...
-  Fmt.mode(...) =>
-
-
-
-note to build under win:
-PATH %PATH%;C:\cygwin\bin
-
-To make UTF-8 compatible:
- 1 test writing with UTF-8 seps, rep-seps (should work)
- 2. modifiy:
-      nio_read_formatted to accept mutibyte seps (not digits)
-      (e.g. txt.tr!(@non_sig,zer) -> txt.gsub...)
-      this in turn implies rewriting RepDec#parse
-          --> one approach: replace all seps by one-byte canonical representats
-              (this would not work if other UTF-8 chars in the string include
-               the canonical bytes)
- 3. test reading with UTF-8 seps
- 4. implement UTF-8 digits
-
-  
-Idea to consider:
-  Make Fmt inmutable (methods such as Fmt#mode would return a new Fmt, not self)
-  implement a Format repository in Fmt:
-  class Fmt
-    @@fmts = { }
-    # define a format
-    def []=(tag,fmt)
-      @@fmts[tag.to_sym] = fmt
-    end
-    def [](tag) 
-      @@fmts[tag.to_sym]
-    end
-  end 
-  
-:dot
-:comma
-:dot_th
-:comma_th
-:code (Ruby C SQL etc)
-
-sin completar:
-  interface para el sufijo/prefijo de base
-  pruebas de esto y de show_plus, etc
-  interface para el modo de sci (:hp)
-
-OPTIMIZAR RedDec (la salida de racionales es muy lenta)
+* Optimize RepDec

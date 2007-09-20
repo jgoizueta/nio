@@ -1,4 +1,4 @@
-== 0.2.0 2007-09-16
+== 0.2.0 2007-09-20
 
-* 1 major enhancement:
-  * Initial release
+* Initial release
+  - Nio has been exctracted from an old project and is now packaged as a Gem

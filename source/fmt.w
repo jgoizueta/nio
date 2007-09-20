@@ -1224,6 +1224,9 @@ def width!(w,adj=nil,ch=nil)
 end
 # Defines the justification (as #width()) with the given
 # width, internal mode and filling with zeros.
+#
+# Note that if you also use grouping separators, the filling 0s
+# will not be separated.
 def pad0s(w)
   dup.pad0s! w
 end

@@ -958,7 +958,7 @@ end
 
 ·d adjust format options
 ·{·%
-if properties[:all_dig].nil? && (properties[:ndig] || properties[:mode])
+if properties[:all_digits].nil? && (properties[:ndig] || properties[:mode])
    ndig = properties[:ndig] || @ndig
    mode = properties[:mode] || @mode
    properties[:all_digits] = ndig!=:exact && mode!=:gen   
@@ -1710,17 +1710,6 @@ module Formattable
 end
 ·}
 
-We will add also a repository of common formats; this was originally done
-in the same module as \cd{Formattable}; I've moved it now to \cd{Fmt}.
-
-·d Nio classes XXXX
-·{·%
-class Fmt
-  ·<Formats Repository·>  
-end
-·}
-
-
 
 \subsection{Formattable mix-in}
 
@@ -1806,7 +1795,7 @@ z = y.class.nio_read(txt,fmt)
 ·}
 
 
-\subsection{Formats Repository}
+\section{Formats Repository}
 
 Class \cd{Fmt} will also act as a namespace to 
 mantain a formats repository:
@@ -1857,7 +1846,7 @@ Fmt[:comma] = Fmt.sep(',','.')
 Fmt[:comma_th] = Fmt.sep(',','.',[3])
 Fmt[:dot] = Fmt.sep('.',',')
 Fmt[:dot_th] = Fmt.sep('.',',',[3])
-Fmt[:code] = Fmt.new.prec(20) # avoid reps # REVISAR
+Fmt[:code] = Fmt.new.prec(20) # don't use :exact to avoid repeating numerals
 ·}
 
 
@@ -2853,21 +2842,44 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 
 ·D Tests
 ·{·%
-  def test_basic_fmt_float
-
-    assert_equal 2,Float::RADIX
-    assert_equal 53,Float::MANT_DIG
-    
+  def test_basic_fmt
     # test correct rounding: 1.448997445238699 -> 6525704354437805*2^-52
     assert_equal Rational(6525704354437805,4503599627370496), Float.nio_read('1.448997445238699').nio_xr
     
     assert_equal "0",0.0.nio_write    
-    
+    assert_equal "0",0.nio_write    
+    assert_equal "0",BigDecimal('0').nio_write    
+    assert_equal "0",Rational(0,1).nio_write    
+
+    assert_equal "123456789",123456789.0.nio_write    
+    assert_equal "123456789",123456789.nio_write    
+    assert_equal "123456789",BigDecimal('123456789').nio_write    
+    assert_equal "123456789",Rational(123456789,1).nio_write    
+    assert_equal "123456789.25",123456789.25.nio_write    
+    assert_equal "123456789.25",BigDecimal('123456789.25').nio_write    
+    assert_equal "123456789.25",(Rational(123456789)+Rational(1,4)).nio_write    
+  end
+·}
+
+·D Tests
+·{·%
+  def test_basic_fmt_float
+
+    assert_equal 2,Float::RADIX
+    assert_equal 53,Float::MANT_DIG
+        
     fmt = Fmt.new {|f|
       f.rep! '[','','...',0,true  
       f.width! 20,:right,'*'
     }
     fmt.sep! '.',',',[3]    
+    
+    assert_equal "0.1",0.1.nio_write
+    assert_equal "0.10000000000000001",0.1.nio_write(Fmt.mode(:gen,:exact).show_all_digits)
+    assert_equal "0.10000000000000001",0.1.nio_write(Fmt.mode(:gen,:exact).show_all_digits(true))
+    assert_equal "0.10000000000000001",0.1.nio_write(Fmt.mode(:gen,:exact,:show_all_digits=>true))
+    assert_equal "0.1000000000000000055511151231257827021181583404541015625",0.1.nio_write(Fmt.mode(:gen,:exact,:approx=>:exact))
+    
     
     assert_equal "******643,454,333.32",fmt.nio_write_formatted(fmt.nio_read_formatted("643,454,333.32"))        
     assert_equal "******643.454.333,32",fmt.sep(',').nio_write_formatted(fmt.nio_read_formatted("643,454,333.32"))        

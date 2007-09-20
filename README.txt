@@ -69,6 +69,7 @@ described in module Nio.
 
 =Examples of use
 
+  require 'rubygems'
   require 'nio'
   require 'nio/sugar'
   include Nio
@@ -78,6 +79,8 @@ described in module Nio.
   x.nio_write(Fmt.prec(20))
   ...etc see :sci, :fix, :gen, width options, base opticos, etc et.
 
+  Fmt.prec(20) == Fmt.mode(:gen,Float::DIG) seems to be the format used by Float#to_s
+
 The default format Fmt.default is used when no format is specified;
 it can be changed by assigning to it:
 
@@ -86,7 +89,7 @@ it can be changed by assigning to it:
   puts 1.23456.nio_write(Fmt.prec(3)) -> 1,23
 
 But note that Fmt.new doesn't use the current default (it's
-the hard-wired default at which Fmt.default starts):
+the hard-wired value at which Fmt.default starts):
 
   puts 1.23456.nio_write(Fmt.new.prec(3)) -> 1.23
 

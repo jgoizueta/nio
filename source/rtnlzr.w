@@ -941,8 +941,14 @@ in particular big powers of the Float radix to their exact integer value (so we 
 class Float
   ·<rdoc commentary for Float\#nio\_xr·>
   def nio_xr
-    return Rational(self.to_i,1) if self.modulo(1)==0
-    f,e = Math.frexp(self)
+    return Rational(self.to_i,1) if self.modulo(1)==0
+    f,e = Math.frexp(self)
+    
+    if f.nan?
+      return Rational(0,0) if self.nan?
+      # assert !self.finite?
+      return self<0 ? Rational(-1,0) : Rational(1,0)
+    end
     
     if e < Float::MIN_EXP
        bits = e+Float::MANT_DIG-Float::MIN_EXP
@@ -1607,6 +1613,37 @@ be documented apart.
 #
 # Values of type BigTolerance or Numeric are accepted.·}
 
+\section{Patch}
+
+In some Ruby implementations there's a bug in \verb|Float#to_i| which
+produces incorrect results. This has been detected in Ruby 1.8.4
+compiled for \verb|x86_64_linux|.
+Here we'll try to detect the problem and apply a quick patch. The resulting
+method will be slower but will produce correct results.
+
+
+·d flttol definitions
+·{·%
+# :stopdoc:
+# A problem has been detected with Float#to_i() in some Ruby versiones
+# (it has been found in Ruby 1.8.4 compiled for x86_64_linux|)
+# This problem makes to_i produce an incorrect sign on some cases.
+# Here we try to detect the problem and apply a quick patch,
+# although this will slow down the method.
+if 4.611686018427388e+018.to_i < 0
+  class Float
+    alias _to_i to_i
+    def to_i
+      neg = (self < 0)
+      i = _to_i
+      i_neg = (i < 0)
+      i = -i if neg != i_neg
+      i
+    end
+  end  
+end
+# :startdoc:
+·}
 
 
 \section{Tests}
@@ -1696,20 +1733,26 @@ We'll load the data for the tests in a global variable.
 ·{·%
     def test_compare_algorithms
       r = Rtnlzr.new(Tolerance.new(1e-5,:sig))
-      $data.each do |x|
+      ($data + $data.collect{|x| -x}).each do |x|
         q1 = r.rationalize_Knuth(x)
         q2 = r.rationalize_Horn(x)
         q3 = r.rationalize_HornHutchins(x)
-        #q4 = r.rationalize_KnuthB(x)
+        #q4 = r.rationalize_KnuthB(x)
+        q1 = [-q1[0],-q1[1]] if q1[1] < 0
+        q2 = [-q2[0],-q2[1]] if q2[1] < 0
+        q3 = [-q3[0],-q3[1]] if q3[1] < 0
         assert_equal q1, q2
         assert_equal q1, q3
         #assert_equal q1, q4
       end
       r = Rtnlzr.new(Tolerance.epsilon)
-      $data.each do |x|
+      ($data + $data.collect{|x| -x}).each do |x|
         q1 = r.rationalize_Knuth(x)
         q2 = r.rationalize_Horn(x)
         q3 = r.rationalize_HornHutchins(x)
+        q1 = [-q1[0],-q1[1]] if q1[1] < 0
+        q2 = [-q2[0],-q2[1]] if q2[1] < 0
+        q3 = [-q3[0],-q3[1]] if q3[1] < 0
         #q4 = r.rationalize_KnuthB(x)
         assert_equal q1, q2
         assert_equal q1, q3

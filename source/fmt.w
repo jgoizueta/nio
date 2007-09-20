@@ -657,7 +657,7 @@ details of formating numbers. It represents a particular format.
 # The formatting aspects managed by Fmt are:
 # * mode and precision
 #   - #mode() and #orec() set the main paramters
-#   - see also #show_all_digits(), #approx_mode(), #non_significative_digits(),
+#   - see also #show_all_digits(), #approx_mode(), #insignificant_digits(),
 #     #sci_digits() and #show_plus()
 # * separators
 #   - see #sep() and #grouping()
@@ -889,7 +889,8 @@ For the \cd{:approx} mode, if \cd{all\_digits} is not active, the minimum
 number of digits necessary to recover unambiguosly the value are generated.
 
 
-The default format has changed from generic using 10 significative digits to
+The default format has changed from generic using \verb|Float::DIG| significant digits
+(which seems to be what \verb|Float#to_s| uses) to
 generic with {\em exact} precision, i.e. showing all digits necessary to
 define the value.
 
@@ -900,7 +901,7 @@ define the value.
 @round=Fmt.default_rounding_mode
 @all_digits = false
 @approx = :only_sig
-@non_sig = '' # marker for non-significant digits of inexact values e.g. '#','0'
+@non_sig = '' # marker for insignificant digits of inexact values e.g. '#','0'
 @sci_format = 1 # number of integral digits in the mantissa: -1 for all
 ·}
 
@@ -914,7 +915,7 @@ define the value.
 #      (fixed precision) is a simple format with a fixed number of digits
 #      after the point
 #   [<tt>:sig</tt>]
-#      (significative precision) is like :fix but using significative digits
+#      (significance precision) is like :fix but using significant digits
 #   [<tt>:sci</tt>]
 #      (scientific) is the exponential form 1.234E2
 # - <tt>precision</tt> (number of digits or :exact, only used for output)
@@ -934,18 +935,18 @@ define the value.
 # - <tt>:approx</tt> approximate mode
 #   [<tt>:only_sig</tt>]
 #     (the default) treats the value as an approximation and only
-#     significative digits (those that cannot take an arbitrary value without
+#     significant digits (those that cannot take an arbitrary value without
 #     changing the specified value) are shown.
 #   [<tt>:exact</tt>]
 #     the value is interpreted as exact, there's no distinction between
-#     significative and unsignificative digits.
+#     significant and insignificant digits.
 #   [<tt>:simplify</tt>]
 #     the value is simplified, if possible to a simpler (rational) value.
 # - <tt>:show_all_digits</tt> if true, this forces to show digits that 
 #   would otherwise not be shown in the <tt>:gen</tt> format: trailing
 #   zeros of exact types or non-signficative digits of inexact types.
 # - <tt>:nonsignficative_digits</tt> assigns a character to display
-#   nonsignificative digits, # by default
+#   insignificant digits, # by default
 def mode(mode,precision=nil,options={})
   dup.mode!(mode,precision,options)
 end
@@ -1025,8 +1026,8 @@ exact precision,
 also all significant digits will be output, rather than only those
 necessary.
 
-Non-significative-digits sets a symbol to stand for
-non-significative digits of inexact values. Showing non-significative
+Insignificant-digits sets a symbol to stand for
+insignificant digits of inexact values. Showing insignificant
 digits with an special character implies showing all digits.
 
 Scientific format digits sets the number of integral digits to be
@@ -1055,14 +1056,14 @@ end
 def approx_mode!(mode)
   set! :approx=>mode
 end
-# Defines a character to stand for unsignificative digits when
+# Defines a character to stand for insignificant digits when
 # a specific number of digits has been requested greater than then
-# number of significative digits (for approximate types).
-def non_significative_digits(ch='#')
-  dup.non_significative_digits! ch
+# number of significant digits (for approximate types).
+def insignificant_digits(ch='#')
+  dup.insignificant_digits! ch
 end
-# This is the mutator version of #non_significative_digits().
-def non_significative_digits!(ch='#')
+# This is the mutator version of #insignificant_digits().
+def insignificant_digits!(ch='#')
   ch ||= ''
   set! :non_sig=>ch
 end
@@ -1224,7 +1225,7 @@ end
 # Defines the justification (as #width()) with the given
 # width, internal mode and filling with zeros.
 def pad0s(w)
-  dup.pad0s w
+  dup.pad0s! w
 end
 # This is the mutator version of #pad0s().
 def pad0s!(w)
@@ -1489,7 +1490,7 @@ if @ndig==:exact
 else
   #zero = get_base_digits.digit_char(0).chr
   ns_digits = ''
-  ·<compute non-significant digits filler·>
+  ·<compute insignificant digits filler·>
   digits = neutral.digits + ns_digits
   if neutral.dec_pos<=0
     str << zero+@dec_sep+zero*(-neutral.dec_pos) + digits
@@ -1502,7 +1503,7 @@ end
 ·<handle trailing zeros·>
 ·}
 
-·d compute non-significant digits filler
+·d compute insignificant digits filler
 ·{·%
 nd = neutral.digits.length
 if actual_mode==:fix
@@ -1551,7 +1552,7 @@ if @ndig==:exact
   str << neutral.to_RepDec.getS(@rep_n, getRepDecOpt(neutral.base))  
 else
   ns_digits = ''
-  ·<compute non-significant digits filler·>
+  ·<compute insignificant digits filler·>
   digits = neutral.digits + ns_digits
   str << ((integral_digits<1) ? zero : digits[0...integral_digits])
   str << @dec_sep
@@ -1955,7 +1956,7 @@ end
 ·}
 
 We are not going to use the Ruby \cd{format} method so that we can avoid
-outputting not-significant digits and also generate as few digits as possible
+outputting insignificant digits and also generate as few digits as possible
 (unless the format specifies "show all digits").
 
 ·d use native float format? ·{false·}
@@ -2141,7 +2142,7 @@ algorithm from \cite[3]{3} by Burger and Dybvig.
 We may later write a C extension using dtoa.c by David M. Gay
 for decimal read/write in free and fixed form.
 An interesting addition would be an option to distinguish
-non-significative digits. There's also C code by Burger in free.c
+insignificant digits. There's also C code by Burger in free.c
 for fixed format base 10.
 
 
@@ -2382,7 +2383,7 @@ end
 
 
 We'll derive, from the previous method, another one to generate all 
-significative digits, i.e. all digits that, if used on input, cannot
+significant digits, i.e. all digits that, if used on input, cannot
 arbitrarily change its value and preserve the parsed value of the
 floating point number.
 This will be useful to generate a fixed number of digits or if
@@ -2662,14 +2663,14 @@ end
 Using the Burger-Dybvig method with BigDecimal doesn't seem to be a good
 idea: BigDecimal has variable precision but we must set a fixed precision
 to apply the method. If use a higher precision than the current precision
-used in the number we might be using non-significative digits
+used in the number we might be using insignificant digits
 (e.g. for $x=1/3$). But the actual precision might be very low
 for conversion (e.g. for $x=0.1$) even though in decimal the 
 representation is exact.
 I have choosen a minimum precision of $24$, because that's what you
 get for \verb|BigDecimal('1')/3|. Non exact numbers should be
 computed or defined with that precision at least to avoid using
-non-significative digits.
+insignificant digits.
 
 The problem with Burger-Dybvig it that it relies on the precision
 of the floating type (in the gaps between consecutive numbers) to
@@ -3055,9 +3056,9 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 ·{·%
   def test_float_nonsig
     
-    assert_equal "100.000000000000000#####", 100.0.nio_write(Fmt.prec(20,:fix).non_significative_digits('#'))
+    assert_equal "100.000000000000000#####", 100.0.nio_write(Fmt.prec(20,:fix).insignificant_digits('#'))
 
-    fmt = Fmt.mode(:sci,20).non_significative_digits('#').sci_digits(1)
+    fmt = Fmt.mode(:sci,20).insignificant_digits('#').sci_digits(1)
     assert_equal "3.3333333333333331###E-1", (1.0/3).nio_write(fmt)
     assert_equal "3.3333333333333335###E6", (1E7/3).nio_write(fmt)
     assert_equal "3.3333333333333334###E-8", (1E-7/3).nio_write(fmt)
@@ -3071,12 +3072,12 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     assert_equal "3.3333333333333335###E6", (1E7/3).nio_write(fmt)
     assert_equal "33.333333333333334###E-9",(1E-7/3).nio_write(fmt)
     
-    fmt = Fmt[:comma].mode(:sci,20).non_significative_digits('#').sci_digits(0)
+    fmt = Fmt[:comma].mode(:sci,20).insignificant_digits('#').sci_digits(0)
     assert_equal "0,33333333333333331###E0",(1.0/3).nio_write(fmt)
     assert_equal "0,33333333333333335###E7",(1E7/3).nio_write(fmt)
     assert_equal "0,33333333333333334###E-7",(1E-7/3).nio_write(fmt)
     
-    fmt = Fmt.mode(:sci,20).non_significative_digits('#').sci_digits(0)
+    fmt = Fmt.mode(:sci,20).insignificant_digits('#').sci_digits(0)
     assert_equal "0.10000000000000001###E0",(1E-1).nio_write(fmt)
     assert_equal "0.50000000000000000###E0",(0.5).nio_write(fmt)
     assert_equal "0.49999999999999994###E0",prv(0.5).nio_write(fmt)

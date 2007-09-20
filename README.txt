@@ -23,13 +23,14 @@ Nio has some interesting features, though:
   positional numerals in any base.
 * Handling of digit repetitions (repeating decimals or, in general, <i>repeating numerals</i>).
   With this method rational numbers can be represented exactly as numerals.
-* Discrimitation of significative digits of the representation of Float in any base.
-  (nonsignificative digits are those that can take any value without altering the
+* Discrimitation of significant digits of the representation of Float in any base.
+  (insignificant digits are those that can take any value without altering the
    Float value they specify.)
 
 Limitations:
 *  UTF-8 or other multi-byte encodings are not supported (digits and separators must be one-byte characters)
 *  This code is not very fast, since it is implemented in pure Ruby (no C extensions are used).
+*  Error handling needs to improve, specially on input.
 
 =Installation
 
@@ -47,8 +48,6 @@ the Ruby code for Nio.
 
 
 =Documentation
-
-For a general introduction and some details, read on below.
 
 See the the API to the Nio::Fmt object for all the formatting options.
 
@@ -74,8 +73,8 @@ described in module Nio.
   require 'nio/sugar'
   include Nio
 
-  x = Math.sqrt(2.0)
-  x.nio_write => ...
+  x = Math.sqrt(2)
+  x.nio_write => 
   x.nio_write(Fmt.prec(20))
   ...etc see :sci, :fix, :gen, width options, base opticos, etc et.
 
@@ -205,15 +204,34 @@ Since we didn't request to see "all digits", we got only as few as possible.
 
 Hey! Where did all that stuff came from? Now we're really seeing the "exact" value of Float. (We told the conversion
 to consider the Float an exactly defined value, rather than an approximation to some other value).
-But, why didn't we get all those digits when we asked for "all digits"?. Because most are not significative;
-the default "approx_mode" is to consider Float an approximate value and show only significative digits.
-We define unsignificative digits as those that can be replace by any other digit without altering the Float
+But, why didn't we get all those digits when we asked for "all digits"?. Because most are not significant;
+the default "approx_mode" is to consider Float an approximate value and show only significant digits.
+We define insignificant digits as those that can be replace by any other digit without altering the Float
 value when the number is rounded to the nearest float. By looking at our example we see that the 17 first digits
-(just before the 555111...) must be significative: they cannot take an arbitrary value without altering the Float.
+(just before the 555111...) must be significant: they cannot take an arbitrary value without altering the Float.
 In fact all have well specified values except the last one that can be either 0 or 1 (but no other value). The next
-digits (first unsignificative, a 5) can be replaced by any other digit d (from 0 to 9) and the expression
+digits (first insignificant, a 5) can be replaced by any other digit d (from 0 to 9) and the expression
 0.10000000000000000d would still be rounded to Float(0.1)
 
+
+==Insignificance
+
+So, let's summarize the situation about inexact numbers: When the approximate mode of a format is <tt>:only_sig</tt>,
+the digits of inexact (i.e. floating point) numbers are classified as significant or insignificant.
+The latter are only shown only if the property <tt>:all_digits</tt> is true
+(which it is by default for <tt>:fix</tt>)
+but since they are not meaningful they use a special character that by default is empty. You can 
+define that character to see where they are:
+  puts 0.1.nio_write(Fmt.mode(:fix,20).insignificant_digits('#')) -> 0.10000000000000001###  
+  
+If we hadn't use the special character we would'nt even seen those digits:  
+  
+  puts 0.1.nio_write(Fmt.mode(:fix,20))                              -> 0.10000000000000001
+
+When the aproximate mode is defined as :exact, there's no distinction between significant or insignificant
+digits, the number is taken as exactly defined and all digits are shown with their value.
+
+  puts 0.1.nio_write(Fmt.mode(:fix,20,:approx_mode=>:exact)          -> 0.10000000000000000555
 
 ==Repeating Numerals
 
@@ -361,3 +379,20 @@ Thay may not look very impressive, but is much more accurate than BigDecimal#to_
      BigDecimal('1.234567890123456').to_f == 1.234567890123456  -> false
      (BigDecimal("355")/226).to_f == (355.0/226.0)              -> false
  
+==More Information
+  
+* <b>What Every Computer Scientist Should Know About Floating-Point Arithmetic</b>
+  David Goldberg
+    http://docs.sun.com/source/806-3568/ncg_goldberg.html
+  
+* <b>How to Read Floating Point Numbers Accurately</b>
+  William D. Clinger
+    http://citeseer.ist.psu.edu/224562.html
+  
+* <b>Printing Floating-Point Numbers Quickly and Accurately</b>
+  Robert G. Burger & R. Kent Dybvig
+    http://www.cs.indiana.edu/~burger/FP-Printing-PLDI96.pdf
+  
+* <b>Repeating Decimal</b>
+    http://mathworld.wolfram.com/RepeatingDecimal.html
+    http://en.wikipedia.org/wiki/Recurring_decimal

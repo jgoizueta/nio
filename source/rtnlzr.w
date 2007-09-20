@@ -183,7 +183,7 @@ class Tolerance
     Float
   end
   
-  # The tolerance mode is either :abs (absolute) :rel (relative) or :sig (significative).
+  # The tolerance mode is either :abs (absolute) :rel (relative) or :sig (significant).
   # The last parameter is a flag to specify decimal mode for the :sig mode
   def initialize(t=0.0, mode=:abs, decmode=false)
     set t, mode, decmode
@@ -233,7 +233,7 @@ The tolerances can be defined in three basic modes:
 \item Absolute tolerance (\cd{:abs}) is a fixed value.
 \item Relative tolerance (\cd{:rel}) is given in relation to the unit $1$
 and varies proportionally to the magnitud of the tested values.
-\item Significative tolerance (\cd{:sig}) is given in relation to 
+\item Significant tolerance (\cd{:sig}) is given in relation to 
 a reference interval and varies in steps (of exponential size).
 For the binary floating-point type Float, binary significant is
 used unless decimal mode is selected; 
@@ -266,9 +266,9 @@ end
 This defines the tolerance by givind the number
 of decimal digits of precision; by default 
 as an absolute tolerance, i.e. by a fixed number of
-decimals; significative mode would also be 
+decimals; significant mode would also be 
 meaningful here, to define the number of 
-significative digits. By default {\emph rounded}
+significant digits. By default {\emph rounded}
 digits are used.
 
 ·d Tolerance constructors
@@ -281,11 +281,11 @@ end
 ·}
 
 This is a shortcut to define the tolerance
-by the number of significative digits.
+by the number of significant digits.
 
 ·d Tolerance constructors
 ·{·%
-#This initializes a Tolerance with a number of significative decimal digits
+#This initializes a Tolerance with a number of significant decimal digits
 def sig_decimals(d, rounded=true)
   decimals d, :sig, rounded
 end
@@ -410,9 +410,9 @@ and choose which of the compared magnitude to use
 ·}
 
 We define a fragment with same parameters for
-the significative comparison.
+the significant comparison.
 
-·d Significative Comparison
+·d Significant Comparison
 ·{·%
 if @decimal_mode
   begin
@@ -437,7 +437,7 @@ else
 end
 ·}
 
-Now we will define reference exponents for significative tolerances;
+Now we will define reference exponents for significant tolerances;
 in general a reference exponent $r$ will select
 the interval $\left[b^{r-1},b^r\right)$ as reference (the interval
 where the tolerance has the value given in its definition).
@@ -453,7 +453,7 @@ tolerance given applies to $\left[1,2\right)$. If we use
 @@ref_exp = 1 # Math.frexp(1)[1] => tol. relative to [1,2)
 ·}
 
-For significative decimals mode, we will use the $\left[0.1,1\right)$ as reference by
+For significant decimals mode, we will use the $\left[0.1,1\right)$ as reference by
 using the reference exponent 0; a reference exponent of 1 the
 reference interval would be $\left[1,10\right)$.
 
@@ -472,7 +472,7 @@ Now we can define the different specific comparisons.
 ·{·%
 case @mode
   when :sig
-    ·<Significative Comparison·(y-x >·,max·)·>
+    ·<Significant Comparison·(y-x >·,max·)·>
   when :rel
     ·<Relative Comparison·(y-x >·,max·)·>
   when :abs
@@ -486,7 +486,7 @@ This is essential equality.
 ·{·%
 case @mode
   when :sig
-    ·<Significative Comparison·((y-x).abs <=·,min·)·>
+    ·<Significant Comparison·((y-x).abs <=·,min·)·>
   when :rel
     ·<Relative Comparison·((y-x).abs <=·,min·)·>
   when :abs
@@ -500,7 +500,7 @@ And this is approximate equality, a weaker form of equality.
 ·{·%
 case @mode
   when :sig
-    ·<Significative Comparison·((y-x).abs <=·,max·)·>
+    ·<Significant Comparison·((y-x).abs <=·,max·)·>
   when :rel
     ·<Relative Comparison·((y-x).abs <=·,max·)·>
   when :abs
@@ -672,7 +672,7 @@ end
 ·}
 
 
-Initialize with a number a significative decimal digits.
+Initialize with a number a number of significant decimal digits.
 
 ·d BigTolerance constructors
 ·{·%
@@ -942,14 +942,13 @@ class Float
   ·<rdoc commentary for Float\#nio\_xr·>
   def nio_xr
     return Rational(self.to_i,1) if self.modulo(1)==0
-    f,e = Math.frexp(self)
-    
-    if f.nan?
+    if !self.finite?
       return Rational(0,0) if self.nan?
-      # assert !self.finite?
       return self<0 ? Rational(-1,0) : Rational(1,0)
-    end
-    
+    end
+    
+    f,e = Math.frexp(self)
+        
     if e < Float::MIN_EXP
        bits = e+Float::MANT_DIG-Float::MIN_EXP
     else

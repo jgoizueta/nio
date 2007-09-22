@@ -15,7 +15,7 @@ an that fraction notation (X/Y) is not supported for rationals;
 those are higher level services that could be implemented using Nio
 but are not the subject of this package.
 
-The implementaion of Nio is pure Ruby, and not specially fast; but it is complete and accurate.
+The implementation of Nio is pure Ruby, and not specially fast; but it is complete and accurate.
 
 Nio has some interesting features, though:
 
@@ -59,7 +59,7 @@ For a general introduction and some details, read on below.
 * To *extend* the formatting to other types see the documentation for the module Nio::Formattable.
 * If you want to use the floating point tolerance see the classes Nio::Tolerance and Nio::BigTolerance, 
   which can be defined with <tt>Nio::Tol()</tt> and <tt>Nio::BigTol()</tt> as described in the module Nio.
-* The functions BigDec() is a convenient way to define/convert BigDecimals, also described in module Nio.
+* The function BigDec() is a convenient way to define/convert BigDecimals, also described in module Nio.
 
 =Basic use
 
@@ -96,12 +96,12 @@ We've seen some formatting modes:
 * <tt>:sci</tt> (similar to E in C printf or in Fortran) is for scientific
   or exponential notation.
 * <tt>:gen</tt> (similar to G in C printf or in Fortran) is the general notational
-  (which also de default), the number of decimals is for significant digits, and
+  (which also the default), the number of decimals is for significant digits, and
   :sig is used if possible; if it would be too long it uses :sci instead.
 In one example above we used <tt>show_plus</tt> to force the display of the sign.
 And in the last line we used <tt>:exact</tt> for the number of digits, (which
 is also the default), and this adjust automatically the number of digits to
-show the value _exaclty_, meaning that if we convert the numeral back to a
+show the value _exactly_, meaning that if we convert the numeral back to a
 numeric object of the original type, the same exact value will be produced.
 
 Now let's see some other formatting aspects. The separators can be defined:
@@ -181,7 +181,7 @@ Here we're dealing with an approximate numerical type, Float, that has a limited
 internal precision and we asked for a higher precision on the output, which we
 didn't get. Nio refuses to show non-significant digits.
 
-We can use a placeholder for the digits so that Nio show us something rather than
+We can use a placeholder for the digits so that Nio shows us something rather than
 just ignoring the digits:
 
   puts x.nio_write(fmt.insignificant_digits('#'))           -> 0.66666666666666663###
@@ -244,11 +244,11 @@ modify it:
   fmt.prec! 3
 
 Note that we had to make a duplicate of the default format in
-order to modifify it or we would have got an error
+order to modify it or we would have got an error
 (if you want to modify the default format
 you have to assign to it).
 
-Now we can simplify this a little passing a block to Fmt.default:
+Now we can simplify this a little by passing a block to Fmt.default:
 
   fmt = Fmt.default { |f|
     f.sep! ','
@@ -285,7 +285,7 @@ we would use, for example:
 ==Exact and aproximate values
  
 Float and BigDecimal are approximate in the sense that 
-a given value within the range of this types, (defined either 
+a given value within the range of these types, (defined either 
 by an expression or as result of a computation) may no be
 exactly represented and has to be substituted by the closest possible value.
 With Float, which generally is a binary floating point, there's an
@@ -309,8 +309,8 @@ But why didn't we see the second one-digit in the first try?
 We requested "exact" precision! 
 
 Well, we didn't get it because it is not needed to specify exactly the inner value
-of Float(1.0); when whe convert 0.1 and round it to the nearest Float we get the
-same value than when we use 0.10000000000000001. 
+of Float(1.0); when we convert 0.1 and round it to the nearest Float we get the
+same value as when we use 0.10000000000000001. 
 Since we didn't request to see "all digits", we got only as few as possible.
 
   0.1.nio_write(Fmt.prec(:exact).approx_mode(:exact)) -> 0.1000000000000000055511151231257827021181583404541015625
@@ -322,7 +322,7 @@ But, why didn't we get all those digits when we asked for "all digits"?.
 
 Because most are not significant;
 the default "approx_mode" is to consider Float an approximate value and show only significant digits.
-We define insignificant digits as those that can be replace by any other digit without altering the Float
+We define insignificant digits as those that can be replaced by any other digit without altering the Float
 value when the number is rounded to the nearest float. By looking at our example we see that the 17 first digits
 (just before the 555111...) must be significant: they cannot take an arbitrary value without altering the Float.
 In fact all have well specified values except the last one that can be either 0 or 1 (but no other value). The next
@@ -334,7 +334,7 @@ digits (first insignificant, a 5) can be replaced by any other digit * (from 0 t
 
 So, let's summarize the situation about inexact numbers: When the approximate mode of a format is <tt>:only_sig</tt>,
 the digits of inexact (i.e. floating point) numbers are classified as significant or insignificant.
-The latter are only shown only if the property <tt>:all_digits</tt> is true
+The latter are only shown if the property <tt>:all_digits</tt> is true
 (which it is by default for <tt>:fix</tt>)
 but since they are not meaningful they use a special character that by default is empty. You can 
 define that character to see where they are:
@@ -352,7 +352,7 @@ digits, the number is taken as exactly defined and all digits are shown with the
 ==Repeating Numerals
 
 The common term is <b>repeating decimal</b> or <b>recurring decimal</b>, but since Nio support them for any base,
-we'll call then <i>repeating numerals</i>.
+we'll call them <i>repeating numerals</i>.
 
   Rational(1,3).nio_write -> 0.333...
  
@@ -366,11 +366,11 @@ It works the other way! In fact the seemingly loose 0.333... was an exact repres
 All Rational numbers can be expressed as a repeating numeral in any base. Repeating numerals may have an infinite
 number of digits, but from some point on they're just repetitions of the same (finite) sequence of digits.
 
-By default Nio expresses that kind repetition by appending two repetitions of the repeating sequence
+By default Nio expresses that kind of repetition by appending two repetitions of the repeating sequence
 after it and adding the ellipsis (so the repeated sequence appears three times, and, by the way Nio
-uses three points rather than a a real ellipsis characters).
+uses three points rather than a real ellipsis characters).
 This allow Nio to recognize the repeating sequence on input.
-We can use a more economical notation by just marking the repeating sequence, rather thar repeating it:
+We can use a more economical notation by just marking the repeating sequence, rather than repeating it:
   Rational(1,3).nio_write(Fmt.rep(:nreps=>0)) -> 0.<3>
 We just requested for 0 as the number of repetitions (the default is 2) and got the sequence delimited by <> 
 (we can change those characters; we can even use just a left separator).
@@ -381,7 +381,7 @@ This is shorter and would allow to show the number better with special typograph
 
 BigDec() is a handy convenience to define BigDecimals; it permits us
 to use BigDec(1) instead of BigDecimal('1')
-(I find tedious to type all those quotes.)
+(I find it tedious to type all those quotes.)
 It can also be used with Float arguments, e.g.:
   BigDec(0.5)
 But this is a questionable use (for example it has been disregarded in Python Decimal.)
@@ -401,7 +401,7 @@ a simple value.
 ++
 
 Since a floating point literal will, in general, convert to a Float of slightly different value,
-and several distinct literals can convert to the same value, there will always some compromise.
+and several distinct literals can convert to the same value, there will always be some compromise.
 Here we've chosen to simplify values so that <tt>BigDec(0.1)==BigDecimal('0.1')</tt>,
 but this implies that, for example, <tt>BigDecimal('0.10000000000000001')</tt> cannot be defined
 with BigDec(), because <tt>Float(0.10000000000000001)==Float(0.1)</tt>.
@@ -440,7 +440,7 @@ the default rounding mode can be changed with Fmt.default_rounding_mode().
 For round-trip conversions, a number should use the same rounding mode on input and output.
 
 For Floats there's an additional issue here, because when we use floating point literals
-on the Ruby code (such as 0.1 or 1E23) they are parsed and converter to Floating point values
+on the Ruby code (such as 0.1 or 1E23) they are parsed and converted to Floating point values
 by the Ruby interpreter which must apply some kind of rounding when the expression to be parsed
 is equidistant from two Float values. 
 All the Ruby implementations I have tried have IEEE754 Double Float
@@ -451,7 +451,7 @@ is the initial default rounding mode.
 ===Examples
 
 We assume the common implementation of float (<tt>Float::RADIX==2 && Float::MANT_DIG==53</tt>) here.
-In that case, we can use the value 1E23, which is equidistant form two Floats
+In that case, we can use the value 1E23, which is equidistant from two Floats
 to check which kind of roundig does the interpreter use.
 If it's round-to-even (the common case) we'll have:
   1E23 == Float.nio_read('1E23',Nio::Fmt.mode(:gen,:exact,:round=>:even) --> true
@@ -462,7 +462,7 @@ But if rounding is to infinity the previous check will be false and this will ho
 
 Now, if we're using the same default rounding for Nio we will have:
   1E23.nio_write == "1E23" --> true
-Which will make you feel warm an fuzzy. But if the system rounding is different 
+Which will make you feel warm and fuzzy. But if the system rounding is different 
 we will get one of these ugly values:
    fmt_inf = Nio::Fmt.mode(:gen,:exact,:round=>:inf)
    fmt_even = Nio::Fmt.mode(:gen,:exact,:round=>:even)

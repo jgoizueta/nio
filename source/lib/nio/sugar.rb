@@ -68,10 +68,18 @@ end
 
 # :stopdoc:
 
+#~ class Numeric
+  #~ def to_xr
+    #~ nio_xr
+  #~ end
+#~ end
+
 for cls in [Integer,Rational,Float,BigDecimal]
-  def cls.to_xr(tol = Nio::Tolerance.big_epsilon)
-    cls.nio_xr
-  end
+  cls.class_eval {
+    def to_xr
+      nio_xr
+    end
+  }
 end
 
 class Float

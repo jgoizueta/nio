@@ -703,6 +703,8 @@ end
 class Error < StandardError # :nodoc:
 end
 class InvalidOption < Error # :nodoc:
+end
+class InvalidFormat < Error # :nodoc:
 end
 ·}
 
@@ -746,7 +748,7 @@ def set!(properties={}) # :nodoc:
      properties[al] = v
      properties.delete k
    elsif !@@valid_properties.include?(k)
-     raise InvalidOption.new("Invalid option: #{k}")
+     raise InvalidOption, "Invalid option: #{k}"
    end
  end
     
@@ -1623,7 +1625,7 @@ def nio_read_formatted(txt) # :nodoc:
 
   opt = getRepDecOpt(base)
   if @rep_in
-    #raise NumFormatError,"Invalid numerical base" if base!=10
+    #raise InvalidFormat,"Invalid numerical base" if base!=10
     rd = RepDec.new # get_base not necessary: setS sets it from options
     rd.setS txt, opt
     num = rd.to_NeutralNum(opt.digits)
@@ -2464,17 +2466,12 @@ class Integer
 end
 ·}
 
-·d Nio classes
-·{·%
-class NumFormatError <StandardError
-end
-·}
 
 
 ·d Read Integer x from neutral
 ·{·%
 if neutral.special?
-  raise Nio::NumFormatError,"Invalid integer numeral"
+  raise Nio::InvalidFormat,"Invalid integer numeral"
 elsif neutral.rep_pos<neutral.digits.length  
   return Rational.nio_read_neutral(neutral).to_i
 else

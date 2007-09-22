@@ -990,7 +990,7 @@ which is somewhat slow:
 ·d scratch
 ·{·%
 class Float
-  def nio_xr(x)
+  def nio_xr
     f,e = Math.frexp(self)
     f = Math.ldexp(f, Float::MANT_DIG)
     e -= Float::MANT_DIG

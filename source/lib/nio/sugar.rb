@@ -21,15 +21,15 @@ require 'nio/rtnlzr'
 require 'nio/fmt'
 
 # This is not a module function: this provides a shorthand access to Nio::Fmt.convert
-def Nio.convert(x, type, aprx=true)
-  Nio::Fmt.convert x, type, aprx
+def Nio.convert(x, type, mode=:approx)
+  Nio::Fmt.convert x, type, mode
 end
 
 module Nio
   module_function
   # This module function can be used after <tt>import Nio</tt>
-  def nio_convert(x, type, aprx=true)
-    Nio::Fmt.convert x, type, aprx
+  def nio_convert(x, type, mode=:approx)
+    Nio::Fmt.convert x, type, mode
   end 
   # :stopdoc:  
   class Fmt

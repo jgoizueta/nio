@@ -76,3 +76,27 @@
   # or we can treat the type as it was exactly defined
   puts x.nio_write(fmt.approx_mode(:exact)) 
 
+
+  # conversions
+  puts Nio.convert(1.0/3, Rational)
+  puts Nio.convert(1.0/3, Rational, :exact)
+  puts Nio.convert(1.0/3, BigDecimal)
+  puts Nio.convert(1.0/3, BigDecimal, :exact)
+  puts Nio.convert(Rational(1,3), Float)
+  puts Nio.convert(Rational(1,3), BigDecimal)
+  puts Nio.convert(BigDecimal('1')/3, Rational)
+  puts Nio.convert(BigDecimal('1')/3, Rational, :exact)
+  puts Nio.convert(BigDecimal('1')/3, Float)
+  puts Nio.convert(BigDecimal('1')/3, Float, :exact)
+ 
+  puts Nio.convert(2.0/3, Rational)
+  puts Nio.convert(2.0/3, Rational, :exact)
+  puts Nio.convert(2.0/3, BigDecimal)
+  puts Nio.convert(2.0/3, BigDecimal, :exact)
+  puts Nio.convert(Rational(2,3), Float)
+  puts Nio.convert(Rational(2,3), BigDecimal)
+  puts Nio.convert(BigDecimal('2')/3, Rational)
+  puts Nio.convert(BigDecimal('2')/3, Rational, :exact)
+  puts Nio.convert(2.0/3, BigDecimal)
+  puts Nio.convert(2.0/3, BigDecimal, :exact)
+  puts Nio.convert(BigDecimal('2')/3, Float)

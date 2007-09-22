@@ -221,10 +221,36 @@ can be defined:
   puts 123456.78.nio_write(Fmt[:code]) -> 123456.8
   Fmt[:locale_money] = Fmt.sep(',','.',[3]).prec(:fix,2)
   puts 123456.78.nio_write(Fmt[:locale_money]) -> 123.456,78
+  
+===Conversions  
+
+Nio can also convert values between numerical types, e.g. from Float to Rational:
+
+  puts Nio.convert(2.0/3, Rational)                     -> 2/3
+  puts Nio.convert(2.0/3, Rational, :exact)             -> 6004799503160661/9007199254740992
+
+The default (approximate) conversions assumes that the value is inexact and tries to find
+a nice simple value near it. When we request <tt>:exact</tt> conversion the actual internal value
+of the floating point number is preserved.
+  
+Let's see some more examples:
+  
+  puts Nio.convert(2.0/3, BigDecimal)                   -> 0.666666666666666666666667E0
+  puts Nio.convert(2.0/3, BigDecimal, :exact)           -> 0.66666666666666662965923251249478198587894439697265625E0
+  puts Nio.convert(Rational(2,3), Float)                -> 0.666666666666667
+  puts Nio.convert(Rational(2,3), BigDecimal)           -> 0.666666666666666666666667E0
+  puts Nio.convert(BigDecimal('2')/3, Rational)         -> 2/3
+  puts Nio.convert(BigDecimal('2')/3, Rational, :exact) -> 666666666666666666666667/1000000000000000000000000
+  puts Nio.convert(2.0/3, BigDecimal)                   -> 0.666666666666666666666667E0
+  puts Nio.convert(2.0/3, BigDecimal, :exact)           -> 0.66666666666666662965923251249478198587894439697265625E0
+  puts Nio.convert(BigDecimal('2')/3, Float)            -> 0.666666666666667
+  puts Nio.convert(BigDecimal('2')/3, Float, :exact)    -> 0.666666666666667
+ 
+  
 
 =Details
 
-==Defining formats
+===Defining formats
 
 Say you want a numeric format based on the current default but with some aspects
 changed, e.g. using comma as the decimal separator and with only 3 digits
@@ -282,7 +308,7 @@ we would use, for example:
   puts 0.1234567.nio_write(fmt.prec(5))  -> 0.12346
   puts 0.1234567.nio_write(fmt)              -> 0.123
 
-==Exact and aproximate values
+===Exact and aproximate values
  
 Float and BigDecimal are approximate in the sense that 
 a given value within the range of these types, (defined either 
@@ -330,7 +356,7 @@ digits (first insignificant, a 5) can be replaced by any other digit * (from 0 t
 0.10000000000000000* would still be rounded to Float(0.1)
 
 
-==Insignificance
+===Insignificance
 
 So, let's summarize the situation about inexact numbers: When the approximate mode of a format is <tt>:only_sig</tt>,
 the digits of inexact (i.e. floating point) numbers are classified as significant or insignificant.
@@ -349,7 +375,7 @@ digits, the number is taken as exactly defined and all digits are shown with the
 
   puts 0.1.nio_write(Fmt.mode(:fix,20,:approx_mode=>:exact)         -> 0.10000000000000000555
 
-==Repeating Numerals
+===Repeating Numerals
 
 The common term is <b>repeating decimal</b> or <b>recurring decimal</b>, but since Nio support them for any base,
 we'll call them <i>repeating numerals</i>.
@@ -377,7 +403,7 @@ We just requested for 0 as the number of repetitions (the default is 2) and got 
 This is shorter and would allow to show the number better with special typography
 (e.g. a bar over the repeated digits, a different color, etc.)
 
-==BigDec()
+===BigDec()
 
 BigDec() is a handy convenience to define BigDecimals; it permits us
 to use BigDec(1) instead of BigDecimal('1')
@@ -411,7 +437,7 @@ to parse floating point literal, and its behaviour is not stricly specified; in 
 (IEEE Double Floats and round-to-even) BigDec() will behave well, but some platforms may
 behave differently.
 
-==Rounding
+===Rounding
 
 Rounding is performed on both input and output.
 When a value is formatted for output the number is rounded to the number of digits
@@ -448,7 +474,7 @@ All the Ruby implementations I have tried have IEEE754 Double Float
 and floating point literals seem to be rounded according to the round-to-even rule, so that
 is the initial default rounding mode.
 
-===Examples
+====Examples
 
 We assume the common implementation of float (<tt>Float::RADIX==2 && Float::MANT_DIG==53</tt>) here.
 In that case, we can use the value 1E23, which is equidistant from two Floats
@@ -472,7 +498,7 @@ we will get one of these ugly values:
 If the Ruby interpreter doesn't support any of the roundings of Nio, or if it doesn't correctly
 round, the best solution would be to avoid using Float literals and use Float#nio_read instead.
 
-==Conversions
+===Conversions
 
 Accurate conversion between numerical types can be performed with Nio.convert.
 It takes three arguments: the value to convert, the class to convert it to (Float,BigDecimal,

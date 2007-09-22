@@ -30,7 +30,7 @@ Nio has some interesting features, though:
 Limitations:
 *  The current version does not support UTF-8 or other multi-byte encodings (digits and separators must be one-byte characters).
 *  This code is not very fast, since it is implemented in pure Ruby (no C extensions are used).
-*  Error handling needs to improve also in future versions, specially on input.
+*  Error handling needs to improve also in future versions, specially on input and format parameters checking.
 
 =Installation
 

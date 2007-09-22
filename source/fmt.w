@@ -1088,6 +1088,31 @@ def sci_digits!(n=-1)
 end
 ·}
 
+·d class Fmt
+·{·%
+# This is a shortcut to return a new default Fmt object 
+# and define show_all_digits
+def Fmt.show_all_digits(v=true)
+  Fmt.default.show_all_digits(v)
+end
+# This is a shortcut to return a new default Fmt object 
+# and define approx_mode
+def Fmt.approx_mode(v)
+  Fmt.default.approx_mode(v)
+end
+# This is a shortcut to return a new default Fmt object 
+# and define insignificant digits
+def Fmt.insignificant_digits(v='#')
+  Fmt.default.insignificant_digits(v)
+end
+# This is a shortcut to return a new default Fmt object 
+# and define sci_digits
+def Fmt.sci_digits(v=-1)
+  Fmt.default.sci_digits(v)
+end
+·}
+
+
 
 ·d adjust format options
 ·{·%
@@ -1116,6 +1141,16 @@ def show_plus!(sp=true)
   set! :show_plus=>sp
 end
 ·}
+
+·d class Fmt
+·{·%
+# This is a shortcut to return a new default Fmt object 
+# and define show_plus
+def Fmt.show_plus(v=true)
+  Fmt.default.show_plus(v)
+end
+·}
+
 
 This determines how to handle repeating decimals.
 Repeating decimals are recognized on input if \cd{@rep\_in}

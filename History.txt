@@ -1,4 +1,4 @@
 == 0.2.0 2007-09-20
 
 * Initial release
-  - Nio has been exctracted from an old project and is now packaged as a Gem
+  - Nio has been extracted from an old project and is now packaged as a Gem

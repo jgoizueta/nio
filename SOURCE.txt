@@ -1,16 +1,31 @@
+=Notes on the source code
+
 The Ruby code in this project is generated from the source code
-in directory source by the Rake task *tangle*.
-There's also a task named *weave* which generates
-a documented form of the source code in PDF format
+in the directory "source" by the Rake task *tangle*.
+
+You can get the updated source code from the SVN repository
+at Rubyforge (svn://rubyforge.org/var/svn/nio/trunk)
+or from the "nio-source" package releases from the project.
+
+The nuweb source files have extension .w
+
+There's also a rake task named *weave* which generates
+a documented form of the source code in PDF format,
 which is saved to the directory source/pdf.
+
 This tasks requires the program nuweb which converts
 the nuweb sources (files with extension .w) in
 directory source to either ruby files or
 LaTeX files for the documentated source.
 For the weave task latex and dvipdfm are also necessary.
+
+You can get the PDF files corresponding to each realese
+in the "nio-source-pdf" packages.
  
-The necessary nuweb tool is available for windows
-here: http://perso.wanadoo.es/jgoizueta/dev/tools/nuweb-win32.zip
+The necessary nuweb tool is available here for windows:
+  http://perso.wanadoo.es/jgoizueta/dev/tools/nuweb-win32.zip
+
 For other systems the source code and an necessary patch
-can be obtained here: http://www.goizueta.info/javier/index.html?pg=dev/req.en.html
+can be obtained here:
+  http://www.goizueta.info/javier/index.html?pg=dev/req.en.html
 

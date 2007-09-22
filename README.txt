@@ -41,8 +41,7 @@ The easiest way to install Nio is using gems:
 ==Downloads
 
 The latest version of Nio and its source code can be downloaded form
-* rubyforge.org/project/showfiles.php?group_id=4445
-* http://rubyforge.org/frs/?group_id=4445
+* http://rubyforge.org/project/showfiles.php?group_id=4445
 
 The source code uses nuweb (a {<i>literate programming system</i>}[http://en.wikipedia.org/wiki/Literate_programming]) to generate
 the Ruby code for Nio. For more details you can download the nuweb source code package, <tt>nio-source</tt> 
@@ -57,9 +56,9 @@ For a general introduction and some details, read on below.
 * For <b>type conversions</b> see Fmt.convert().
 * For some notational <b>shortcuts</b> see nio/sugar.rb[link:files/lib/nio/sugar_rb.html].
 * To *extend* the formatting to other types see the documentation for the module Nio::Formattable.
-* If you want to use the floating point tolerance see the classes Nio::Tolerance and Nio::BigTolerance, 
+* If you want to use the <b>floating point tolerance</b> see the classes Nio::Tolerance and Nio::BigTolerance, 
   which can be defined with <tt>Nio::Tol()</tt> and <tt>Nio::BigTol()</tt> as described in the module Nio.
-* The function BigDec() is a convenient way to define/convert BigDecimals, also described in module Nio.
+* The function <b>BigDec()</b> is a convenient constructor to define/convert BigDecimals, also described in module Nio.
 
 =Basic use
 
@@ -536,16 +535,21 @@ You can contact me through Rubyforge:http://rubyforge.org/sendmessage.php?touser
   
 * <b>What Every Computer Scientist Should Know About Floating-Point Arithmetic</b>
   David Goldberg
-    http://docs.sun.com/source/806-3568/ncg_goldberg.html
+  - http://docs.sun.com/source/806-3568/ncg_goldberg.html
   
 * <b>How to Read Floating Point Numbers Accurately</b>
   William D. Clinger
-    http://citeseer.ist.psu.edu/224562.html
+  - http://citeseer.ist.psu.edu/224562.html
   
 * <b>Printing Floating-Point Numbers Quickly and Accurately</b>
   Robert G. Burger & R. Kent Dybvig
-    http://www.cs.indiana.edu/~burger/FP-Printing-PLDI96.pdf
+  - http://www.cs.indiana.edu/~burger/FP-Printing-PLDI96.pdf
   
 * <b>Repeating Decimal</b>
-    http://mathworld.wolfram.com/RepeatingDecimal.html
-    http://en.wikipedia.org/wiki/Recurring_decimal
+  - http://mathworld.wolfram.com/RepeatingDecimal.html
+  - http://en.wikipedia.org/wiki/Recurring_decimal
+  
+* For <b>floating point rationalization algorithms</b>, see my commented 
+  source code for the  <tt>rntlzr</tt> module from Nio,
+  which you can download in PDF here:
+  - http://perso.wanadoo.es/jgoizueta/dev/goi/rtnlzr.pdf

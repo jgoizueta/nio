@@ -73,6 +73,10 @@ class TestFmt < Test::Unit::TestCase
   def setup
     ·<Tests setup·>
   end
+
+  def teardown
+    ·<Tests teardown·>
+  end
   
   ·<Tests·> 
 
@@ -2875,6 +2879,11 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     $data << MIN_D
 ·}
 
+·d Tests teardown
+·{·%
+    Fmt.default = Fmt.new
+·}
+
 
 ·D Tests
 ·{·%
@@ -2966,8 +2975,8 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     tol = Tolerance.new.decimals(12,:sig)
     fmt = Fmt.prec(12,:sig)
     $data.each do |x|
-       assert tol.equals?(x, Float.nio_read(x.nio_write(fmt),fmt))
-       assert tol.equals?(-x, Float.nio_read((-x).nio_write(fmt),fmt))
+       assert tol.equals?(x, Float.nio_read(x.nio_write(fmt),fmt)), "out of tolerance: #{x.inspect} #{Float.nio_read(x.nio_write(fmt),fmt)}"
+       assert tol.equals?(-x, Float.nio_read((-x).nio_write(fmt),fmt)), "out of tolerance: #{(-x).inspect} #{Float.nio_read((-x).nio_write(fmt),fmt)}"
     end
   end
 ·}

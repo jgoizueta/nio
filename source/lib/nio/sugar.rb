@@ -1,4 +1,6 @@
-# This file provides some syntactic sugar for the Nio module
+# This file provides some syntactic sugar for the Nio module.
+# Some methods here: #to_r(), #to_xr, may collide with methods in other
+# libraries.
 #
 # This non mondule-function is equivalent to +Nio::Fmt.convert+
 #   Nio.convert(x, type, arpx=true)

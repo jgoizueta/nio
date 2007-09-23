@@ -63,6 +63,8 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
   
   #p.spec_extras = {}    # A hash of extra values to set in the gemspec.
   
+  #p.spec_extras = { :autorequire=>'nio' }
+  
 end
 
 CHANGES = hoe.paragraphs_of('History.txt', 0..1).join("\\n\\n")

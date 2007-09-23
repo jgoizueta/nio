@@ -27,6 +27,11 @@ Nio has some interesting features, though:
   (insignificant digits are those that can take any value without altering the Float value they specify.)
 * Floating point tolerance classes
 
+All definitions are inside the module Nio that acts as a namespace, and methods added
+to classes outside of Nio have names that begin with the prefix <tt>nio_</tt>. Only
+the module nio/sugar.rb, which must be required separately, breaks this rule by defining
+some methods such as Float#to_r.
+
 Limitations:
 *  The current version does not support UTF-8 or other multi-byte encodings (digits and separators must be one-byte characters).
 *  This code is not very fast, since it is implemented in pure Ruby (no C extensions are used).

@@ -1686,7 +1686,7 @@ We'll load the data for the tests in a global variable.
     assert_equal Rational(24166771439, 104063), 232232.123223432.nio_r(t)
     assert_equal Rational(792766404965, 637), 1244531247.98273123.nio_r(t)    
     #$data.each do |x|
-    #  assert t.equals?(x, x.nio_r(t).to_f)
+    #  assert t.equals?(x, x.nio_r(t).to_f), "out of tolerance: #{x.inspect} #{x.nio_r(t).inspect}"
     #end
     
     # rationalization with maximum denominator 
@@ -1723,7 +1723,7 @@ We'll load the data for the tests in a global variable.
     $data.each do |x|
       x = BigDec(x,:exact)
       q = x.nio_r(t)
-      assert t.equals?(x, BigDec(q))
+      assert t.equals?(x, BigDec(q)), "out of tolerance: #{x.inspect} #{BigDec(q)}"
     end
   end
 ·}

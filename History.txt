@@ -1,3 +1,11 @@
+== 0.2.1 2007-10-08
+
+* Minor enhancements
+  - The RepDec maximum number of digits can now be changed, and the default
+    value has been incremented to 5000 digits (was 2048). With the new value
+    the minimum value of a IEEE 754 extended number can now be shown as
+    different from zero.
+
 == 0.2.0 2007-09-22
 
 * Initial release

@@ -816,8 +816,23 @@ end
 
 ·d Default Options
 ·{·%
-@max_d = 2048
+@max_d = 5000
 ·}
+
+·d RepDec members
+·{·%
+# Change the maximum number of digits that RepDec objects
+# can handle.
+def RepDec.maximum_number_of_digits=(n)
+  @max_d = [n,2048].max
+end
+# Return the maximum number of digits that RepDec objects
+# can handle.
+def RepDec.maximum_number_of_digits
+  @max_d
+end
+·}
+
 
 \subsection{Quotient to decimal}
 

@@ -5,6 +5,8 @@
     value has been incremented to 5000 digits (was 2048). With the new value
     the minimum value of a IEEE 754 extended number can now be shown as
     different from zero.
+* Bug corrections
+  - Fixed a problem in the formatted output of BigDecimals which affected large numbers.
 
 == 0.2.0 2007-09-22
 

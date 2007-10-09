@@ -2690,6 +2690,7 @@ else
     if fmt.get_base==10 
       txt = x.to_s
       ·<Convert Floating Point Expression to Neutral·>
+      converted = true
     end
   end  
   if !converted
@@ -2716,6 +2717,10 @@ of the floating type (in the gaps between consecutive numbers) to
 give the shortest representation that will be parsed back to the
 same number (with the fixed precision). But the representation
 may convert to a diferent \cd{BigDecima} if more precision is used.
+
+Another problem with Burger-Dybvig  is that it uses native floating point
+arithmetic (to compute the scale using logB), so it can be overflown
+for larg BigDecimals.
 
 ·d Convert BigDecimal Expression to Neutral base
 ·{·%
@@ -2991,7 +2996,10 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
       x = BigDecimal(x.to_s)
       assert_equal x,BigDecimal.nio_read(x.nio_write(fmt),fmt)
     end
-    
+    assert_equal "1E500",BigDec('1E500').nio_write        
+    assert_equal "1E-500",BigDec('1E-500').nio_write        
+    assert_equal "-1E500",BigDec('-1E500').nio_write        
+    assert_equal "-1E-500",BigDec('-1E-500').nio_write            
   end
 ·}
 

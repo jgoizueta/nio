@@ -853,7 +853,7 @@ def setQ(x,y, opt=DEF_OPT)
   @d = [];
   @rep_i = nil;
   ·<Set special values·>
-  k = [];
+  k = {};
   @ip = x.div(y) #x/y;
   x -= @ip*y;
   i = 0;
@@ -861,9 +861,9 @@ def setQ(x,y, opt=DEF_OPT)
 
   max_d = opt.max_d
   while x>0 && @rep_i==nil && (max_d<=0 || i<max_d)
-    @rep_i = k.index(x)
+    @rep_i = k[x]
     if @rep_i.nil? then
-      k.push x;
+      k[x] = i;
       x *= @radix
       d,x = x.divmod(y)
       @d.push d

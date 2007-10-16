@@ -5,6 +5,7 @@
     value has been incremented to 5000 digits (was 2048). With the new value
     the minimum value of a IEEE 754 extended number can now be shown as
     different from zero.
+  - Speed optimizations in RepDec#setQ
 * Bug corrections
   - Fixed a problem in the formatted output of BigDecimals which affected large numbers.
 

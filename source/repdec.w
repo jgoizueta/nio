@@ -865,8 +865,8 @@ def setQ(x,y, opt=DEF_OPT)
     if @rep_i.nil? then
       k.push x;
       x *= @radix
-      @d.push d=x.div(y) # x/y;
-      x-= d*y;
+      d,x = x.divmod(y)
+      @d.push d
       i += 1;  
     end
   end

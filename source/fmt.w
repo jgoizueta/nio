@@ -2105,14 +2105,20 @@ end
 
 ·d Clinger functions
 ·{·%
+# valid only for non-negative x
 def nextfloat(x)
   f,e = Math.frexp(x)  
   e = Float::MIN_EXP if f==0
   e = [Float::MIN_EXP,e].max
   dx = Math.ldexp(1,e-Float::MANT_DIG) #Math.ldexp(Math.ldexp(1.0,-Float::MANT_DIG),e)  
-  x + dx
+  if f==(1.0 - Math.ldexp(1,-Float::MANT_DIG))
+    x + dx*2
+  else
+    x + dx
+  end
 end
 
+# valid only for non-negative x
 def prevfloat(x)
   f,e = Math.frexp(x)  
   e = Float::MIN_EXP if f==0

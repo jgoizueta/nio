@@ -92,12 +92,16 @@ We'll use the contants available in Float since version 1.8 of ruby:
 a decimal number has more digits they may not preserve when
 converted to Float (with correct rounding) and back to decimal
 (rounded to \cd{DIG} digits).
-\item \cd{EPSILON} is the smallest number that, added to 1.0 produces something different from 1.0
-(i.e. the difference between 1 and the least value greater than 1 that is representable).
-Note that \cd{EPSILON} is also the maximum relative error corresponding to
-half an ulp (unit in the last place), and half an ulp is tha maximum rounding
+\item \cd{EPSILON} is the  difference between 1.0 and the least value greater than 1
+that is representable.
+Note that \cd{EPSILON} corresponds to the maximum relative error of one ulp
+(unit in the last place) and that half an ulp is the maximum rounding
 error when a real number is approximated by the closest floating point
 number.
+Note also that \cd{EPSILON} is the difference between adjacent Float values
+in the interval $\left[1,\right}$ and that the difference between $x$ and the
+next Float value is \verb|Math.ldexp(Float::EPSILON, Math.frexp(x)[1]-1)
+ unless $x$ is a power of two.
 \end{itemize}
 
 To these we add a constant, \cd{DECIMAL\_DIG} defined as the number of
@@ -126,15 +130,20 @@ end
 
 If we need to compute the constants we assume the base is 2. Then the
 number of bits of precision can be easily compute like this:
+Note that after the first loop we may have counted one too many bits, 
+because of the rounding mode applied to the result of the x+1 addition.
 
 ·d compute bits per Float
 ·{·%
 x = 1.0
 _bits_ = 0
-begin 
+while 1!=x+1
   _bits_ += 1
   x /= 2
-end while 1!=x+1
+end
+if (1.0-(1.0+2*x))>2*x
+  _bits_ -= 1
+end
 ·}
 
 Notes: 
@@ -148,26 +157,10 @@ decimal digits.
 \item \verb|MANT_DIG = 2-Math.frexp(Float::EPSILON)[1]|
 \cd{EPSILON} is 1ulp (unit in the least place) for 1.0.
 Knuth (4.2.2 pg.219) states that a tolerace greater than or 
-equal to \verb|2*EPSILON/(1-0.5*EPSILON)**2| assures the
+equal to \verb|2*EPSILON/(1-0.5*EPSILON)**2| guarantees the
 associativity of multiplication, e.g. \verb|ldexp(0.75,3-MANT_DIG)|,
 since we have \verb|2*EPSILON/(1-0.5*EPSILON)^2 == ldexp(0.5,3-MANT_DIG)|.
 \end{itemize}
-
-% La menor cantidad que sumada a x (Float) produce un Float distinto
-% es Math.ldexp(Float::EPSILON, Math.frexp(x)[1]-1)
-% la razón del -1 es que Float::EPSILON es la menor cantidad que sumada a 1
-% produce un Float distinto; el exponente de 1.0 (Math.frexp(1)[1]) es 1,
-% que es el valor que hay que restar al exponente de x (para encontrar el
-% exponente relativo entre x y 1)
-% el valor EPSILON es aplicable directamente por tanto al intervalo
-% que tiene el mismo exponente binario que 1.0: [1,2)
-
-%  nota: Math.ldexp(x,y) == Math.ldexp(Math.frexp(x)[0],y+Math.frexp(x)[1])
-
-% nota: hay una diferencia de 1 entre el exponente dado por frexp y 
-% el exponente interno IEEE; la diferencia es que en IEEE la mantisa
-% es de la forma b.bbb... y frexp devuelve 0.bbb...
-
 
 This class represents floating point tolerances and allows comparison
 of numbers within the specified tolerance.

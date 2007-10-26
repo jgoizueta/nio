@@ -16,4 +16,8 @@
 
 * Create an interface in Fmt for base suffix/prefix control and for sci format (:hp)
 
-* Optimize RepDec
+* Rewrite RepDec/NeutralNum into a single class (PositionalNumeral?)
+  using a byte String for the digit values (and no separated integral part as in RepDec)
+
+* Replace algM by a more efficient method
+

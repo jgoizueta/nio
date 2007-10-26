@@ -8,6 +8,7 @@
   - Speed optimizations in RepDec#setQ
 * Bug corrections
   - Fixed a problem in the formatted output of BigDecimals which affected large numbers.
+  - Fix minor problem with nextfloat
 
 == 0.2.0 2007-09-22
 

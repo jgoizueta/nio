@@ -933,11 +933,14 @@ define the value.
 # - <tt>:round</tt> rounding mode applied to conversions
 #   (this is relevant for both input and output). It must be one of:
 #   [<tt>:inf</tt>]
-#     rounds towards infinite; 1.5 is rounded to 2, -1.5 to -2
+#     rounds to nearest with ties toward infinite; 
+#       1.5 is rounded to 2, -1.5 to -2
 #   [<tt>:zero</tt>]
-#     rounds towards zero; 1.5 is rounded to 1, -1.5 to 2
+#     rounds to nearest with ties toward zero; 
+#       1.5 is rounded to 1, -1.5 to 2
 #   [<tt>:even</tt>]
-#     rounds to the nearest even digit 1.5 rounds to 2, 2.5 to 2
+#     rounds to the nearest with ties toward an even digit;
+#       1.5 rounds to 2, 2.5 to 2
 # - <tt>:approx</tt> approximate mode
 #   [<tt>:only_sig</tt>]
 #     (the default) treats the value as an approximation and only

@@ -2087,11 +2087,26 @@ def algM(f,e,round_mode,eb=10,beta=Float::RADIX,n=Float::MANT_DIG,min_e=Float::M
 end
 ·}
 
+
+% To add support for IEEE rounding modes:
+% case round_mode
+%   when :inf    # to nearest, ties away from zero
+%     z  = nextfloat(z) if r>=v_r
+%   when :zero  # to nearest, ties toward zero
+%     z  = nextfloat(z) if r>v_r
+%   when :even # to nearest, ties to even
+%     z = nextfloat(z) if r>v_r ||( r==v_r && !q.even?)
+%   when :ieee_down # toward minus infinite
+%   when :ieee_up # toward positive infinite
+%     z = nextfloat(z) if r>0
+%   when :ieee_zero # truncation
+%     # equivalent to :ieee_down, since z>0
+%  end
+
 ·d Clinger functions
 ·{·%
 def ratio_float(u,v,k,round_mode,beta=Float::RADIX,n=Float::MANT_DIG)
-  q = u.div v
-  r = u-q*v
+  q,r = u.divmod(v)
   v_r = v-r
   z = Math.ldexp(q,k)
   if r<v_r
@@ -2277,6 +2292,13 @@ def float_to_digits(v,f,e,round_mode,min_e,p,b,_B)
     [k]+generate(r,s,m_p,m_m,_B,roundl ,roundh)
 end
 ·}
+
+% to support IEEE rounding modes (see algM) here,
+% the m_p,m_m passed to generate should be modified when the rounding
+% is :ieee_up,:ieee_down or :ieee_zero (here equivalent to :ieee_down since numbers as positive)
+% The should be substituted in those cases by r and r+1, and roundl,roundh would take
+% the values [true,false] for :ieee_down/:ieee_zero and [false,true] for :ieee_up
+
 
 The \cd{roundl} and \cd{roundh} flags indicate if the lower and upper
 rounding limits are rounded to the number.

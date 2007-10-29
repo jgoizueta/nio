@@ -2303,7 +2303,8 @@ case round_mode
     roundh = true
   else
     # here we don't assume any rounding in the floating point numbers
-    # the result is valid for any rounding
+    # the result is valid for any rounding but may produce more digits
+    # than stricly necessary for specifica rounding modes.
     roundl = false
     roundh = false
 end

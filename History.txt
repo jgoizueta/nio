@@ -1,11 +1,11 @@
-== 0.2.1 2007-10-08
+== 0.2.1 2007-12-15
 
 * Minor enhancements
   - The RepDec maximum number of digits can now be changed, and the default
     value has been incremented to 5000 digits (was 2048). With the new value
     the minimum value of a IEEE 754 extended number can now be shown as
     different from zero.
-  - Speed optimizations in RepDec#setQ
+  - Performance optimizations in RepDec#setQ
 * Bug corrections
   - Fixed a problem in the formatted output of BigDecimals which affected large numbers.
   - Fix minor problem with nextfloat
@@ -14,4 +14,4 @@
 
 * Initial release
   - The Nio library has been extracted from and old project
-    and packages as a Gem.
+    and packaged as a Gem.

@@ -381,7 +381,7 @@ class DigitsDef
   end
   def digit_value(ch_code)
     ch_code = set_case(ch_code) unless @casesens
-    @digits.index(ch_code)
+    @digits.index(ch_code.chr)
   end
   def digit_char(v)
     @digits[v]

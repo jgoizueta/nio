@@ -574,7 +574,7 @@ since \cd{BigDecimal} has arbitrary precision.
 ·d flttol Required Modules
 ·{·%
 require 'bigdecimal'
-require 'bigdecimal/math' if ::VERSION>='1.8.1'
+require 'bigdecimal/math' if RUBY_VERSION>='1.8.1'
 require 'nio/tools'
 ·}
 

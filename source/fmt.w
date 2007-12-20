@@ -2865,9 +2865,9 @@ that will be used by BigDec which is defined in rtnlzr.rb
 ·{·%
 def nio_float_to_bigdecimal(x,prec) # :nodoc:
   if prec.nil?
-    x = Nio.convert(x,BigDecimal,:approx)          
+    x = Fmt.convert(x,BigDecimal,:approx)          
   elsif prec==:exact
-    x = Nio.convert(x,BigDecimal,:exact) 
+    x = Fmt.convert(x,BigDecimal,:exact) 
   else
     x = BigDecimal(x.nio_write(Nio::Fmt.new.prec(prec,:sig)))
   end
@@ -2996,7 +2996,11 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
                  (1.0/3).nio_write(Fmt.prec(:exact).show_all_digits(true).approx_mode(:simplify))
                  
     fmt = Fmt.default
-    assert_raises TypeError do fmt.prec! 4 end
+    if RUBY_VERSION>='1.9.0'
+      assert_raises RuntimeError do fmt.prec! 4 end
+    else
+      assert_raises TypeError do fmt.prec! 4 end
+    end
     fmt = Fmt.default {|f| f.prec! 4 }
     assert_equal "1,235", 1.23456.nio_write(fmt)
     assert_equal "1,23456", 1.23456.nio_write()
@@ -3262,13 +3266,13 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     x_f = Float.nio_read(x_txt)
     assert_equal 1.234567890123456, x_f
     assert_equal BigDecimal(x_txt), x_d
-    assert_equal Nio.convert(x_d,Float,:exact), x_f
-    assert_equal Nio.convert(x_d,Float,:approx), x_f
+    assert_equal Fmt.convert(x_d,Float,:exact), x_f
+    assert_equal Fmt.convert(x_d,Float,:approx), x_f
     
     x_d = BigDec(355)/226
     x_f = Float(355)/226
-    assert_equal Nio.convert(x_d,Float,:exact), x_f
-    assert_equal Nio.convert(x_d,Float,:approx), x_f
+    assert_equal Fmt.convert(x_d,Float,:exact), x_f
+    assert_equal Fmt.convert(x_d,Float,:approx), x_f
     
   end
 ·}

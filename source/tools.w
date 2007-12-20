@@ -107,7 +107,7 @@ module StateEquivalent
   def hash
     h = 0
     self.instance_variables.each do |var|
-      v = self.instance_eval var
+      v = self.instance_eval var.to_s
       h ^= v.hash unless v.nil?
     end
     h
@@ -117,8 +117,8 @@ module StateEquivalent
   def test_equal(obj)
     return false unless self.class == obj.class
     (self.instance_variables + obj.instance_variables).uniq.each do |var|
-      v1 = self.instance_eval var
-      v2 = obj.instance_eval var
+      v1 = self.instance_eval var.to_s
+      v2 = obj.instance_eval var.to_s
       return false unless v1 == v2
     end
     true

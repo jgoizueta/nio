@@ -11,7 +11,7 @@ module PrepareData
     end
 
     def self.init
-      unless File.exists?('test/data.yaml')
+      unless File.exist?('test/data.yaml')
         100.times do
            x = rand   
            x *= rand(1000) if rand<0.5

@@ -1,3 +1,10 @@
+== 0.2.2 
+
+* Minor enhancements
+  - show_plus can be passed a string (e.g. ' ') that is used as the plus sign;
+    added new show_exp_plus to control the sign display of the exponent in 
+    scientific notation.
+
 == 0.2.1 2007-12-15
 
 * Minor enhancements

@@ -3321,6 +3321,38 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 ·}
 
 
+·D Tests
+·{·%
+  def test_sign
+    assert_equal '1.23', 1.23.nio_write
+    assert_equal '+1.23', 1.23.nio_write(Fmt.show_plus)
+    assert_equal ' 1.23', 1.23.nio_write(Fmt.show_plus(' '))
+    assert_equal '-1.23', -1.23.nio_write
+    assert_equal '-1.23', -1.23.nio_write(Fmt.show_plus)
+    assert_equal '1.23E5', 1.23E5.nio_write(Fmt.mode(:sci))
+    assert_equal '-1.23E5', -1.23E5.nio_write(Fmt.mode(:sci))
+    assert_equal '1.23E-5', 1.23E-5.nio_write(Fmt.mode(:sci))
+    assert_equal '-1.23E-5', -1.23E-5.nio_write(Fmt.mode(:sci))
+    assert_equal '+1.23E5', 1.23E5.nio_write(Fmt.mode(:sci).show_plus)
+    assert_equal '-1.23E5', -1.23E5.nio_write(Fmt.mode(:sci).show_plus)
+    assert_equal ' 1.23E5', 1.23E5.nio_write(Fmt.mode(:sci).show_plus(' '))
+    assert_equal '-1.23E5', -1.23E5.nio_write(Fmt.mode(:sci).show_plus(' '))
+    assert_equal '1.23E+5', 1.23E5.nio_write(Fmt.mode(:sci).show_exp_plus)
+    assert_equal '-1.23E+5', -1.23E5.nio_write(Fmt.mode(:sci).show_exp_plus)
+    assert_equal '1.23E 5', 1.23E5.nio_write(Fmt.mode(:sci).show_exp_plus(' '))
+    assert_equal '-1.23E 5', -1.23E5.nio_write(Fmt.mode(:sci).show_exp_plus(' '))
+    assert_equal '1.23E-5', 1.23E-5.nio_write(Fmt.mode(:sci).show_exp_plus(' '))
+    assert_equal '-1.23E-5', -1.23E-5.nio_write(Fmt.mode(:sci).show_exp_plus(' '))
+    assert_equal ' 1.23E-5', 1.23E-5.nio_write(Fmt.mode(:sci).show_exp_plus(' ').show_plus)
+    assert_equal '-1.23E-5', -1.23E-5.nio_write(Fmt.mode(:sci).show_exp_plus(' ').show_plus)
+    assert_equal ' 1.23E 5', 1.23E5.nio_write(Fmt.mode(:sci).show_exp_plus(' ').show_plus)
+    assert_equal '-1.23E 5', -1.23E5.nio_write(Fmt.mode(:sci).show_exp_plus(' ').show_plus)
+    assert_equal '+1.23E-5', 1.23E-5.nio_write(Fmt.mode(:sci).show_exp_plus.show_plus)
+    assert_equal '-1.23E-5', -1.23E-5.nio_write(Fmt.mode(:sci).show_exp_plus.show_plus)
+    assert_equal '+1.23E+5', 1.23E5.nio_write(Fmt.mode(:sci).show_exp_plus.show_plus)
+    assert_equal '-1.23E+5', -1.23E5.nio_write(Fmt.mode(:sci).show_exp_plus.show_plus)
+  end
+  ·}
 
 \begin{thebibliography}{Rtnlzr}
 

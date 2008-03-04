@@ -662,7 +662,7 @@ details of formating numbers. It represents a particular format.
 # * mode and precision
 #   - #mode() and #orec() set the main paramters
 #   - see also #show_all_digits(), #approx_mode(), #insignificant_digits(),
-#     #sci_digits() and #show_plus()
+#     #sci_digits(), #show_exp_plus() and #show_plus()
 # * separators
 #   - see #sep() and #grouping()
 # * field justfification
@@ -1130,12 +1130,23 @@ elsif !properties[:non_sig].nil? && properties[:all_digits].nil?
 end
 ·}
 
-This value forces the presentation of $+$ for positive numbers.
+These values force the presentation of $+$ for positive numbers
+and positive exponents (in scientifica format) respectively.
 
 ·d Initialize Fmt
 ·{·%
 @show_plus = false
+@show_exp_plus = false
 ·}
+
+The actual sign characters to be used can differ forom $+$ and $-$:
+
+·d Initialize Fmt
+·{·%
+@plus_symbol = nil
+@minus_symbol = nil
+·}
+
 
 ·d class Fmt
 ·{·%
@@ -1146,6 +1157,22 @@ end
 # This is the mutator version of #show_plus().
 def show_plus!(sp=true)
   set! :show_plus=>sp
+  set! :plus_symbol=>sp if sp.kind_of?(String)
+  self
+end
+·}
+
+·d class Fmt
+·{·%
+# Controls the display of the sign for positive exponents
+def show_exp_plus(sp=true)
+  dup.show_exp_plus! sp
+end
+# This is the mutator version of #show_plus().
+def show_exp_plus!(sp=true)
+  set! :show_exp_plus=>sp
+  set! :plus_symbol=>sp if sp.kind_of?(String)
+  self
 end
 ·}
 
@@ -1155,6 +1182,11 @@ end
 # and define show_plus
 def Fmt.show_plus(v=true)
   Fmt.default.show_plus(v)
+end
+# This is a shortcut to return a new default Fmt object 
+# and define show_exp_plus
+def Fmt.show_exp_plus(v=true)
+  Fmt.default.show_exp_plus(v)
 end
 ·}
 
@@ -1527,9 +1559,17 @@ end
 exp = neutral.dec_pos - integral_digits
 ·}
 
+·d add sign to str
+·{·%
+if @show_plus || neutral.sign!='+'
+  str << ({'-'=>@minus_symbol, '+'=>@plus_symbol}[neutral.sign] || neutral.sign)
+end
+·}
+
 ·d Format neutral :fix
 ·{·%
-str << neutral.sign if @show_plus || neutral.sign!='+'
+·<add sign to str·>
+
 ·<show base prefix·>
 if @ndig==:exact
   neutral.sign = '+'
@@ -1590,7 +1630,7 @@ end
 
 ·d Format neutral :sci
 ·{·%
-str << neutral.sign if @show_plus || neutral.sign!='+'
+·<add sign to str·>
 ·<show base prefix·>
 #zero = get_base_digits.digit_char(0).chr
 if @ndig==:exact
@@ -1609,7 +1649,10 @@ else
 end
 ·<handle trailing zeros·>
 str << get_exp_char(neutral.base)
-str << exp.to_s
+if @show_exp_plus || exp<0
+  str << (exp<0 ? (@minus_symbol || '-') : (@plus_symbol || '+'))
+end
+str << exp.abs.to_s
 ·}
 
 

@@ -1,4 +1,4 @@
-== 0.2.2 
+== 0.2.2 2008-03-04
 
 * Minor enhancements
   - show_plus can be passed a string (e.g. ' ') that is used as the plus sign;

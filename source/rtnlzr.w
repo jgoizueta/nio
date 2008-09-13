@@ -879,26 +879,26 @@ end
 ·o test/test_rtnlzr.rb
 ·{
 ·<License·>
-require 'test/unit'
-
-require 'nio/rtnlzr'
-require 'nio/sugar'
-include Nio
-require 'yaml'
-require 'bigdecimal/math'
+require 'test/unit'
 
-class TestRtnlzr < Test::Unit::TestCase
-
-  class BgMth
-    extend BigMath
-  end
-
+require 'nio/rtnlzr'
+require 'nio/sugar'
+include Nio
+require 'yaml'
+require 'bigdecimal/math'
+
+class TestRtnlzr < Test::Unit::TestCase
+
+  class BgMth
+    extend BigMath
+  end
+
   def setup
-    ·<Tests setup·>
-  end
+    ·<Tests setup·>
+  end
   
   ·<Tests·> 
-  
+  
 end
 ·}
 
@@ -933,7 +933,7 @@ in particular big powers of the Float radix to their exact integer value (so we 
 ·{·%
 class Float
   ·<rdoc commentary for Float\#nio\_xr·>
-  def nio_xr
+  def nio_xr
     return Rational(self.to_i,1) if self.modulo(1)==0
     if !self.finite?
       return Rational(0,0) if self.nan?
@@ -941,21 +941,21 @@ class Float
     end
     
     f,e = Math.frexp(self)
-        
-    if e < Float::MIN_EXP
-       bits = e+Float::MANT_DIG-Float::MIN_EXP
-    else
-       bits = [Float::MANT_DIG,e].max  
-       #return Rational(self.to_i,1) if bits<e
-    end      
-      p = Math.ldexp(f,bits)
-      e = bits - e
-      if e<Float::MAX_EXP
-        q = Math.ldexp(1,e)
-      else
-        q = Float::RADIX**e
-      end
-    return Rational(p.to_i,q.to_i)
+        
+    if e < Float::MIN_EXP
+       bits = e+Float::MANT_DIG-Float::MIN_EXP
+    else
+       bits = [Float::MANT_DIG,e].max  
+       #return Rational(self.to_i,1) if bits<e
+    end      
+      p = Math.ldexp(f,bits)
+      e = bits - e
+      if e<Float::MAX_EXP
+        q = Math.ldexp(1,e)
+      else
+        q = Float::RADIX**e
+      end
+    return Rational(p.to_i,q.to_i)
   end
 end
 ·}
@@ -983,11 +983,11 @@ which is somewhat slow:
 ·d scratch
 ·{·%
 class Float
-  def nio_xr
-    f,e = Math.frexp(self)
-    f = Math.ldexp(f, Float::MANT_DIG)
-    e -= Float::MANT_DIG
-    return Rational( f.to_i*(Float::RADIX**e.to_i), 1)
+  def nio_xr
+    f,e = Math.frexp(self)
+    f = Math.ldexp(f, Float::MANT_DIG)
+    e -= Float::MANT_DIG
+    return Rational( f.to_i*(Float::RADIX**e.to_i), 1)
   end
 end
 ·}
@@ -1022,25 +1022,25 @@ brought in before using BigDec applied to a Float argument.
 ·d flttol functions
 ·{·%
   ·<rdoc for BigDec·>
-  def BigDec(x,prec=nil) # :doc:
-    if x.respond_to?(:to_str)
-      x = BigDecimal(x.to_str, prec||0)
-    else
-      case x
-        when Integer
-        x = BigDecimal(x.to_s)
-      when Rational
-        if prec && prec!=:exact
-          x = BigDecimal.new(x.numerator.to_s).div(x.denominator,prec)
+  def BigDec(x,prec=nil) # :doc:
+    if x.respond_to?(:to_str)
+      x = BigDecimal(x.to_str, prec||0)
+    else
+      case x
+        when Integer
+        x = BigDecimal(x.to_s)
+      when Rational
+        if prec && prec!=:exact
+          x = BigDecimal.new(x.numerator.to_s).div(x.denominator,prec)
         else
           x = BigDecimal.new(x.numerator.to_s)/BigDecimal.new(x.denominator.to_s)
-        end
-      when BigDecimal
+        end
+      when BigDecimal
       when Float
-        x = nio_float_to_bigdecimal(x,prec)
-      end
-    end
-    x
+        x = nio_float_to_bigdecimal(x,prec)
+      end
+    end
+    x
   end  
 ·}
 
@@ -1581,29 +1581,29 @@ be documented apart.
 ·{#   BigDec(x) -> a BigDecimal
 #   BigDec(x,precision) -> a BigDecimal
 #   BigDec(x,:exact) -> a BigDecimal
-# This is a shortcut to define a BigDecimal without using quotes
-# and a general conversion to BigDecimal method. 
-#
-# The second parameter can be :exact to try for an exact conversion
-#
-# Conversions from Float have issues that should be understood; :exact
-# conversion will use the exact internal value of the Float, and when
-# no precision is specified, a value as simple as possible expressed as
+# This is a shortcut to define a BigDecimal without using quotes
+# and a general conversion to BigDecimal method. 
+#
+# The second parameter can be :exact to try for an exact conversion
+#
+# Conversions from Float have issues that should be understood; :exact
+# conversion will use the exact internal value of the Float, and when
+# no precision is specified, a value as simple as possible expressed as
 # a fraction will be used.·}
 
 ·d rdoc for Tol
 ·{#  Tol(x) -> a Tolerance
-# This module function will convert its argument to a Noi::Tolerance
-# or a Noi::BigTolerance depending on its argument;
-#
-# Values of type Tolerance,Float,Integer (for Tolerance) or
-# BigTolerance,BigDecimal (for BigTolerance) are accepted.·}
+# This module function will convert its argument to a Noi::Tolerance
+# or a Noi::BigTolerance depending on its argument;
+#
+# Values of type Tolerance,Float,Integer (for Tolerance) or
+# BigTolerance,BigDecimal (for BigTolerance) are accepted.·}
 
 ·d rdoc for BigTol
 ·{#  BigTol(x) -> a BigTolerance
-# This module function will convert its argument to a Noi::BigTolerance
-#
-# Values of type BigTolerance or Numeric are accepted.·}
+# This module function will convert its argument to a Noi::BigTolerance
+#
+# Values of type BigTolerance or Numeric are accepted.·}
 
 \section{Patch}
 
@@ -1623,15 +1623,15 @@ method will be slower but will produce correct results.
 # Here we try to detect the problem and apply a quick patch,
 # although this will slow down the method.
 if 4.611686018427388e+018.to_i < 0
-  class Float
-    alias _to_i to_i
-    def to_i
-      neg = (self < 0)
-      i = _to_i
-      i_neg = (i < 0)
-      i = -i if neg != i_neg
-      i
-    end
+  class Float
+    alias _to_i to_i
+    def to_i
+      neg = (self < 0)
+      i = _to_i
+      i_neg = (i < 0)
+      i = -i if neg != i_neg
+      i
+    end
   end  
 end
 # :startdoc:
@@ -1647,7 +1647,7 @@ We'll load the data for the tests in a global variable.
 
 ·d Tests setup
 ·{·%
-    $data = YAML.load(File.read(File.join(File.dirname(__FILE__) ,'data.yaml'))).collect{|x| [x].pack('H*').unpack('E')[0]}
+    $data = YAML.load(File.read(File.join(File.dirname(__FILE__) ,'data.yaml'))).collect{|x| [x].pack('H*').unpack('E')[0]}
 ·}
 
 
@@ -1655,102 +1655,102 @@ We'll load the data for the tests in a global variable.
 
 ·D Tests
 ·{·%
-  def test_basic_rtnlzr
-    # basic Rtnlzr tests
-    r = Rtnlzr.new
-    assert_equal [13,10], r.rationalize(1.3)
-    assert_equal [13,10], Rtnlzr.max_denominator(1.3,10)
-    assert_equal [13,10], Rtnlzr.max_denominator(BigDecimal('1.3'),10)
-    assert_equal [1,3], Rtnlzr.max_denominator(1.0/3,10)
-    assert_equal [1,3], Rtnlzr.max_denominator(BigDecimal('1')/3,10)
-    
-    # basic tests of Float#nio_r
-    assert_equal Rational(1,3), (1.0/3.0).nio_r
-    assert_equal Rational(2,3), (2.0/3.0).nio_r
-    assert_equal Rational(1237,1234), (1237.0/1234.0).nio_r
-    assert_equal Rational(89,217), (89.0/217.0).nio_r
-
-    # rationalization of Floats using a tolerance
-    t = Tolerance.new(1e-15,:sig)
-    assert_equal Rational(540429, 12500),43.23432.nio_r(t)
-    assert_equal Rational(6636649, 206596193),0.032123772.nio_r(t)
-    assert_equal Rational(280943, 2500000), 0.1123772.nio_r(t)
-    assert_equal Rational(39152929, 12500), 3132.23432.nio_r(t)
-    assert_equal Rational(24166771439, 104063), 232232.123223432.nio_r(t)
-    assert_equal Rational(792766404965, 637), 1244531247.98273123.nio_r(t)    
-    #$data.each do |x|
-    #  assert t.equals?(x, x.nio_r(t).to_f), "out of tolerance: #{x.inspect} #{x.nio_r(t).inspect}"
-    #end
-    
-    # rationalization with maximum denominator 
-    assert_equal Rational(9441014047197, 7586), (1244531247.98273123.nio_r(10000))  
-    assert_equal Rational(11747130449709, 9439), BigDecimal('1244531247.982731230').nio_r(10000)
-    
-    
-    # approximate a value in [0.671,0.672];
-    #  Float
-    assert_equal [43,64], Rtnlzr.new(Tolerance.new(0.0005)).rationalize(0.6715)
-    assert_equal [43,64], Rtnlzr.new(Tol(0.0005)).rationalize(0.6715)
-    assert_equal [43,64], Rtnlzr.new(Rational(5,10000)).rationalize(0.6715)
-    #  BigDecimal
-    assert_equal [43,64], Rtnlzr.new(BigTolerance.new(BigDecimal('0.0005'))).rationalize(BigDecimal('0.6715'))
-    assert_equal [43,64], Rtnlzr.new(Tol(BigDecimal('0.0005'))).rationalize(BigDecimal('0.6715'))
-    assert_equal [43,64], Rtnlzr.new(Rational(5,10000)).rationalize(BigDecimal('0.6715'))
-    # 
-    assert_equal Rational(43,64), 0.6715.nio_r(0.0005)
-    assert_equal Rational(43,64), 0.6715.nio_r(Rational(5,10000))
-    assert_equal Rational(47,70), 0.6715.nio_r(70)
-    assert_equal Rational(45,67), 0.6715.nio_r(69)
-    assert_equal Rational(2,3), 0.6715.nio_r(10)
-    
-    # some PI tests
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigTolerance.new(BigDec('261E-24')))
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(Tol(BigDec('261E-24')))
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigDec('261E-24'))
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigDec(261E-24))
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(261E-24)  
-    
-    # BigDecimal tests
-    #t = BigTolerance.new(BigDecimal('1e-15'),:sig)
-    t = BigTolerance.decimals(20,:sig)    
-    $data.each do |x|
-      x = BigDec(x,:exact)
-      q = x.nio_r(t)
-      assert t.equals?(x, BigDec(q)), "out of tolerance: #{x.inspect} #{BigDec(q)}"
+  def test_basic_rtnlzr
+    # basic Rtnlzr tests
+    r = Rtnlzr.new
+    assert_equal [13,10], r.rationalize(1.3)
+    assert_equal [13,10], Rtnlzr.max_denominator(1.3,10)
+    assert_equal [13,10], Rtnlzr.max_denominator(BigDecimal('1.3'),10)
+    assert_equal [1,3], Rtnlzr.max_denominator(1.0/3,10)
+    assert_equal [1,3], Rtnlzr.max_denominator(BigDecimal('1')/3,10)
+    
+    # basic tests of Float#nio_r
+    assert_equal Rational(1,3), (1.0/3.0).nio_r
+    assert_equal Rational(2,3), (2.0/3.0).nio_r
+    assert_equal Rational(1237,1234), (1237.0/1234.0).nio_r
+    assert_equal Rational(89,217), (89.0/217.0).nio_r
+
+    # rationalization of Floats using a tolerance
+    t = Tolerance.new(1e-15,:sig)
+    assert_equal Rational(540429, 12500),43.23432.nio_r(t)
+    assert_equal Rational(6636649, 206596193),0.032123772.nio_r(t)
+    assert_equal Rational(280943, 2500000), 0.1123772.nio_r(t)
+    assert_equal Rational(39152929, 12500), 3132.23432.nio_r(t)
+    assert_equal Rational(24166771439, 104063), 232232.123223432.nio_r(t)
+    assert_equal Rational(792766404965, 637), 1244531247.98273123.nio_r(t)    
+    #$data.each do |x|
+    #  assert t.equals?(x, x.nio_r(t).to_f), "out of tolerance: #{x.inspect} #{x.nio_r(t).inspect}"
+    #end
+    
+    # rationalization with maximum denominator 
+    assert_equal Rational(9441014047197, 7586), (1244531247.98273123.nio_r(10000))  
+    assert_equal Rational(11747130449709, 9439), BigDecimal('1244531247.982731230').nio_r(10000)
+    
+    
+    # approximate a value in [0.671,0.672];
+    #  Float
+    assert_equal [43,64], Rtnlzr.new(Tolerance.new(0.0005)).rationalize(0.6715)
+    assert_equal [43,64], Rtnlzr.new(Tol(0.0005)).rationalize(0.6715)
+    assert_equal [43,64], Rtnlzr.new(Rational(5,10000)).rationalize(0.6715)
+    #  BigDecimal
+    assert_equal [43,64], Rtnlzr.new(BigTolerance.new(BigDecimal('0.0005'))).rationalize(BigDecimal('0.6715'))
+    assert_equal [43,64], Rtnlzr.new(Tol(BigDecimal('0.0005'))).rationalize(BigDecimal('0.6715'))
+    assert_equal [43,64], Rtnlzr.new(Rational(5,10000)).rationalize(BigDecimal('0.6715'))
+    # 
+    assert_equal Rational(43,64), 0.6715.nio_r(0.0005)
+    assert_equal Rational(43,64), 0.6715.nio_r(Rational(5,10000))
+    assert_equal Rational(47,70), 0.6715.nio_r(70)
+    assert_equal Rational(45,67), 0.6715.nio_r(69)
+    assert_equal Rational(2,3), 0.6715.nio_r(10)
+    
+    # some PI tests
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigTolerance.new(BigDec('261E-24')))
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(Tol(BigDec('261E-24')))
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigDec('261E-24'))
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigDec(261E-24))
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(261E-24)  
+    
+    # BigDecimal tests
+    #t = BigTolerance.new(BigDecimal('1e-15'),:sig)
+    t = BigTolerance.decimals(20,:sig)    
+    $data.each do |x|
+      x = BigDec(x,:exact)
+      q = x.nio_r(t)
+      assert t.equals?(x, BigDec(q)), "out of tolerance: #{x.inspect} #{BigDec(q)}"
     end
-  end
+  end
 ·}
 
 ·D Tests
 ·{·%
-    def test_compare_algorithms
-      r = Rtnlzr.new(Tolerance.new(1e-5,:sig))
-      ($data + $data.collect{|x| -x}).each do |x|
-        q1 = r.rationalize_Knuth(x)
-        q2 = r.rationalize_Horn(x)
-        q3 = r.rationalize_HornHutchins(x)
+    def test_compare_algorithms
+      r = Rtnlzr.new(Tolerance.new(1e-5,:sig))
+      ($data + $data.collect{|x| -x}).each do |x|
+        q1 = r.rationalize_Knuth(x)
+        q2 = r.rationalize_Horn(x)
+        q3 = r.rationalize_HornHutchins(x)
         #q4 = r.rationalize_KnuthB(x)
-        q1 = [-q1[0],-q1[1]] if q1[1] < 0
-        q2 = [-q2[0],-q2[1]] if q2[1] < 0
-        q3 = [-q3[0],-q3[1]] if q3[1] < 0
-        assert_equal q1, q2
-        assert_equal q1, q3
-        #assert_equal q1, q4
-      end
-      r = Rtnlzr.new(Tolerance.epsilon)
-      ($data + $data.collect{|x| -x}).each do |x|
-        q1 = r.rationalize_Knuth(x)
-        q2 = r.rationalize_Horn(x)
-        q3 = r.rationalize_HornHutchins(x)
-        q1 = [-q1[0],-q1[1]] if q1[1] < 0
-        q2 = [-q2[0],-q2[1]] if q2[1] < 0
-        q3 = [-q3[0],-q3[1]] if q3[1] < 0
-        #q4 = r.rationalize_KnuthB(x)
-        assert_equal q1, q2
-        assert_equal q1, q3
-        #assert_equal q1, q4
-      end
-      
+        q1 = [-q1[0],-q1[1]] if q1[1] < 0
+        q2 = [-q2[0],-q2[1]] if q2[1] < 0
+        q3 = [-q3[0],-q3[1]] if q3[1] < 0
+        assert_equal q1, q2
+        assert_equal q1, q3
+        #assert_equal q1, q4
+      end
+      r = Rtnlzr.new(Tolerance.epsilon)
+      ($data + $data.collect{|x| -x}).each do |x|
+        q1 = r.rationalize_Knuth(x)
+        q2 = r.rationalize_Horn(x)
+        q3 = r.rationalize_HornHutchins(x)
+        q1 = [-q1[0],-q1[1]] if q1[1] < 0
+        q2 = [-q2[0],-q2[1]] if q2[1] < 0
+        q3 = [-q3[0],-q3[1]] if q3[1] < 0
+        #q4 = r.rationalize_KnuthB(x)
+        assert_equal q1, q2
+        assert_equal q1, q3
+        #assert_equal q1, q4
+      end
+      
     end
 ·}
 

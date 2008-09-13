@@ -73,23 +73,23 @@ require 'rubygems'
 
 ·o test/test_tools.rb
 ·{
-#require File.dirname(__FILE__) + '/test_helper.rb'
-require 'test/unit'
-
+#require File.dirname(__FILE__) + '/test_helper.rb'
+require 'test/unit'
+
 require 'nio/repdec'
-include Nio
-require 'yaml'
-
+include Nio
+require 'yaml'
+
 ·<Tests definitions·>
-
-class TestTools < Test::Unit::TestCase
-
-  def setup
-    ·<Tests setup·>
+
+class TestTools < Test::Unit::TestCase
+
+  def setup
+    ·<Tests setup·>
   end
 
-  ·<Tests·> 
-end
+  ·<Tests·> 
+end
  ·}
 
 

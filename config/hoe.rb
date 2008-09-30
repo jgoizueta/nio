@@ -1,4 +1,4 @@
-require 'nio/version'
+require File.join(File.dirname(__FILE__),'../source/lib/nio/version')
 
 AUTHOR = 'Javier Goizueta'  # can also be an array of Authors
 EMAIL = "javier@goizueta.info"

@@ -10,3 +10,4 @@ source/*.out
 source/*.tex
 source/*.aux
 source/pdf/*.pdf
+doc

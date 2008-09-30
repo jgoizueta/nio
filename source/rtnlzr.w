@@ -99,8 +99,8 @@ Note that \cd{EPSILON} corresponds to the maximum relative error of one ulp
 error when a real number is approximated by the closest floating point
 number.
 Note also that \cd{EPSILON} is the difference between adjacent Float values
-in the interval $\left[1,\right}$ and that the difference between $x$ and the
-next Float value is \verb|Math.ldexp(Float::EPSILON, Math.frexp(x)[1]-1)
+in the interval $\left[1,2\right)$ and that the difference between $x$ and the
+next Float value is \verb|Math.ldexp(Float::EPSILON, Math.frexp(x)[1]-1)|
  unless $x$ is a power of two.
 \end{itemize}
 

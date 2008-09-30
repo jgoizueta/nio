@@ -4,3 +4,9 @@ source/*.ws
 test/*.rb
 lib/**/*.rb
 lib/*.rb
+source/*.dvi
+source/*.log
+source/*.out
+source/*.tex
+source/*.aux
+source/pdf/*.pdf

@@ -8,6 +8,7 @@ RUBYFORGE_PROJECT = 'nio' # The unix name for your project
 HOMEPATH = "http://#{RUBYFORGE_PROJECT}.rubyforge.org"
 DOWNLOAD_PATH = "http://rubyforge.org/projects/#{RUBYFORGE_PROJECT}"
 
+=begin
 @config_file = "C:/Documents and Settings/jgoizueta/.rubyforge/user-config.yml"
 @config = nil
 RUBYFORGE_USERNAME = "jgoizueta"
@@ -31,7 +32,6 @@ end
 REV = nil 
 # UNCOMMENT IF REQUIRED: 
 # REV = `svn info`.each {|line| if line =~ /^Revision:/ then k,v = line.split(': '); break v.chomp; else next; end} rescue nil
-VERS = Nio::VERSION::STRING + (REV ? ".#{REV}" : "")
 RDOC_OPTS = ['--quiet', '--title', 'Nio documentation',
     "--opname", "index.html",
     "--line-numbers", 
@@ -44,21 +44,25 @@ class Hoe
     @extra_deps
   end 
 end
+=end
 
 # Generate all the Rake tasks
 # Run 'rake -T' to see list of generated tasks (from gem root directory)
-hoe = Hoe.new(GEM_NAME, VERS) do |p|
-  p.author = AUTHOR 
+$hoe = Hoe.new(GEM_NAME, Nio::VERSION::STRING) do |p|
+  p.developer AUTHOR, EMAIL
   p.description = DESCRIPTION
-  p.email = EMAIL
   p.summary = DESCRIPTION
   p.url = HOMEPATH
   p.rubyforge_name = RUBYFORGE_PROJECT if RUBYFORGE_PROJECT
   p.test_globs = ["test/**/test_*.rb"]
   p.clean_globs |= ['**/.*.sw?', '*.gem', '.config', '**/.DS_Store']  #An array of file patterns to delete on clean.
   
-  # == Optional
+  path = (p.rubyforge_name == p.name) ? p.rubyforge_name : "\#{p.rubyforge_name}/\#{p.name}"
+  #p.remote_rdoc_dir = File.join(path.gsub(/^#{p.rubyforge_name}\/?/,''), 'rdoc')
+  p.remote_rdoc_dir = '' # we start using the rdoc as the project home-page, later we'll setup separate page
+  p.rsync_args = '-av --delete --ignore-errors'
   p.changes = p.paragraphs_of("History.txt", 0..1).join("\\n\\n")
+
   #p.extra_deps = []     # An array of rubygem dependencies [name, version], e.g. [ ['active_support', '>= 1.3.1'] ]
   
   #p.spec_extras = {}    # A hash of extra values to set in the gemspec.
@@ -67,7 +71,4 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
   
 end
 
-CHANGES = hoe.paragraphs_of('History.txt', 0..1).join("\\n\\n")
-PATH    = (RUBYFORGE_PROJECT == GEM_NAME) ? RUBYFORGE_PROJECT : "#{RUBYFORGE_PROJECT}/#{GEM_NAME}"
-#hoe.remote_rdoc_dir = File.join(PATH.gsub(/^#{RUBYFORGE_PROJECT}\/?/,''), 'rdoc')
-hoe.remote_rdoc_dir = '' # we start using the rdoc as the project home-page, later we'll setup separate page
+require 'newgem/tasks' # load /tasks/*.rake

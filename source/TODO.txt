@@ -21,3 +21,6 @@
 
 * Replace algM by a more efficient method
 
+* Replace NFmt arguments by an options hash (e.g. :fix=>4 or :mode=>:fix, :precision=>4, ...)
+
+

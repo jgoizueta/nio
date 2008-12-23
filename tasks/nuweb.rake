@@ -2,7 +2,10 @@
 namespace :nuweb do
 
   desc "Generate Ruby code from nuweb source"
-  task :tangle => Dir['source/*.w'].collect{|fn| fn.gsub /\.w/,'.ws'}+Dir['source/lib/**/*.rb'].collect{|fn| fn.gsub('source/lib/','lib/')}+[:test]
+  task :tangle => Dir['source/*.w'].collect{|fn| fn.gsub /\.w/,'.ws'}+
+                  Dir['source/lib/**/*.rb'].collect{|fn| fn.gsub('source/lib/','lib/')}+
+                  Dir['source/test/**/*'].collect{|fn| fn.gsub('source/test/','test/')}+
+                  [:test]
 
   # directory 'lib'
   # directory 'lib/nio'

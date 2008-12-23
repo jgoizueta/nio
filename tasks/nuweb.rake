@@ -115,9 +115,11 @@ end
 
 task :clobber=>'nuweb:clobber'
 task :clean=>'nuweb:clean'
-# namespace :gem do
-#   task :package=>'nuweb:tangle'
-# end
+
+Rake::Task['gem:package'].enhance ['nuweb:tangle'] # this is ineffective: the prerequisite should come first
+Rake::Task['gem:release'].clear_prerequisites.enhance ['gem'] # remove clobber prerequisite
 
 desc 'Generate code and documentation from nuweb sources'
 task :nuweb => ['nuweb:tangle', 'nuweb:weave']
+
+STDERR.puts "TTT #{Rake::Task['gem:package'].prerequisites.inspect}"

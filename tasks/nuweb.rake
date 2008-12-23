@@ -16,7 +16,8 @@ namespace :nuweb do
   end
 
   clean_exts = ['*.tex','*.dvi','*.log','*.aux','*.out','*.ws']
-  clobber_dirs = ['lib', 'source/pdf']
+  clobber_dirs = ['lib', 'source/pdf', 'test']
+  clobber_exceptions = ['test/data.yaml', 'test/test_helper.rb']
 
   desc "Remove all nuweb generated files"
   task :clobber=>[:clean] do |t|
@@ -74,6 +75,36 @@ namespace :nuweb do
   rule /\Alib\/.*\.rb/ =>[proc{|tn| tn.sub(/\Alib\//, 'source/lib/') }]  do |t|
     cp t.source, t.name  if t.source
   end
+
+  rule /\Atest\/.*/ =>[proc{|tn| tn.sub(/\Atest\//, 'source/test/') }]  do |t|
+    cp t.source, t.name  if t.source
+  end
+
+  namespace :docs do
+
+    task :package=>['nuweb:weave']
+
+    Rake::PackageTask.new('nio-source-pdf', Nio::VERSION::STRING) do |p|
+      # generate same formats as for the gem contents
+      p.need_tar = PROJ.gem.need_tar
+      p.need_zip = PROJ.gem.need_zip
+      p.package_files.include "source/pdf/**/*.pdf"
+    end
+
+  end
+
+    task :package=>['clobber']
+    Rake::PackageTask.new('nio-source', Nio::VERSION::STRING) do |p|
+      # generate same formats as for the gem contents
+      p.need_tar = PROJ.gem.need_tar
+      p.need_zip = PROJ.gem.need_zip
+      # to generate the strict source we could require the clobber task and then
+      # pack everything left... but we will just define what to pack
+      p.package_files.include "source/**/*"
+      p.package_files.exclude "source/pdf/**/*"
+      p.package_files.include 'History.txt', 'License.txt', 'Manifest.txt', 'Rakefile', 'README.txt', 'setup.rb'
+      p.package_files.include "tasks/**/*"
+    end
 
 end
 

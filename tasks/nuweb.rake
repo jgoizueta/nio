@@ -86,7 +86,6 @@ namespace :nuweb do
   namespace :docs do
 
     task :package=>['nuweb:weave']
-
     Rake::PackageTask.new('nio-source-pdf', Nio::VERSION::STRING) do |p|
       # generate same formats as for the gem contents
       p.need_tar = PROJ.gem.need_tar
@@ -96,14 +95,17 @@ namespace :nuweb do
 
   end
 
-    task :package=>['clobber']
     Rake::PackageTask.new('nio-source', Nio::VERSION::STRING) do |p|
       # generate same formats as for the gem contents
       p.need_tar = PROJ.gem.need_tar
       p.need_zip = PROJ.gem.need_zip
       # to generate the strict source we could require the clobber task and then
       # pack everything left... but we will just define what to pack
-      p.package_files.include "source/**/*"
+      p.package_files.include "source/**/*.txt"
+      p.package_files.include "source/helpers/**/*"
+      p.package_files.include "source/lib/**/*"
+      p.package_files.include "source/test/**/*"
+      p.package_files.include "source/**/*.w"
       p.package_files.exclude "source/pdf/**/*"
       p.package_files.include 'History.txt', 'License.txt', 'Manifest.txt', 'Rakefile', 'README.txt', 'setup.rb'
       p.package_files.include "tasks/**/*"
@@ -113,6 +115,9 @@ end
 
 task :clobber=>'nuweb:clobber'
 task :clean=>'nuweb:clean'
+# namespace :gem do
+#   task :package=>'nuweb:tangle'
+# end
 
 desc 'Generate code and documentation from nuweb sources'
 task :nuweb => ['nuweb:tangle', 'nuweb:weave']

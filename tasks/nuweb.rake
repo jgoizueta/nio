@@ -86,6 +86,7 @@ namespace :nuweb do
   namespace :docs do
 
     task :package=>['nuweb:weave']
+    # TODO: there's something wrong here; this task fails the first time it is invoked
     Rake::PackageTask.new('nio-source-pdf', Nio::VERSION::STRING) do |p|
       # generate same formats as for the gem contents
       p.need_tar = PROJ.gem.need_tar
@@ -113,11 +114,11 @@ namespace :nuweb do
 
 end
 
-task :clobber=>'nuweb:clobber'
+task :clobber=>'nuweb:clobber' # maybe this is not a good idea (the nuweb generated files are ruby sources needed for gems, etc.)
 task :clean=>'nuweb:clean'
 
 Rake::Task['gem:package'].enhance ['nuweb:tangle'] # this is ineffective: the prerequisite should come first
-Rake::Task['gem:release'].clear_prerequisites.enhance ['gem'] # remove clobber prerequisite
+Rake::Task['gem:release'].clear_prerequisites.enhance ['gem'] # remove clobber prerequisite (or we would have no ruby code left!)
 
 desc 'Generate code and documentation from nuweb sources'
 task :nuweb => ['nuweb:tangle', 'nuweb:weave']

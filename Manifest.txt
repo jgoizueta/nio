@@ -4,8 +4,6 @@ Manifest.txt
 README.txt
 SOURCE.txt
 Rakefile
-config/hoe.rb
-config/requirements.rb
 lib/nio.rb
 lib/nio/version.rb
 lib/nio/repdec.rb
@@ -22,9 +20,6 @@ script/txt2html
 script/txt2html.cmd
 setup.rb
 tasks/nuweb.rake
-tasks/deployment.rake
-tasks/environment.rake
-tasks/website.rake
 test/data.yaml
 test/test_helper.rb
 test/test_tools.rb

@@ -17,15 +17,15 @@ namespace :nuweb do
 
   clobber_exts = ['*.tex','*.dvi','*.log','*.aux','*.out','*.ws']
 
-  desc "Clean up nuweb products"
-  task :clean => [:clobber] do |t|
+  desc "Remove all nuweb generated files"
+  task :clobber=>[:clean] do |t|
     Dir['lib/**/*'].each do |fn|
       rm fn unless File.directory?(fn)
     end
   end
 
   desc "Clean up nuweb temporary files"
-  task :clobber do |t|
+  task :clean do |t|
     rm_r clobber_exts.collect{|x| Dir.glob('*'+x)+Dir.glob('source/*'+x)+Dir.glob('source/pdf/*'+x)}.flatten
   end
 

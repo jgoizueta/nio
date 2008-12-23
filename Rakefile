@@ -16,7 +16,7 @@ require File.join(File.dirname(__FILE__),'source/lib/nio/version')
 task :default => 'spec:run'
 
 
-PROJ.name = 'test_bones'
+PROJ.name = 'nio'
 PROJ.description = "Numeric input/output"
 PROJ.authors = 'Javier Goizueta'
 PROJ.email = 'javier@goizueta.info'

@@ -12,12 +12,6 @@ lib/nio/tools.rb
 lib/nio/rtnlzr.rb
 lib/nio/fmt.rb
 lib/nio/sugar.rb
-script/destroy
-script/destroy.cmd
-script/generate
-script/generate.cmd
-script/txt2html
-script/txt2html.cmd
 setup.rb
 tasks/nuweb.rake
 test/data.yaml

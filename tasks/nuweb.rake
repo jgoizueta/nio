@@ -15,18 +15,19 @@ namespace :nuweb do
      File.open(t.name,'w'){|f| f.puts "sentinel"}
   end
 
-  clobber_exts = ['*.tex','*.dvi','*.log','*.aux','*.out','*.ws']
+  clean_exts = ['*.tex','*.dvi','*.log','*.aux','*.out','*.ws']
+  clobber_dirs = ['lib', 'source/pdf']
 
   desc "Remove all nuweb generated files"
   task :clobber=>[:clean] do |t|
-    Dir['lib/**/*'].each do |fn|
+    clobber_dirs.map{|dir| Dir["#{dir}/**/*"]}.flatten.each do |fn|
       rm fn unless File.directory?(fn)
     end
   end
 
   desc "Clean up nuweb temporary files"
   task :clean do |t|
-    rm_r clobber_exts.collect{|x| Dir.glob('*'+x)+Dir.glob('source/*'+x)+Dir.glob('source/pdf/*'+x)}.flatten
+    rm_r clean_exts.collect{|x| Dir.glob('*'+x)+Dir.glob('source/*'+x)+Dir.glob('source/pdf/*'+x)}.flatten
   end
 
   desc "Generate nuweb source code documentation"

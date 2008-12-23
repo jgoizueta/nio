@@ -11,3 +11,6 @@ source/*.tex
 source/*.aux
 source/pdf/*.pdf
 doc
+email.txt
+nio.gemspec
+html

@@ -511,7 +511,7 @@ end
 # and returns it as an object of the specified class (by default, Integer)
 def apprx_i(x,result=Integer)
   r = x.round
-  return equals?(x,r) ? r.prec(result) : x
+  return equals?(x,r) ? Nio.numeric_cast(r,result) : x
 end
 ·}
 
@@ -1373,7 +1373,7 @@ def Rtnlzr.max_denominator(f, max_den=1000000000, num_class=nil)
   num_class ||= f.class
   return mth.ip(f),1 if mth.fp(f)==0
 
-  one = 1.prec(num_class)
+  one = Nio.numeric_cast(1, num_class)
   
     sign = f<0
     f = -f if sign
@@ -1390,7 +1390,7 @@ def Rtnlzr.max_denominator(f, max_den=1000000000, num_class=nil)
     end
     
 
-    f1,f2 = [a,b].collect{|x| mth.abs(mth.rnd(x*f)/x.prec(num_class)-f)}
+    f1,f2 = [a,b].collect{|x| mth.abs(mth.rnd(x*f)/Nio.numeric_cast(x, num_class)-f)}
 
     a = f1>f2 ? b : a
 
@@ -1487,6 +1487,30 @@ class BigDecimal
     end
   end
 end
+·}
+
+\section{Auxiliar Conversions}
+
+Sometimes we need a constant or value converted to some numeric type defined by its class.
+This could be done with the prec method, but that was removed from Ruby during the
+development of version 1.9 (with the intention to reintroduce a better conversion
+system sometime in the future)
+
+We'll define a method to cope with this conversions to cope with the different Ruby versions.
+
+·d flttol functions
+·{·%
+	def numeric_cast(value, type)
+	  if value.respond_to?(:prec)
+	    value.prec(type)
+      else
+        if type.kind_of?(BigDecimal)
+          BigDec(value)
+        else
+          Object.send type.to_s, value
+        end
+      end
+	end
 ·}
 
 

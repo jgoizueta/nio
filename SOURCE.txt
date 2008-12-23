@@ -1,7 +1,7 @@
 =Notes on the source code
 
 The Ruby code in this project is generated from the source code
-in the directory "source" by the Rake task *tangle*.
+in the directory "source" by the Rake task *nuweb:tangle*.
 
 You can get the updated source code from the SVN repository
 at Rubyforge (svn://rubyforge.org/var/svn/nio/trunk)
@@ -9,7 +9,7 @@ or from the "nio-source" package releases from the project.
 
 The nuweb source files have extension .w
 
-There's also a rake task named *weave* which generates
+There's also a rake task named *nuweb:weave* which generates
 a documented form of the source code in PDF format,
 which is saved to the directory source/pdf.
 
@@ -21,7 +21,7 @@ For the weave task latex and dvipdfm are also necessary.
 
 You can get the PDF files corresponding to each realese
 in the "nio-source-pdf" packages.
- 
+
 The necessary nuweb tool is available here for windows:
   http://perso.wanadoo.es/jgoizueta/dev/tools/nuweb-win32.zip
 

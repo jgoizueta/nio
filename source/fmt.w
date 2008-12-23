@@ -2763,7 +2763,10 @@ else
   end
   if !converted 
     if fmt.get_base==10 
-      txt = x.to_s
+      # Don't use x.to_s because of bugs in BigDecimal in Ruby 1.9 revisions 20359-20797
+      # x.to_s('F') is not affected by that problem, but produces innecesary long strings
+      sgn,ds,b,e = x.split
+      txt = "#{sgn<0 ? '-' : ''}0.#{ds}E#{e}"
       ·<Convert Floating Point Expression to Neutral·>
       converted = true
     end

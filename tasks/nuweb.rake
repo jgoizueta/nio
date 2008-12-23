@@ -78,3 +78,6 @@ end
 
 task :clobber=>'nuweb:clobber'
 task :clean=>'nuweb:clean'
+
+desc 'Generate code and documentation from nuweb sources'
+task :nuweb => ['nuweb:tangle', 'nuweb:weave']

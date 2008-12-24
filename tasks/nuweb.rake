@@ -18,20 +18,25 @@ namespace :nuweb do
      File.open(t.name,'w'){|f| f.puts "sentinel"}
   end
 
-  clean_exts = ['*.tex','*.dvi','*.log','*.aux','*.out','*.ws']
-  clobber_dirs = ['lib', 'source/pdf', 'test']
-  clobber_exceptions = ['test/data.yaml', 'test/test_helper.rb']
+  clean_exts = ['*.tex','*.dvi','*.log','*.aux','*.out']
+  clobber_exts = ['*.ws']
+  generated_dirs = ['lib', 'source/pdf', 'test']
 
   desc "Remove all nuweb generated files"
-  task :clobber=>[:clean] do |t|
-    clobber_dirs.map{|dir| Dir["#{dir}/**/*"]}.flatten.each do |fn|
+  task :clobber=>[:clean_more] do |t|
+    generated_dirs.map{|dir| Dir["#{dir}/**/*"]}.flatten.each do |fn|
       rm fn unless File.directory?(fn)
     end
   end
 
-  desc "Clean up nuweb temporary files"
+  desc "Clean up all nuweb temporary files"
+  task :clean_more=>[:clean] do |t|
+    rm_r((clean_exts+['*.ws']).collect{|x| Dir.glob('*'+x)+Dir.glob('source/*'+x)+Dir.glob('source/pdf/*'+x)}.flatten)
+  end
+
+  desc "Clean up nuweb weave temporary files"
   task :clean do |t|
-    rm_r clean_exts.collect{|x| Dir.glob('*'+x)+Dir.glob('source/*'+x)+Dir.glob('source/pdf/*'+x)}.flatten
+    rm_r clean_exts.collect{|x| Dir.glob('source/*'+x)+Dir.glob('source/pdf/*'+x)}.flatten
   end
 
   desc "Generate nuweb source code documentation"
@@ -114,13 +119,11 @@ namespace :nuweb do
 
 end
 
-task :clobber=>'nuweb:clobber' # maybe this is not a good idea (the nuweb generated files are ruby sources needed for gems, etc.)
+task :clobber=>'nuweb:clean_more'
 task :clean=>'nuweb:clean'
 
-Rake::Task['gem:package'].enhance ['nuweb:tangle'] # this is ineffective: the prerequisite should come first
-Rake::Task['gem:release'].clear_prerequisites.enhance ['gem'] # remove clobber prerequisite (or we would have no ruby code left!)
+gem_package_prerequisites = Rake::Task['gem:package'].prerequisites
+Rake::Task['gem:package'].clear_prerequisites.enhance ['nuweb:tangle']+gem_package_prerequisites
 
 desc 'Generate code and documentation from nuweb sources'
 task :nuweb => ['nuweb:tangle', 'nuweb:weave']
-
-STDERR.puts "TTT #{Rake::Task['gem:package'].prerequisites.inspect}"

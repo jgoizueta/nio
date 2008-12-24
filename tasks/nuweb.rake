@@ -23,7 +23,7 @@ namespace :nuweb do
   generated_dirs = ['lib', 'source/pdf', 'test']
 
   desc "Remove all nuweb generated files"
-  task :clobber=>[:clean_more] do |t|
+  task :clobber=>['^clobber'] do |t|
     generated_dirs.map{|dir| Dir["#{dir}/**/*"]}.flatten.each do |fn|
       rm fn unless File.directory?(fn)
     end
@@ -90,13 +90,12 @@ namespace :nuweb do
 
   namespace :docs do
 
-    task :package=>['nuweb:weave']
-    # TODO: there's something wrong here; this task fails the first time it is invoked
     Rake::PackageTask.new('nio-source-pdf', Nio::VERSION::STRING) do |p|
       # generate same formats as for the gem contents
       p.need_tar = PROJ.gem.need_tar
       p.need_zip = PROJ.gem.need_zip
-      p.package_files.include "source/pdf/**/*.pdf"
+      pdf_files = Dir['source/*.w'].map{|fn| File.join 'source','pdf',File.basename(fn,'.w')+'.pdf'}
+      p.package_files.include *pdf_files
     end
 
   end

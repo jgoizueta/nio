@@ -1,37 +1,56 @@
 # nuweb build tasks
 namespace :nuweb do
 
+  NUWEB_PRODUCTS = []
+  NUWEB_SOURCES = Dir['source/**/*.w']
+
+  NUWEB_SOURCES.each do |input_fn|
+    products = []
+    File.open(input_fn) do |input|
+      meta = '@'
+      input.each_line do |line|
+        if /^\s*%#{meta}r(.)%/.match(line)
+          meta = $1
+        elsif /^\s*[^#{meta}]?#{meta}(?:o|O)\s*(\S.*)\s*$/.match(line)
+          products << $1
+        end
+      end
+    end
+    NUWEB_PRODUCTS.concat products
+    products.each do |product|
+      file product => [input_fn] do |t|
+        puts "nuweb -t #{input_fn}"
+        puts `nuweb -t #{input_fn}`
+        touch product
+      end
+    end
+  end
+
+  %w{lib test}.each do |dir|
+    sources = Dir["source/#{dir}/**/*"]
+    NUWEB_SOURCES.concat sources
+    NUWEB_PRODUCTS.concat sources.map{|s| s.sub("source/#{dir}/","#{dir}/")}
+    rule(/\A#{dir}\/.*/ =>[proc{|tn| tn.sub(/\A#{dir}\//, "source/#{dir}/") }])  do |t|
+      cp t.source, t.name  if t.source
+    end
+  end
+
   desc "Generate Ruby code from nuweb source"
-  task :tangle => Dir['source/*.w'].collect{|fn| fn.gsub /\.w/,'.ws'}+
-                  Dir['source/lib/**/*.rb'].collect{|fn| fn.gsub('source/lib/','lib/')}+
-                  Dir['source/test/**/*'].collect{|fn| fn.gsub('source/test/','test/')}+
-                  [:test]
+  task :tangle => NUWEB_PRODUCTS + [:test]
 
   # directory 'lib'
   # directory 'lib/nio'
   # directory 'source/pdf'
 
-  rule '.ws' => ['.w'] do |t|
-    puts "build dir: #{Dir.pwd}"
-    puts "nuweb -t #{t.source}"
-    puts `nuweb -t #{t.source}`
-     File.open(t.name,'w'){|f| f.puts "sentinel"}
-  end
-
   clean_exts = ['*.tex','*.dvi','*.log','*.aux','*.out']
-  clobber_exts = ['*.ws']
-  generated_dirs = ['lib', 'source/pdf', 'test']
+  clobber_exts = []
+  generated_dirs = ['lib', 'test', 'source/pdf']
 
   desc "Remove all nuweb generated files"
   task :clobber=>['^clobber'] do |t|
     generated_dirs.map{|dir| Dir["#{dir}/**/*"]}.flatten.each do |fn|
       rm fn unless File.directory?(fn)
     end
-  end
-
-  desc "Clean up all nuweb temporary files"
-  task :clean_more=>[:clean] do |t|
-    rm_r((clean_exts+['*.ws']).collect{|x| Dir.glob('*'+x)+Dir.glob('source/*'+x)+Dir.glob('source/pdf/*'+x)}.flatten)
   end
 
   desc "Clean up nuweb weave temporary files"
@@ -80,21 +99,13 @@ namespace :nuweb do
     w_to_pdf t.source
   end
 
-  rule /\Alib\/.*\.rb/ =>[proc{|tn| tn.sub(/\Alib\//, 'source/lib/') }]  do |t|
-    cp t.source, t.name  if t.source
-  end
-
-  rule /\Atest\/.*/ =>[proc{|tn| tn.sub(/\Atest\//, 'source/test/') }]  do |t|
-    cp t.source, t.name  if t.source
-  end
-
   namespace :docs do
 
     Rake::PackageTask.new('nio-source-pdf', Nio::VERSION::STRING) do |p|
       # generate same formats as for the gem contents
       p.need_tar = PROJ.gem.need_tar
       p.need_zip = PROJ.gem.need_zip
-      pdf_files = Dir['source/*.w'].map{|fn| File.join 'source','pdf',File.basename(fn,'.w')+'.pdf'}
+      pdf_files = Dir['source/**/*.w'].map{|fn| File.join 'source','pdf',File.basename(fn,'.w')+'.pdf'}
       p.package_files.include *pdf_files
     end
 
@@ -118,7 +129,7 @@ namespace :nuweb do
 
 end
 
-task :clobber=>'nuweb:clean_more'
+task :clobber=>'nuweb:clean'
 task :clean=>'nuweb:clean'
 
 gem_package_prerequisites = Rake::Task['gem:package'].prerequisites

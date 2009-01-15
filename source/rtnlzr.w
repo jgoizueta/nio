@@ -20,13 +20,13 @@
 \isodate
 
 \newcommand{\ProgTitle}{Rationalizer}
-\newcommand{\ProgAuth}{Javier Goizueta} 
-\newcommand{\ProgDate}{\today} 
+\newcommand{\ProgAuth}{Javier Goizueta}
+\newcommand{\ProgDate}{\today}
 \newcommand{\ProgVer}{1.0}
 \newcommand{\ProgSource}{\ttfamily\bfseries rtnlzr.w}
 
 \title{\ProgTitle}
-\author{\ProgAuth} 
+\author{\ProgAuth}
 \date{\ProgDate}
 
 % ===========================================================================
@@ -41,7 +41,7 @@
 
 \lng{ruby}
 
-%@r·%   this is the nuweb escape character (183) which is a centered dot in iso-8859-latin1
+%@rÂ·%   this is the nuweb escape character (183) which is a centered dot in iso-8859-latin1
 
 \begin{document}
 
@@ -58,29 +58,29 @@ floating-point telerance.
 We will support tolerances for the floating point types
 \cd{Float} and \cd{BigDecimal}.
 
-·o lib/nio/flttol.rb
-·{# Floating point tolerance
+Â·o lib/nio/flttol.rb
+Â·{# Floating point tolerance
 #--
-·<License·>
+Â·<LicenseÂ·>
 #++
-·<rdoc commentary for flttol.rb·>
-·<flttol Required Modules·>
-·<flttol definitions·>
-·<Nio constructor methods rdoc·>
+Â·<rdoc commentary for flttol.rbÂ·>
+Â·<flttol Required ModulesÂ·>
+Â·<flttol definitionsÂ·>
+Â·<Nio constructor methods rdocÂ·>
 module Nio
-  ·<flttol classes·>
+  Â·<flttol classesÂ·>
   module_function
-  ·<flttol functions·>
+  Â·<flttol functionsÂ·>
 end
-·}
+Â·}
 
-·d License
-·{# Copyright (C) 2003-2005, Javier Goizueta <javier@goizueta.info>
+Â·d License
+Â·{# Copyright (C) 2003-2005, Javier Goizueta <javier@goizueta.info>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.·}
+# of the License, or (at your option) any later version.Â·}
 
 First we'll set up some utilities to deal with floating point types.
 We need some information about the floating point implementation and we
@@ -109,13 +109,13 @@ decimal digits necessary for round-trip conversion
 \cd{Float}$\rightarrow$decimal$\rightarrow$\cd{Float}.
 
 
-·d flttol definitions
-·{·%
-class Float  
+Â·d flttol definitions
+Â·{Â·%
+class Float
   unless const_defined?(:RADIX) # old Ruby versions didn't have this
     # Base of the Float representation
     RADIX = 2
-    ·<compute bits per Float·>          
+    Â·<compute bits per FloatÂ·>
     # Number of RADIX-base digits of precision in a Float
     MANT_DIG = _bits_
     # Number of decimal digits that can be stored in a Float and recovered
@@ -123,18 +123,18 @@ class Float
     # Smallest value that added to 1.0 produces something different from 1.0
     EPSILON = Math.ldexp(*Math.frexp(1).collect{|e| e.kind_of?(Integer) ? e-(MANT_DIG-1) : e})
   end
-  # Decimal precision required to represent a Float and be able to recover its value  
+  # Decimal precision required to represent a Float and be able to recover its value
   DECIMAL_DIG = (MANT_DIG*Math.log(RADIX)/Math.log(10)).ceil+1
 end
-·}
+Â·}
 
 If we need to compute the constants we assume the base is 2. Then the
 number of bits of precision can be easily compute like this:
-Note that after the first loop we may have counted one too many bits, 
+Note that after the first loop we may have counted one too many bits,
 because of the rounding mode applied to the result of the x+1 addition.
 
-·d compute bits per Float
-·{·%
+Â·d compute bits per Float
+Â·{Â·%
 x = 1.0
 _bits_ = 0
 while 1!=x+1
@@ -144,19 +144,19 @@ end
 if ((1.0+2*x)-1.0)>2*x
   _bits_ -= 1
 end
-·}
+Â·}
 
-Notes: 
+Notes:
 \begin{itemize}
 \item \cd{DIG} is defined to be valid for any decimal representation and
-and \cd{DECIMAL\_DIG} for any \cd{Float} value. 
+and \cd{DECIMAL\_DIG} for any \cd{Float} value.
 Particular decimal expresions with many more than \cd{DIG}
 digits can be stored exactly in a Float, and particular \cd{Float} values
 can be unambiguosly defined with less than \cd{DECIMAL\_DIG}
 decimal digits.
 \item \verb|MANT_DIG = 2-Math.frexp(Float::EPSILON)[1]|
 \cd{EPSILON} is 1ulp (unit in the least place) for 1.0.
-Knuth (4.2.2 pg.219) states that a tolerace greater than or 
+Knuth (4.2.2 pg.219) states that a tolerace greater than or
 equal to \verb|2*EPSILON/(1-0.5*EPSILON)**2| guarantees the
 associativity of multiplication, e.g. \verb|ldexp(0.75,3-MANT_DIG)|,
 since we have \verb|2*EPSILON/(1-0.5*EPSILON)^2 == ldexp(0.5,3-MANT_DIG)|.
@@ -165,72 +165,72 @@ since we have \verb|2*EPSILON/(1-0.5*EPSILON)^2 == ldexp(0.5,3-MANT_DIG)|.
 This class represents floating point tolerances and allows comparison
 of numbers within the specified tolerance.
 
-·D flttol classes
-·{·%
-·<rdoc commentary for Tolerance·>
+Â·D flttol classes
+Â·{Â·%
+Â·<rdoc commentary for ToleranceÂ·>
 class Tolerance
   include StateEquivalent
-  
+
   # The numeric class this tolerance applies to.
   def num_class
     Float
   end
-  
+
   # The tolerance mode is either :abs (absolute) :rel (relative) or :sig (significant).
   # The last parameter is a flag to specify decimal mode for the :sig mode
   def initialize(t=0.0, mode=:abs, decmode=false)
     set t, mode, decmode
   end
-  
-  ·<Tolerance constructors·>
+
+  Â·<Tolerance constructorsÂ·>
 
   #Shortcut notation for get_value
   def [](x)
     return x.nil? ? @t : get_value(x)
   end
   #Return tolerance relative to a magnitude
-  def get_value(x)  
+  def get_value(x)
     rel(x)
   end
   #Essential equality within tolerance
   def equals?(x,y)
-    ·<equals?·>       
+    Â·<equals?Â·>
   end
   #Approximate equality within tolerance
   def aprx_equals?(x,y)
-    ·<aprxEquals?·>       
+    Â·<aprxEquals?Â·>
   end
-  #Comparison within tolerance  
+  #Comparison within tolerance
   def greater_than?(x,y)
     less_than?(y,x)
   end
-  #Comparison within tolerance  
+  #Comparison within tolerance
   def less_than?(x,y)
-   ·<lessThan?·>   
+   Â·<lessThan?Â·>
   end
-  #Comparison within tolerance  
+  #Comparison within tolerance
   def zero?(x,compared_with=nil)
     compared_with.nil? ? x.abs<@t : x.abs<rel(compared_with)
   end
 
-  ·<Tolerance methods·>  
-  ·<Tolerance attributes·>
-  
+  Â·<Tolerance methodsÂ·>
+  Â·<Tolerance attributesÂ·>
+
   private
-  ·<Tolerance private·>
+  Â·<Tolerance privateÂ·>
 end
-·}
+Â·}
 
 The tolerances can be defined in three basic modes:
 \begin{itemize}
 \item Absolute tolerance (\cd{:abs}) is a fixed value.
 \item Relative tolerance (\cd{:rel}) is given in relation to the unit $1$
 and varies proportionally to the magnitud of the tested values.
-\item Significant tolerance (\cd{:sig}) is given in relation to 
+\item Significant tolerance (\cd{:sig}) is given in relation to
 a reference interval and varies in steps (of exponential size).
 For the binary floating-point type Float, binary significant is
-used unless decimal mode is selected; 
-the reference interval is $\left[1,2\right)$. 
+used unless decimal mode is selected;
+the reference interval is $\left[1,2\right)$.
 Otherwise decimal significance in relation to reference $\left[0.1,1\right)$
 is used.
 \end{itemize}
@@ -248,69 +248,69 @@ binary mode significance & decimal mode significance
 
 This private method defines a tolerance.
 
-·d Tolerance private
-·{·%
+Â·d Tolerance private
+Â·{Â·%
 def set(t=0.0, mode=:abs, decmode=false)
-  ·<Initialize Tolerance·>
+  Â·<Initialize ToleranceÂ·>
   self
 end
-·}
+Â·}
 
 This defines the tolerance by givind the number
-of decimal digits of precision; by default 
+of decimal digits of precision; by default
 as an absolute tolerance, i.e. by a fixed number of
-decimals; significant mode would also be 
-meaningful here, to define the number of 
+decimals; significant mode would also be
+meaningful here, to define the number of
 significant digits. By default {\emph rounded}
 digits are used.
 
-·d Tolerance constructors
-·{·%
+Â·d Tolerance constructors
+Â·{Â·%
 #This initializes a Tolerance with a given number of decimals
 def decimals(d, mode=:abs, rounded=true)
-  ·<Initialize Tolerance from digits·>
+  Â·<Initialize Tolerance from digitsÂ·>
   self
 end
-·}
+Â·}
 
 This is a shortcut to define the tolerance
 by the number of significant digits.
 
-·d Tolerance constructors
-·{·%
+Â·d Tolerance constructors
+Â·{Â·%
 #This initializes a Tolerance with a number of significant decimal digits
 def sig_decimals(d, rounded=true)
   decimals d, :sig, rounded
 end
-·}
+Â·}
 
 Initialize with a multiple of the internal floating-point precision.
 
-·d Tolerance constructors
-·{·%
+Â·d Tolerance constructors
+Â·{Â·%
 #Initialize with a multiple of the internal floating-point precision.
 def epsilon(times_epsilon=1, mode=:sig)
   set Float::EPSILON*times_epsilon, mode
 end
-·}
+Â·}
 
 Same, with a somewhat (about twice) bigger precision that assures associative
 multiplication.
 
-·d Tolerance constructors
-·{·%
+Â·d Tolerance constructors
+Â·{Â·%
 # As #epsilon but using a somewhat bigger (about twice) precision that
 # assures associative multiplication.
 def big_epsilon(n=1, mode=:sig)
   t = Math.ldexp(0.5*n,3-Float::MANT_DIG) # n*(2*Float::EPSILON/(1-0.5*Float::EPSILON)**2)
   set t, mode
 end
-·}
+Â·}
 
 Initialize with a relative fraction, a percentage, or a per-mille value.
 
-·d Tolerance constructors
-·{·%
+Â·d Tolerance constructors
+Â·{Â·%
 # Initialize with a relative fraction
 def fraction(f)
   set f, :rel
@@ -323,13 +323,13 @@ end
 def permille(x)
   fraction x/1000.0
 end
-·}
+Â·}
 
 Now we define constructors using the initialization
 methods defined.
 
-·d flttol classes
-·{·%
+Â·d flttol classes
+Â·{Â·%
 def Tolerance.decimals(d=0, mode=:abs,rounded=true)
   Tolerance.new.decimals(d,mode,rounded)
 end
@@ -351,21 +351,21 @@ end
 def Tolerance.permille(p)
   Tolerance.new.permille(p)
 end
-·}
+Â·}
 
-This is the code to set the tolerance value: 
-values that are to big or too small are adjusted, 
+This is the code to set the tolerance value:
+values that are to big or too small are adjusted,
 and the number of decimal digits implied by the tolerance is computed.
 
-·d Initialize Tolerance
-·{·%
+Â·d Initialize Tolerance
+Â·{Â·%
 @t = t==0 ? Float::EPSILON : t.abs
 @t = 0.5 if @t > 0.5
 @mode = mode
 @t = Float::EPSILON if @mode!=:abs && @t<Float::EPSILON
 @decimal_mode = decmode
 @d = @t==0 ? 0 : (-Math.log10(2*@t).floor).to_i
-·}
+Â·}
 
 Note that there is an inconsistency in the relative mode
 between decimals and non-decimals tolerences:
@@ -378,35 +378,35 @@ rounded or truncated decimals; in both cases
 the rounded or truncated $d$ digit may vary in
 one unit at most.
 
-·d Initialize Tolerance from digits
-·{·%
+Â·d Initialize Tolerance from digits
+Â·{Â·%
 @mode = mode
 @decimal_mode = true
 @d = (d<=0 || d>Float::DIG) ? Float::DIG : d
 @t = 10**(-@d)
 @t *= 0.5 if rounded
-·}
+Â·}
 
 The mode determines how to compare quantities
 within the tolerance.
 First we define relative comparison; this fragment
 is parameterized by a partial expression
 that defines what to compare against the tolerance
-and which comparision operator to use 
+and which comparision operator to use
 (e.g. \verb|y-x >|) and by a method to apply
 and choose which of the compared magnitude to use
 (e.g. \verb|min|).
 
-·d Relative Comparison
-·{·%
-·1 @t*([x.abs,y.abs].·2) #reference value is 1
-·}
+Â·d Relative Comparison
+Â·{Â·%
+Â·1 @t*([x.abs,y.abs].Â·2) #reference value is 1
+Â·}
 
 We define a fragment with same parameters for
 the significant comparison.
 
-·d Significant Comparison
-·{·%
+Â·d Significant Comparison
+Â·{Â·%
 if @decimal_mode
   begin
     x_exp = Math.log10(x.abs)
@@ -415,20 +415,20 @@ if @decimal_mode
   rescue
     x_exp = 0
   end
-  begin 
+  begin
     y_exp = Math.log10(y.abs)
     #y_exp = y_exp.finite? ? y_exp.ceil : 0
     y_exp = y_exp.finite? ? y_exp.floor+1 : 0
   rescue
     y_exp = 0
   end
-  ·1 @t*(10**([x_exp,y_exp].·2-@@dec_ref_exp))
+  Â·1 @t*(10**([x_exp,y_exp].Â·2-@@dec_ref_exp))
 else
   z,x_exp = Math.frexp(x)
   z,y_exp = Math.frexp(y)
-  ·1 Math.ldexp(@t,[x_exp,y_exp].·2-@@ref_exp) # ·1 @t*(2**([x_exp,y_exp].·2-@@ref_exp))
+  Â·1 Math.ldexp(@t,[x_exp,y_exp].Â·2-@@ref_exp) # Â·1 @t*(2**([x_exp,y_exp].Â·2-@@ref_exp))
 end
-·}
+Â·}
 
 Now we will define reference exponents for significant tolerances;
 in general a reference exponent $r$ will select
@@ -436,24 +436,24 @@ the interval $\left[b^{r-1},b^r\right)$ as reference (the interval
 where the tolerance has the value given in its definition).
 
 The reference exponent is the binary exponent of the reference value
-for relative tolerances. 
+for relative tolerances.
 If we use 1 (which is \verb|Math.frexp(1)[1]|), then the
 tolerance given applies to $\left[1,2\right)$. If we use
 0 the reference interval is $\left[0.5,1\right)$.
 
-·d Tolerance private
-·{·%
+Â·d Tolerance private
+Â·{Â·%
 @@ref_exp = 1 # Math.frexp(1)[1] => tol. relative to [1,2)
-·}
+Â·}
 
 For significant decimals mode, we will use the $\left[0.1,1\right)$ as reference by
 using the reference exponent 0; a reference exponent of 1 the
 reference interval would be $\left[1,10\right)$.
 
-·d Tolerance private
-·{·%
+Â·d Tolerance private
+Â·{Â·%
 @@dec_ref_exp = 0 # tol. relative to [0.1,1)
-·}
+Â·}
 
 For relative mode, the reference is always $1$ (a single value rather
 than an interval); for absolute mode the reference is $(-\infty,+\infty)$,
@@ -461,48 +461,48 @@ since the same value is always used.
 
 Now we can define the different specific comparisons.
 
-·d lessThan?
-·{·%
+Â·d lessThan?
+Â·{Â·%
 case @mode
   when :sig
-    ·<Significant Comparison·(y-x >·,max·)·>
+    Â·<Significant ComparisonÂ·(y-x >Â·,maxÂ·)Â·>
   when :rel
-    ·<Relative Comparison·(y-x >·,max·)·>
+    Â·<Relative ComparisonÂ·(y-x >Â·,maxÂ·)Â·>
   when :abs
     x-y<@t
 end
-·}
+Â·}
 
 This is essential equality.
 
-·d equals?
-·{·%
+Â·d equals?
+Â·{Â·%
 case @mode
   when :sig
-    ·<Significant Comparison·((y-x).abs <=·,min·)·>
+    Â·<Significant ComparisonÂ·((y-x).abs <=Â·,minÂ·)Â·>
   when :rel
-    ·<Relative Comparison·((y-x).abs <=·,min·)·>
+    Â·<Relative ComparisonÂ·((y-x).abs <=Â·,minÂ·)Â·>
   when :abs
     (x-y).abs<@t
 end
-·}
+Â·}
 
 And this is approximate equality, a weaker form of equality.
 
-·d aprxEquals?
-·{·%
+Â·d aprxEquals?
+Â·{Â·%
 case @mode
   when :sig
-    ·<Significant Comparison·((y-x).abs <=·,max·)·>
+    Â·<Significant ComparisonÂ·((y-x).abs <=Â·,maxÂ·)Â·>
   when :rel
-    ·<Relative Comparison·((y-x).abs <=·,max·)·>
+    Â·<Relative ComparisonÂ·((y-x).abs <=Â·,maxÂ·)Â·>
   when :abs
-    (x-y).abs<=@t    
+    (x-y).abs<=@t
 end
-·}
+Â·}
 
-·d Tolerance methods
-·{·%
+Â·d Tolerance methods
+Â·{Â·%
 # Returns true if the argument is approximately an integer
 def apprx_i?(x)
   equals?(x,x.round)
@@ -513,20 +513,20 @@ def apprx_i(x,result=Integer)
   r = x.round
   return equals?(x,r) ? Nio.numeric_cast(r,result) : x
 end
-·}
+Â·}
 
 Now we will define accessors for the public properties of Tolerance.
 To modify a property the tolerance must be redefined with any of
 the initialization methods.
 
-·d Tolerance attributes
-·{·% 
+Â·d Tolerance attributes
+Â·{Â·%
 # Returns the magnitude of the tolerance
 def magnitude
   @t
 end
 # Returns the number of decimal digits of the tolerance
-def num_decimals  
+def num_decimals
   @d
 end
 # Returns true for decimal-mode tolerance
@@ -537,7 +537,7 @@ end
 def mode
   @mode
 end
-·}
+Â·}
 
 
 And we must now define a method to compute the relative value of the
@@ -545,8 +545,8 @@ tolerance in relation to a magnitude \cd{x}.
 For absolute mode this returns the tolerance value independently of \cd{x};
 otherwise the value is properly scaled to \cd{x}.
 
-·d Tolerance private
-·{·% 
+Â·d Tolerance private
+Â·{Â·%
 def rel(x)
   r = @t
   case @mode
@@ -562,28 +562,28 @@ def rel(x)
       r = @t*x.abs
   end
   r
-end  
-·}
+end
+Â·}
 
 \subsection{BigDecimal tolerance}
 
 Here define a tolerance class for \cd{BigDecimal}. This is not,
-in general, as useful as \cd{Tolerance} for \cd{Float} is, 
+in general, as useful as \cd{Tolerance} for \cd{Float} is,
 since \cd{BigDecimal} has arbitrary precision.
 
-·d flttol Required Modules
-·{·%
+Â·d flttol Required Modules
+Â·{Â·%
 require 'bigdecimal'
 require 'bigdecimal/math' if RUBY_VERSION>='1.8.1'
 require 'nio/tools'
-·}
+Â·}
 
 
-·D flttol classes
-·{·%
-·<rdoc commentary for BigTolerance·>
+Â·D flttol classes
+Â·{Â·%
+Â·<rdoc commentary for BigToleranceÂ·>
 class BigTolerance
-  include StateEquivalent  
+  include StateEquivalent
   module BgMth # :nodoc:
     extend BigMath if ::RUBY_VERSION>='1.8.1'
   end
@@ -597,24 +597,24 @@ class BigTolerance
   def initialize(t=BigDecimal('0'), mode=:abs, decmode=false)
     set t, mode, decmode
   end
-  
-  ·<BigTolerance constructors·>
+
+  Â·<BigTolerance constructorsÂ·>
 
   #Shortcut notation for get_value
   def [](x)
     return x.nil? ? @t : get_value(x)
   end
   #Return tolerance relative to a magnitude
-  def get_value(x)  
+  def get_value(x)
     rel(x)
   end
   #Essential equality within tolerance
   def equals?(x,y)
-    ·<BigTolerance equals?·>       
+    Â·<BigTolerance equals?Â·>
   end
   #Approximate equality within tolerance
   def aprx_equals?(x,y)
-    ·<BigTolerance aprxEquals?·>       
+    Â·<BigTolerance aprxEquals?Â·>
   end
   #Comparison within tolerance
   def greater_than?(x,y)
@@ -622,63 +622,63 @@ class BigTolerance
   end
   #Comparison within tolerance
   def less_than?(x,y)
-   ·<BigTolerance lessThan?·>   
+   Â·<BigTolerance lessThan?Â·>
   end
   #Comparison within tolerance
   def zero?(x,compared_with=nil)
     compared_with.nil? ? x.abs<@t : x.abs<rel(compared_with)
   end
 
-  ·<Tolerance methods·>  
-  ·<Tolerance attributes·>
-  
-  private
-  ·<BigTolerance private·>
-end
-·}
+  Â·<Tolerance methodsÂ·>
+  Â·<Tolerance attributesÂ·>
 
-·d BigTolerance private
-·{·%
+  private
+  Â·<BigTolerance privateÂ·>
+end
+Â·}
+
+Â·d BigTolerance private
+Â·{Â·%
 HALF = BigDecimal('0.5')
-·}
+Â·}
 
 The initialization methods and constructors are as those of \cd{Tolerance}.
 
 
-·d BigTolerance private
-·{·%
+Â·d BigTolerance private
+Â·{Â·%
 def set(t=BigDecimal('0'), mode=:abs, decmode=false)
-  ·<Initialize BigTolerance·>
+  Â·<Initialize BigToleranceÂ·>
   self
 end
-·}
+Â·}
 
 Initialize with a given number of decimals.
 
-·d BigTolerance constructors
-·{·%
+Â·d BigTolerance constructors
+Â·{Â·%
 #This initializes a BigTolerance with a given number of decimals
 def decimals(d, mode=:abs, rounded=true)
-  ·<Initialize BigTolerance from digits·>
+  Â·<Initialize BigTolerance from digitsÂ·>
   self
 end
-·}
+Â·}
 
 
 Initialize with a number a number of significant decimal digits.
 
-·d BigTolerance constructors
-·{·%
+Â·d BigTolerance constructors
+Â·{Â·%
 #This initializes a BigTolerance with a number of significative decimal digits
 def sig_decimals(d, rounded=true)
   decimals d, :sig, rounded
 end
-·}
+Â·}
 
 Initialize with a relative fraction, a percentage, or a per-mille value.
 
-·d BigTolerance constructors
-·{·%
+Â·d BigTolerance constructors
+Â·{Â·%
 def fraction(f)
   set f, :rel
 end
@@ -688,13 +688,13 @@ end
 def permille(x)
   fraction x*BigDecimal('0.001')
 end
-·}
+Â·}
 
 Shortcuts for constructors.
 
 
-·d flttol classes
-·{·%
+Â·d flttol classes
+Â·{Â·%
 def BigTolerance.decimals(d=0, mode=:abs)
   BigTolerance.new.decimals(d,mode)
 end
@@ -710,16 +710,16 @@ end
 def BigTolerance.permille(p)
   BigTolerance.new.permille(p)
 end
-·}
+Â·}
 
 Since the underlying type \cd{BigTolerance} is now decimal we won't
-use a ``binary significance'' mode, but we will use a different 
+use a ``binary significance'' mode, but we will use a different
 reference intervals for decimal mode.
 Here is the normal tolerance mode, with the reference $\left[1,10\right)$
 for significative mode.
 
-·d Initialize BigTolerance
-·{·%
+Â·d Initialize BigTolerance
+Â·{Â·%
 @t = t
 @t = HALF if @t > HALF
 raise TypeError,"El valor de tolerancia debe ser de tipo BigDecimal" if @t.class!=BigDecimal
@@ -727,13 +727,13 @@ raise TypeError,"El valor de tolerancia debe ser de tipo BigDecimal" if @t.class
 @decimal_mode = decmode
 @d = @t.zero? ? 0 : -(@t*2).exponent+1
 @ref_exp = BigDecimal('1').exponent # reference for significative mode: [1,10)
-·}
+Â·}
 
 And here is the decimal tolerance mode, with the reference $\left[0.1,1\right)$.
 
 
-·d Initialize BigTolerance from digits
-·{·%
+Â·d Initialize BigTolerance from digits
+Â·{Â·%
 @mode = mode
 @decimal_mode = true
 @d = d==0 ? 16 : d
@@ -743,64 +743,64 @@ else
   @t = BigDecimal("1E#{-d}") # BigDecimal(10)**(-d)
 end
 @ref_exp = BigDecimal('0.1').exponent # reference for significative mode: [0.1,1)
-·}
+Â·}
 
 Now we define the parameterized comparison fragments as for \cd{Tolerance}.
 
-·d BigTolerance Significative Comparison
-·{·%
+Â·d BigTolerance Significative Comparison
+Â·{Â·%
 x_exp = x.exponent
-y_exp = y.exponent  
-·1 @t*BigDecimal("1E#{[x_exp,y_exp].·2-@ref_exp}")
-·}
+y_exp = y.exponent
+Â·1 @t*BigDecimal("1E#{[x_exp,y_exp].Â·2-@ref_exp}")
+Â·}
 
-·d BigTolerance Relative Comparison
-·{·%
-·1 @t*([x.abs,y.abs].·2) #reference value is 1
-·}
+Â·d BigTolerance Relative Comparison
+Â·{Â·%
+Â·1 @t*([x.abs,y.abs].Â·2) #reference value is 1
+Â·}
 
 And the specific comparisons.
 
-·d BigTolerance lessThan?
-·{·%
+Â·d BigTolerance lessThan?
+Â·{Â·%
 case @mode
   when :sig
-    ·<BigTolerance Significative Comparison·(y-x >·,max·)·>
+    Â·<BigTolerance Significative ComparisonÂ·(y-x >Â·,maxÂ·)Â·>
   when :rel
-    ·<BigTolerance Relative Comparison·(y-x >·,max·)·>
+    Â·<BigTolerance Relative ComparisonÂ·(y-x >Â·,maxÂ·)Â·>
   when :abs
     x-y<@t
 end
-·}
+Â·}
 
-·d BigTolerance equals?
-·{·%
+Â·d BigTolerance equals?
+Â·{Â·%
 case @mode
   when :sig
-    ·<BigTolerance Significative Comparison·((y-x).abs <=·,min·)·>
+    Â·<BigTolerance Significative ComparisonÂ·((y-x).abs <=Â·,minÂ·)Â·>
   when :rel
-    ·<BigTolerance Relative Comparison·((y-x).abs <=·,min·)·>
+    Â·<BigTolerance Relative ComparisonÂ·((y-x).abs <=Â·,minÂ·)Â·>
   when :abs
     (x-y).abs<@t
 end
-·}
+Â·}
 
-·d BigTolerance aprxEquals?
-·{·%
+Â·d BigTolerance aprxEquals?
+Â·{Â·%
 case @mode
   when :sig
-    ·<BigTolerance Significative Comparison·((y-x).abs <=·,max·)·>
+    Â·<BigTolerance Significative ComparisonÂ·((y-x).abs <=Â·,maxÂ·)Â·>
   when :rel
-    ·<BigTolerance Relative Comparison·((y-x).abs <=·,max·)·>
+    Â·<BigTolerance Relative ComparisonÂ·((y-x).abs <=Â·,maxÂ·)Â·>
   when :abs
     (x-y).abs<=@t
 end
-·}
+Â·}
 
 And the tolerance relative value.
 
-·d BigTolerance private
-·{·%
+Â·d BigTolerance private
+Â·{Â·%
 def rel(x)
   r = @t
   case @mode
@@ -811,15 +811,15 @@ def rel(x)
       r = @t*x.abs
   end
   r
-end  
-·}
+end
+Â·}
 
 
 \subsection{Tolerance definition and conversion methods}
 
-·D flttol functions
-·{·%
-·<rdoc for Tol·>
+Â·D flttol functions
+Â·{Â·%
+Â·<rdoc for TolÂ·>
 def Tol(x) # :doc:
   case x
     when Tolerance
@@ -833,11 +833,11 @@ def Tol(x) # :doc:
     when Integer
       Tolerance.sig_decimals(x)
     else # e.g. Rational
-      x 
+      x
   end
 end
 
-·<rdoc for BigTol·>
+Â·<rdoc for BigTolÂ·>
 def BigTol(x) # :doc:
   case x
     when BigTolerance
@@ -850,7 +850,7 @@ def BigTol(x) # :doc:
       BigTolerance.new(BigDec(x))
   end
 end
-·}
+Â·}
 
 
 
@@ -859,26 +859,26 @@ end
 To find rational aproximations we use algorithms by Joe Horn
 adaptad from his RPL programs.
 
-·o lib/nio/rtnlzr.rb
-·{# Rationalization of floating point numbers.
+Â·o lib/nio/rtnlzr.rb
+Â·{# Rationalization of floating point numbers.
 #--
-·<License·>
+Â·<LicenseÂ·>
 #++
-·<rdoc commentary for rntlzr.rb·>
-·<Required Modules·>
-·<definitions·>
-·<classes·>
+Â·<rdoc commentary for rntlzr.rbÂ·>
+Â·<Required ModulesÂ·>
+Â·<definitionsÂ·>
+Â·<classesÂ·>
 module Nio
-  ·<Nio definitions·>
-  ·<Nio classes·>
+  Â·<Nio definitionsÂ·>
+  Â·<Nio classesÂ·>
   module_function
-  ·<Nio functions·>
+  Â·<Nio functionsÂ·>
 end
-·}
+Â·}
 
-·o test/test_rtnlzr.rb
-·{
-·<License·>
+Â·o test/test_rtnlzr.rb
+Â·{
+Â·<LicenseÂ·>
 require 'test/unit'
 
 require 'nio/rtnlzr'
@@ -894,23 +894,23 @@ class TestRtnlzr < Test::Unit::TestCase
   end
 
   def setup
-    ·<Tests setup·>
+    Â·<Tests setupÂ·>
   end
-  
-  ·<Tests·> 
-  
+
+  Â·<TestsÂ·>
+
 end
-·}
+Â·}
 
-·d Required Modules
-·{·%
+Â·d Required Modules
+Â·{Â·%
 require 'nio/tools'
-·}
+Â·}
 
-·d Required Modules
-·{·%
+Â·d Required Modules
+Â·{Â·%
 require 'nio/flttol'
-·}
+Â·}
 
 \section{Floating point to exact fraction conversion}
 
@@ -929,25 +929,25 @@ in particular big powers of the Float radix to their exact integer value (so we 
 \verb|Math.frexp| rather than \verb|Integer#**| when possible.)
 
 
-·d definitions
-·{·%
+Â·d definitions
+Â·{Â·%
 class Float
-  ·<rdoc commentary for Float\#nio\_xr·>
+  Â·<rdoc commentary for Float\#nio\_xrÂ·>
   def nio_xr
     return Rational(self.to_i,1) if self.modulo(1)==0
     if !self.finite?
       return Rational(0,0) if self.nan?
       return self<0 ? Rational(-1,0) : Rational(1,0)
     end
-    
+
     f,e = Math.frexp(self)
-        
+
     if e < Float::MIN_EXP
        bits = e+Float::MANT_DIG-Float::MIN_EXP
     else
-       bits = [Float::MANT_DIG,e].max  
+       bits = [Float::MANT_DIG,e].max
        #return Rational(self.to_i,1) if bits<e
-    end      
+    end
       p = Math.ldexp(f,bits)
       e = bits - e
       if e<Float::MAX_EXP
@@ -958,13 +958,13 @@ class Float
     return Rational(p.to_i,q.to_i)
   end
 end
-·}
+Â·}
 
 Here's alternative implementation for binary floating point that
 yields smallest fractions when possible and is almost as fast:
 
-·d scratch
-·{·%
+Â·d scratch
+Â·{Â·%
 class Float
   def nio_xr
     p,q = self,1
@@ -975,13 +975,13 @@ class Float
     return Rational(p.to_i,q)
   end
 end
-·}
+Â·}
 
-An a here's a shorter implementation relying on the semantics of the power operator, but 
+An a here's a shorter implementation relying on the semantics of the power operator, but
 which is somewhat slow:
 
-·d scratch
-·{·%
+Â·d scratch
+Â·{Â·%
 class Float
   def nio_xr
     f,e = Math.frexp(self)
@@ -990,15 +990,15 @@ class Float
     return Rational( f.to_i*(Float::RADIX**e.to_i), 1)
   end
 end
-·}
+Â·}
 
 \subsection{BigDecimal}
 
 
-·d definitions
-·{·%
+Â·d definitions
+Â·{Â·%
 class BigDecimal
-  ·<rdoc commentary for BigDecimal\#nio\_xr·>
+  Â·<rdoc commentary for BigDecimal\#nio\_xrÂ·>
   def nio_xr
     s,f,b,e = split
     p = f.to_i
@@ -1012,16 +1012,16 @@ class BigDecimal
     return Rational(p,q)
   end
 end
-·}
+Â·}
 
 We will define here also a utility to define BigDecimals; when applied to a Float value
 this uses the method \verb|Nio.nio_float_to_bigdecimal|, defined in rtnlzr.rb;
 that file is not required here to avoid circular references, but should have been
 brought in before using BigDec applied to a Float argument.
 
-·d flttol functions
-·{·%
-  ·<rdoc for BigDec·>
+Â·d flttol functions
+Â·{Â·%
+  Â·<rdoc for BigDecÂ·>
   def BigDec(x,prec=nil) # :doc:
     if x.respond_to?(:to_str)
       x = BigDecimal(x.to_str, prec||0)
@@ -1041,39 +1041,39 @@ brought in before using BigDec applied to a Float argument.
       end
     end
     x
-  end  
-·}
+  end
+Â·}
 
 
 
 \subsection{Integer}
 
-·d definitions
-·{·%
+Â·d definitions
+Â·{Â·%
 class Integer
-  ·<rdoc commentary for Integer\#nio\_r·>
+  Â·<rdoc commentary for Integer\#nio\_rÂ·>
   def nio_xr
     return Rational(self,1)
   end
 end
-·}
+Â·}
 
 \subsection{Rational}
 
-·d definitions
-·{·%
+Â·d definitions
+Â·{Â·%
 class Rational
-  ·<rdoc commentary for Rational\#nio\_r·>
+  Â·<rdoc commentary for Rational\#nio\_rÂ·>
   def nio_xr
     return self
   end
-  
+
   # helper method to return both the numerator and denominator
   def nio_num_den
     return [numerator,denominator]
   end
 end
-·}
+Â·}
 
 \section{Rationalizer object}
 
@@ -1081,9 +1081,9 @@ Here is the \cd{Rtnlzr} class that encapsulates the rationalization
 algorithm. It contains several rationalization approaches that has been
 tested; the most efficient one is them \cd{rationalize} method.
 
-·d Nio classes
-·{·%
-·<rdoc commentary for Rtnlzr·>
+Â·d Nio classes
+Â·{Â·%
+Â·<rdoc commentary for RtnlzrÂ·>
 class Rtnlzr
   include StateEquivalent
 
@@ -1100,27 +1100,27 @@ class Rtnlzr
   def rationalize(x)
     rationalize_Knuth(x)
   end
-  
-  # This algorithm is derived from exercise 39 of 4.5.3 in 
+
+  # This algorithm is derived from exercise 39 of 4.5.3 in
   # "The Art of Computer Programming", by Donald E. Knuth.
   def rationalize_Knuth(x)
-    ·<Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta·>       
+    Â·<Smallest-Denominator Rationalization by Donald Knuth and Javier GoizuetaÂ·>
   end
   # This is algorithm PDQ2 by Joe Horn.
   def rationalize_Horn(x)
-    ·<Smallest-Denominator Rationalization by Joe Horn·>       
+    Â·<Smallest-Denominator Rationalization by Joe HornÂ·>
   end
   # This is from a RPL program by Tony Hutchins (PDR6).
   def rationalize_HornHutchins(x)
-    ·<Smallest-Denominator Rationalization by Joe Horn and Tony Hutchins·>       
+    Â·<Smallest-Denominator Rationalization by Joe Horn and Tony HutchinsÂ·>
   end
 end
-·}
+Â·}
 
 This is the generic structure of our rationalization methods:
 
-·d Rationalization Procedure
-·{·%
+Â·d Rationalization Procedure
+Â·{Â·%
 num_tol = @tol.kind_of?(Numeric)
 if !num_tol && @tol.zero?(x)
   # num,den = x.nio_xr.nio_num_den
@@ -1132,68 +1132,68 @@ else
     x = -x
   end
   dx = num_tol ? @tol : @tol.get_value(x)
-  
-  ·1 
-  
+
+  Â·1
+
   num = -num if negans
 end
 return num,den
-·}
+Â·}
 
 \subsection{Rationalization algorithms}
 
 
 Simple rationalization algorithm not currently included in the Rtnlzr class:
 
-·d Simple Rationalization by Joe Horn
-·{·%
-·<Rationalization Procedure·(·<Simple Rationalization by Joe Horn Procedure·>·)·>
-·}
+Â·d Simple Rationalization by Joe Horn
+Â·{Â·%
+Â·<Rationalization ProcedureÂ·(Â·<Simple Rationalization by Joe Horn ProcedureÂ·>Â·)Â·>
+Â·}
 
 Smallest denominator rationalization procedure by Joe Horn.
 
-·d Smallest-Denominator Rationalization by Joe Horn
-·{·%
-·<Rationalization Procedure·(·<Smallest-Denominator Rationalization by Joe Horn Procedure·>·)·>
-·}
+Â·d Smallest-Denominator Rationalization by Joe Horn
+Â·{Â·%
+Â·<Rationalization ProcedureÂ·(Â·<Smallest-Denominator Rationalization by Joe Horn ProcedureÂ·>Â·)Â·>
+Â·}
 
 Smallest denominator rationalization procedure by Joe Horn and Tony Hutchins; this
 is the most efficient method as implemented in RPL.
 
-·d Smallest-Denominator Rationalization by Joe Horn and Tony Hutchins
-·{·%
-·<Rationalization Procedure·(·<Smallest-Denominator Rationalization by Joe Horn Procedure·>·)·>
-·}
+Â·d Smallest-Denominator Rationalization by Joe Horn and Tony Hutchins
+Â·{Â·%
+Â·<Rationalization ProcedureÂ·(Â·<Smallest-Denominator Rationalization by Joe Horn ProcedureÂ·>Â·)Â·>
+Â·}
 
 Smallest denominator rationalization based on exercise 39 of \cite[\S 4.5.3]{Knuth}.
 This has been found the most efficient method (except for big tolerances)
 as implemented in Ruby.
 
-·d Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta
-·{·%
-·<Rationalization Procedure·(·<Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta Procedure·>·)·>
-·}
+Â·d Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta
+Â·{Â·%
+Â·<Rationalization ProcedureÂ·(Â·<Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta ProcedureÂ·>Â·)Â·>
+Â·}
 
 A  small modification of this algorthm has been used in tests, but is not currenly included
 in class Rtnlzr.
 
-·d Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta B
-·{·%
-·<Rationalization Procedure·(·<Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta B Procedure·>·)·>
-·}
+Â·d Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta B
+Â·{Â·%
+Â·<Rationalization ProcedureÂ·(Â·<Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta B ProcedureÂ·>Â·)Â·>
+Â·}
 
 \subsection{Implementation of the algorithms}
 
 
-·d Smallest-Denominator Rationalization by Joe Horn Procedure
-·{·<Rationalization by Joe Horn Procedure·(·<Extra Rationalization Step by Joe Horn·>·)·>·}
+Â·d Smallest-Denominator Rationalization by Joe Horn Procedure
+Â·{Â·<Rationalization by Joe Horn ProcedureÂ·(Â·<Extra Rationalization Step by Joe HornÂ·>Â·)Â·>Â·}
 
 
-·d Simple Rationalization by Joe Horn Procedure 
-·{·<Rationalization by Joe Horn Procedure·>·}
+Â·d Simple Rationalization by Joe Horn Procedure
+Â·{Â·<Rationalization by Joe Horn ProcedureÂ·>Â·}
 
-·d Rationalization by Joe Horn Procedure
-·{·%
+Â·d Rationalization by Joe Horn Procedure
+Â·{Â·%
 z,t = x,dx # renaming
 
 a,b = t.nio_xr.nio_num_den
@@ -1209,12 +1209,12 @@ begin
   cd = y
   n,d = d,r
 end until b*(n0*y-d0*x).abs <= a*d0*y
-·1 
+Â·1
 num,den = x,y # renaming
-·}
+Â·}
 
-·d Extra Rationalization Step by Joe Horn
-·{·%
+Â·d Extra Rationalization Step by Joe Horn
+Â·{Â·%
 if q>1
   hi = q
   begin
@@ -1226,18 +1226,18 @@ if q>1
     else
       hi = mid
     end
-  end until hi-lo <= 1 
+  end until hi-lo <= 1
   x = cn - pn*lo
-  y = cd - pd*lo    
-end 
-·}
+  y = cd - pd*lo
+end
+Â·}
 
 
-Tony Hutchins has come up with PDR6, an improvement over PDQ2; 
+Tony Hutchins has come up with PDR6, an improvement over PDQ2;
 though benchmarking does not show any speed improvement under Ruby.
 
-·d Smallest-Denominator Rationalization by Joe Horn and Tony Hutchins Procedure
-·{·%
+Â·d Smallest-Denominator Rationalization by Joe Horn and Tony Hutchins Procedure
+Â·{Â·%
 a,b = dx.nio_xr.nio_num_den
 n,d = x.nio_xr.nio_num_den
 pc,ce = n,-d
@@ -1251,7 +1251,7 @@ end until b*ce.abs <= t*cd
 tt = t * (pe<0 ? -1 : (pe>0 ? +1 : 0))
 tt = (tt*d+b*ce).div(tt*pd+b*pe)
 num,den = (n*cd-ce-(n*pd-pe)*tt)/d, tt/(cd-tt*pd)
-·}
+Â·}
 
 Here's the rationalization procedure based on the exercise by Knuth.
 We need first to calculate the limits (x-dx, x+dx)
@@ -1262,13 +1262,13 @@ less accurate. We can achieve perfect accuracy as the other methods by doing the
 substraction and addition with rationals, but then this method becomes less efficient than
 the others for a low number of iterations (low precision required).
 
-·d Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta Procedure
-·{·%
+Â·d Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta Procedure
+Â·{Â·%
   x = x.nio_xr
   dx = dx.nio_xr
   xp,xq = (x-dx).nio_num_den
   yp,yq = (x+dx).nio_num_den
-  
+
     a = []
     fin,odd = false,false
     while !fin && xp!=0 && yp!=0
@@ -1291,19 +1291,19 @@ the others for a low number of iterations (low precision required).
     p,q = 1,0
     (1..a.size).each{|i| p,q=q+p*a[-i],p}
     num,den = q,p
-·}
+Â·}
 
 
-La siguiente variante realiza una iteración menos si xq<xp y una iteración más
+La siguiente variante realiza una iteraciÃ³n menos si xq<xp y una iteraciÃ³n mÃ¡s
 si xq>xp.
 
-·d Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta B Procedure
-·{·%
+Â·d Smallest-Denominator Rationalization by Donald Knuth and Javier Goizueta B Procedure
+Â·{Â·%
   x = x.nio_xr
   dx = dx.nio_xr
   xq,xp = (x-dx).nio_num_den
   yq,yp = (x+dx).nio_num_den
-  
+
     a = []
     fin,odd = false,true
     while !fin && xp!=0 && yp!=0
@@ -1326,7 +1326,7 @@ si xq>xp.
     p,q = 1,0
     (1..a.size).each{|i| p,q=q+p*a[-i],p}
     num,den = p,q
-·}
+Â·}
 
 
 \subsection{Maximum denominator algorithm}
@@ -1342,13 +1342,13 @@ edition in 1889, in Part II, Chapter 32.
 This algorithm was implementd in the User-RPL program \cd{DEC2FRAC},
 which I have adapted here for Ruby.
 
-As this is a different approach, which uses no tolerance value, but 
+As this is a different approach, which uses no tolerance value, but
 instead needs a maximum denominator, I'll add it as a class-method.
 Note thas this method operates on floating point quantities
 (rather than integers as the other methods here do)
 and requires \cd{ceil}, \cd{floor}, \cd{abs}
 and \cd{round} on the floating point type (so it is applicable to
-\cd{Float} and \cd{BigDecimal}). 
+\cd{Float} and \cd{BigDecimal}).
 As only the denominator is computed first, and then the numerator
 is computed using floating point math, this limits the magnitude
 and precision of the numerator. The precision of the
@@ -1360,8 +1360,8 @@ as $23/194$ using \cd{BigDecimal}. But the accumulated
 error when using \cd{Float} make the method return $16/135$.
 
 
-·D Nio classes
-·{·%
+Â·D Nio classes
+Â·{Â·%
 # Best fraction given maximum denominator
 # Algorithm Copyright (c) 1991 by Joseph K. Horn.
 #
@@ -1374,7 +1374,7 @@ def Rtnlzr.max_denominator(f, max_den=1000000000, num_class=nil)
   return mth.ip(f),1 if mth.fp(f)==0
 
   one = Nio.numeric_cast(1, num_class)
-  
+
     sign = f<0
     f = -f if sign
 
@@ -1384,11 +1384,11 @@ def Rtnlzr.max_denominator(f, max_den=1000000000, num_class=nil)
       a,b,c = b, mth.ip(cc)*b+a, mth.fp(cc)
     end
 
-  
+
     if b>max_den
       b -= a*mth.ceil((b-max_den)/Float(a))
     end
-    
+
 
     f1,f2 = [a,b].collect{|x| mth.abs(mth.rnd(x*f)/Nio.numeric_cast(x, num_class)-f)}
 
@@ -1396,16 +1396,16 @@ def Rtnlzr.max_denominator(f, max_den=1000000000, num_class=nil)
 
     num,den = mth.rnd(a*f).to_i,a
     den = 1 if mth.abs(den)<1
-    
+
     num = -num if sign
 
   return num,den
 end
-·}
+Â·}
 
 To simplifly the code I've defined this, RPL-like, functions:
-·D Nio classes
-·{·%
+Â·D Nio classes
+Â·{Â·%
 class Rtnlzr
   private
   #Auxiliary floating-point functions
@@ -1431,11 +1431,11 @@ class Rtnlzr
 
     def self.ceil(x)
       x.ceil.to_i
-    end    
+    end
   end
   def self.mth; Mth; end
 end
-·}
+Â·}
 
 
 \subsection{Float to Rational conversion}
@@ -1444,39 +1444,39 @@ end
 Having added \cd{Rtnlzr.max\_denominator}, I'll use
 it if the parameter to \cd{nio\_r} is not a \cd{Tolerance}.
 
-·d Required Modules
-·{·%
+Â·d Required Modules
+Â·{Â·%
 require 'rational'
-·}
+Â·}
 
-·d classes
-·{·%
+Â·d classes
+Â·{Â·%
 class Float
-  ·<rdoc commentary for Float\#nio\_r·>
+  Â·<rdoc commentary for Float\#nio\_rÂ·>
   def nio_r(tol = Nio::Tolerance.big_epsilon)
     case tol
       when Integer
         Rational(*Nio::Rtnlzr.max_denominator(self,tol,Float))
       else
-        Rational(*Nio::Rtnlzr.new(Nio::Tol(tol)).rationalize(self))      
+        Rational(*Nio::Rtnlzr.new(Nio::Tol(tol)).rationalize(self))
     end
   end
 end
-·}
+Â·}
 
 
 
 \subsection{BigDecimal to Rational conversion}
 
-·d Required Modules
-·{·%
+Â·d Required Modules
+Â·{Â·%
 require 'bigdecimal'
-·}
+Â·}
 
-·d classes
-·{·%
+Â·d classes
+Â·{Â·%
 class BigDecimal
-  ·<rdoc commentary for BigDecimal\#nio\_r·>
+  Â·<rdoc commentary for BigDecimal\#nio\_rÂ·>
   def nio_r(tol = nil)
     tol ||= BigTolerance.decimals([precs[0],Float::DIG].max,:sig)
     case tol
@@ -1487,7 +1487,7 @@ class BigDecimal
     end
   end
 end
-·}
+Â·}
 
 \section{Auxiliar Conversions}
 
@@ -1498,11 +1498,11 @@ system sometime in the future)
 
 We'll define a method to cope with this conversions to cope with the different Ruby versions.
 
-·d flttol functions
-·{·%
-	def numeric_cast(value, type)
-	  if value.respond_to?(:prec)
-	    value.prec(type)
+Â·d flttol functions
+Â·{Â·%
+    def numeric_cast(value, type)
+      if value.respond_to?(:prec)
+        value.prec(type)
       else
         if type.kind_of?(BigDecimal)
           BigDec(value)
@@ -1510,14 +1510,14 @@ We'll define a method to cope with this conversions to cope with the different R
           Object.send type.to_s, value
         end
       end
-	end
-·}
+    end
+Â·}
 
 
 \section{rdoc documentation}
 
-·d rdoc commentary for rntlzr.rb
-·{#
+Â·d rdoc commentary for rntlzr.rb
+Â·{#
 # Author::    Javier Goizueta (mailto:javier@goizueta.info)
 # Copyright:: Copyright (c) 2002-2004 Javier Goizueta & Joe Horn
 # License::   Distributes under the GPL license
@@ -1533,101 +1533,101 @@ We'll define a method to cope with this conversions to cope with the different R
 # There's also exact rationalization implemented in:
 # * Float#nio_xr
 # * BigDecimal#nio_r
-·}
+Â·}
 
-·d rdoc commentary for Rtnlzr
-·{# This class provides conversion of fractions 
+Â·d rdoc commentary for Rtnlzr
+Â·{# This class provides conversion of fractions
 # (as approximate floating point numbers)
-# to rational numbers.·}
+# to rational numbers.Â·}
 
 
-·d rdoc commentary for flttol.rb
-·{#
+Â·d rdoc commentary for flttol.rb
+Â·{#
 # Author::    Javier Goizueta (mailto:javier@goizueta.info)
 # Copyright:: Copyright (c) 2002-2004 Javier Goizueta
 # License::   Distributes under the GPL license
 #
-# This module provides a numeric tolerance class for Float and BigDecimal.·}
+# This module provides a numeric tolerance class for Float and BigDecimal.Â·}
 
-·d rdoc commentary for Tolerance
-·{# This class represents floating point tolerances for Float numbers
-# and allows comparison within the specified tolerance.·}
+Â·d rdoc commentary for Tolerance
+Â·{# This class represents floating point tolerances for Float numbers
+# and allows comparison within the specified tolerance.Â·}
 
-·d rdoc commentary for BigTolerance
-·{# This class represents floating point tolerances for BigDecimal numbers
-# and allows comparison within the specified tolerance.·}
-
-
-
-·d rdoc commentary for BigDecimal\#nio\_r ·{·<rdoc commentary for nio\_r·(BigTolerance·)·>·}
-·d rdoc commentary for Float\#nio\_r ·{·<rdoc commentary for nio\_r·(Tolerance·)·>·}
+Â·d rdoc commentary for BigTolerance
+Â·{# This class represents floating point tolerances for BigDecimal numbers
+# and allows comparison within the specified tolerance.Â·}
 
 
-·d rdoc commentary for nio\_r
-·{# Conversion to Rational. The optional argument must be one of:
-# - a Nio::·1 that defines the admisible tolerance;
+
+Â·d rdoc commentary for BigDecimal\#nio\_r Â·{Â·<rdoc commentary for nio\_rÂ·(BigToleranceÂ·)Â·>Â·}
+Â·d rdoc commentary for Float\#nio\_r Â·{Â·<rdoc commentary for nio\_rÂ·(ToleranceÂ·)Â·>Â·}
+
+
+Â·d rdoc commentary for nio\_r
+Â·{# Conversion to Rational. The optional argument must be one of:
+# - a Nio::Â·1 that defines the admisible tolerance;
 #   in that case, the smallest denominator rational within the
 #   tolerance will be found (which may take a long time for
 #   small tolerances.)
 # - an integer that defines a maximum value for the denominator.
-#   in which case, the best approximation with that maximum 
-#   denominator will be returned.·}
+#   in which case, the best approximation with that maximum
+#   denominator will be returned.Â·}
 
-·d rdoc commentary for BigDecimal\#nio\_xr ·{·<rdoc commentary for nio\_xr·>·}
-·d rdoc commentary for Float\#nio\_xr ·{·<rdoc commentary for nio\_xr·>·}
-·d rdoc commentary for Integer\#nio\_xr ·{·<rdoc commentary for nio\_xr·>·}
-·d rdoc commentary for Rational\#nio\_xr ·{·<rdoc commentary for nio\_xr·>·}
+Â·d rdoc commentary for BigDecimal\#nio\_xr Â·{Â·<rdoc commentary for nio\_xrÂ·>Â·}
+Â·d rdoc commentary for Float\#nio\_xr Â·{Â·<rdoc commentary for nio\_xrÂ·>Â·}
+Â·d rdoc commentary for Integer\#nio\_xr Â·{Â·<rdoc commentary for nio\_xrÂ·>Â·}
+Â·d rdoc commentary for Rational\#nio\_xr Â·{Â·<rdoc commentary for nio\_xrÂ·>Â·}
 
-·d rdoc commentary for nio\_xr
-·{# Conversion to Rational preserving the exact value of the number.·}
+Â·d rdoc commentary for nio\_xr
+Â·{# Conversion to Rational preserving the exact value of the number.Â·}
 
 
 The constructor methods are module functions with capitalized names that need to
 be documented apart.
 
-·d Nio constructor methods rdoc
-·{
+Â·d Nio constructor methods rdoc
+Â·{
 # This module contains some constructor-like module functions
 # to help with the creation of tolerances and big-decimals.
 #
 # =BigDec
-·<rdoc for BigDec·>
+Â·<rdoc for BigDecÂ·>
 #
 # =Tol
-·<rdoc for Tol·>
+Â·<rdoc for TolÂ·>
 #
 # =BigTol
-·<rdoc for BigTol·>·}
+Â·<rdoc for BigTolÂ·>Â·}
 
 
 
-·d rdoc for BigDec
-·{#   BigDec(x) -> a BigDecimal
+Â·d rdoc for BigDec
+Â·{#   BigDec(x) -> a BigDecimal
 #   BigDec(x,precision) -> a BigDecimal
 #   BigDec(x,:exact) -> a BigDecimal
 # This is a shortcut to define a BigDecimal without using quotes
-# and a general conversion to BigDecimal method. 
+# and a general conversion to BigDecimal method.
 #
 # The second parameter can be :exact to try for an exact conversion
 #
 # Conversions from Float have issues that should be understood; :exact
 # conversion will use the exact internal value of the Float, and when
 # no precision is specified, a value as simple as possible expressed as
-# a fraction will be used.·}
+# a fraction will be used.Â·}
 
-·d rdoc for Tol
-·{#  Tol(x) -> a Tolerance
+Â·d rdoc for Tol
+Â·{#  Tol(x) -> a Tolerance
 # This module function will convert its argument to a Noi::Tolerance
 # or a Noi::BigTolerance depending on its argument;
 #
 # Values of type Tolerance,Float,Integer (for Tolerance) or
-# BigTolerance,BigDecimal (for BigTolerance) are accepted.·}
+# BigTolerance,BigDecimal (for BigTolerance) are accepted.Â·}
 
-·d rdoc for BigTol
-·{#  BigTol(x) -> a BigTolerance
+Â·d rdoc for BigTol
+Â·{#  BigTol(x) -> a BigTolerance
 # This module function will convert its argument to a Noi::BigTolerance
 #
-# Values of type BigTolerance or Numeric are accepted.·}
+# Values of type BigTolerance or Numeric are accepted.Â·}
 
 \section{Patch}
 
@@ -1638,8 +1638,8 @@ Here we'll try to detect the problem and apply a quick patch. The resulting
 method will be slower but will produce correct results.
 
 
-·d flttol definitions
-·{·%
+Â·d flttol definitions
+Â·{Â·%
 # :stopdoc:
 # A problem has been detected with Float#to_i() in some Ruby versiones
 # (it has been found in Ruby 1.8.4 compiled for x86_64_linux|)
@@ -1656,10 +1656,10 @@ if 4.611686018427388e+018.to_i < 0
       i = -i if neg != i_neg
       i
     end
-  end  
+  end
 end
 # :startdoc:
-·}
+Â·}
 
 
 \section{Tests}
@@ -1669,16 +1669,16 @@ end
 
 We'll load the data for the tests in a global variable.
 
-·d Tests setup
-·{·%
+Â·d Tests setup
+Â·{Â·%
     $data = YAML.load(File.read(File.join(File.dirname(__FILE__) ,'data.yaml'))).collect{|x| [x].pack('H*').unpack('E')[0]}
-·}
+Â·}
 
 
 \subsection{Test methods}
 
-·D Tests
-·{·%
+Â·D Tests
+Â·{Â·%
   def test_basic_rtnlzr
     # basic Rtnlzr tests
     r = Rtnlzr.new
@@ -1687,7 +1687,7 @@ We'll load the data for the tests in a global variable.
     assert_equal [13,10], Rtnlzr.max_denominator(BigDecimal('1.3'),10)
     assert_equal [1,3], Rtnlzr.max_denominator(1.0/3,10)
     assert_equal [1,3], Rtnlzr.max_denominator(BigDecimal('1')/3,10)
-    
+
     # basic tests of Float#nio_r
     assert_equal Rational(1,3), (1.0/3.0).nio_r
     assert_equal Rational(2,3), (2.0/3.0).nio_r
@@ -1701,16 +1701,16 @@ We'll load the data for the tests in a global variable.
     assert_equal Rational(280943, 2500000), 0.1123772.nio_r(t)
     assert_equal Rational(39152929, 12500), 3132.23432.nio_r(t)
     assert_equal Rational(24166771439, 104063), 232232.123223432.nio_r(t)
-    assert_equal Rational(792766404965, 637), 1244531247.98273123.nio_r(t)    
+    assert_equal Rational(792766404965, 637), 1244531247.98273123.nio_r(t)
     #$data.each do |x|
     #  assert t.equals?(x, x.nio_r(t).to_f), "out of tolerance: #{x.inspect} #{x.nio_r(t).inspect}"
     #end
-    
-    # rationalization with maximum denominator 
-    assert_equal Rational(9441014047197, 7586), (1244531247.98273123.nio_r(10000))  
+
+    # rationalization with maximum denominator
+    assert_equal Rational(9441014047197, 7586), (1244531247.98273123.nio_r(10000))
     assert_equal Rational(11747130449709, 9439), BigDecimal('1244531247.982731230').nio_r(10000)
-    
-    
+
+
     # approximate a value in [0.671,0.672];
     #  Float
     assert_equal [43,64], Rtnlzr.new(Tolerance.new(0.0005)).rationalize(0.6715)
@@ -1720,33 +1720,33 @@ We'll load the data for the tests in a global variable.
     assert_equal [43,64], Rtnlzr.new(BigTolerance.new(BigDecimal('0.0005'))).rationalize(BigDecimal('0.6715'))
     assert_equal [43,64], Rtnlzr.new(Tol(BigDecimal('0.0005'))).rationalize(BigDecimal('0.6715'))
     assert_equal [43,64], Rtnlzr.new(Rational(5,10000)).rationalize(BigDecimal('0.6715'))
-    # 
+    #
     assert_equal Rational(43,64), 0.6715.nio_r(0.0005)
     assert_equal Rational(43,64), 0.6715.nio_r(Rational(5,10000))
     assert_equal Rational(47,70), 0.6715.nio_r(70)
     assert_equal Rational(45,67), 0.6715.nio_r(69)
     assert_equal Rational(2,3), 0.6715.nio_r(10)
-    
+
     # some PI tests
     assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigTolerance.new(BigDec('261E-24')))
     assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(Tol(BigDec('261E-24')))
     assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigDec('261E-24'))
     assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigDec(261E-24))
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(261E-24)  
-    
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(261E-24)
+
     # BigDecimal tests
     #t = BigTolerance.new(BigDecimal('1e-15'),:sig)
-    t = BigTolerance.decimals(20,:sig)    
+    t = BigTolerance.decimals(20,:sig)
     $data.each do |x|
       x = BigDec(x,:exact)
       q = x.nio_r(t)
       assert t.equals?(x, BigDec(q)), "out of tolerance: #{x.inspect} #{BigDec(q)}"
     end
   end
-·}
+Â·}
 
-·D Tests
-·{·%
+Â·D Tests
+Â·{Â·%
     def test_compare_algorithms
       r = Rtnlzr.new(Tolerance.new(1e-5,:sig))
       ($data + $data.collect{|x| -x}).each do |x|
@@ -1774,9 +1774,9 @@ We'll load the data for the tests in a global variable.
         assert_equal q1, q3
         #assert_equal q1, q4
       end
-      
+
     end
-·}
+Â·}
 
 
 
@@ -1785,13 +1785,13 @@ We'll load the data for the tests in a global variable.
 
 
 \subsection{Files}
-·f
+Â·f
 
 \subsection{Macros}
-·m
+Â·m
 
 \subsection{Identifiers}
-·u
+Â·u
 
 \begin{thebibliography}{Rtnlzr}
 
@@ -1803,6 +1803,6 @@ We'll load the data for the tests in a global variable.
    \red{Addison-Wesley}
    \risbn{0-201-03822-6}
 
-\end{thebibliography}   
+\end{thebibliography}
 
 \end{document}

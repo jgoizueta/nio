@@ -20,13 +20,13 @@
 \isodate
 
 \newcommand{\ProgTitle}{Repeating Decimals}
-\newcommand{\ProgAuth}{Javier Goizueta} 
-\newcommand{\ProgDate}{\today} 
+\newcommand{\ProgAuth}{Javier Goizueta}
+\newcommand{\ProgDate}{\today}
 \newcommand{\ProgVer}{1.0}
 \newcommand{\ProgSource}{\ttfamily\bfseries repdec.w}
 
 \title{\ProgTitle}
-\author{\ProgAuth} 
+\author{\ProgAuth}
 \date{\ProgDate}
 
 % ===========================================================================
@@ -46,7 +46,7 @@
 
 \lng{ruby}
 
-%@r·%   this is the nuweb escape character (183) which is a centered dot in iso-8859-latin1
+%@rÂ·%   this is the nuweb escape character (183) which is a centered dot in iso-8859-latin1
 
 \begin{document}
 
@@ -55,7 +55,7 @@
 This small Ruby class has its origins on old notes I wrote about reading decimal representations
 of rational numbers, including repeating decimals.
 A simple and clear exposition of the theory behind it can be found at \cite[\S 16]{Ross},
-''Decimal Expansions of Real Numbers´´.
+''Decimal Expansions of Real NumbersÂ´Â´.
 
 This module may serve as a low-level help for the implementation of rational numbers,
 to handle representation of rationals as decimal numbers.
@@ -74,22 +74,22 @@ in an array \cd{@d} of numbers, and the position of the first repeating decimal 
 We'll use the number's absolute value for the  integer part and decimals and keep the sign separated
 in \cd{@sign} because we cannot use \cd{@ip} sign when it is zero.
 
-·o lib/nio/repdec.rb
-·{# repdec.rb -- Repeating Decimals (Repeating Numerals, actually)
-·<License·>
+Â·o lib/nio/repdec.rb
+Â·{# repdec.rb -- Repeating Decimals (Repeating Numerals, actually)
+Â·<LicenseÂ·>
 require 'nio/tools'
 module Nio
-  ·<Auxiliar classes·>  
-  ·<RepDec class·>  
-  ·<Auxiliary functions·>
+  Â·<Auxiliar classesÂ·>
+  Â·<RepDec classÂ·>
+  Â·<Auxiliary functionsÂ·>
   module_function
-  ·<Nio functions·>
+  Â·<Nio functionsÂ·>
 end
-·}
+Â·}
 
-·o test/test_repdec.rb
-·{
-·<License·>
+Â·o test/test_repdec.rb
+Â·{
+Â·<LicenseÂ·>
 #require File.dirname(__FILE__) + '/test_helper.rb'
 require 'test/unit'
 
@@ -100,48 +100,48 @@ require 'yaml'
 class TestRepdec < Test::Unit::TestCase
 
   def setup
-    ·<Tests setup·>
+    Â·<Tests setupÂ·>
   end
 
-  ·<Tests·> 
+  Â·<TestsÂ·>
 end
- ·}
+ Â·}
 
-·d License
-·{·%
+Â·d License
+Â·{Â·%
 # Copyright (C) 2003-2005, Javier Goizueta <javier@goizueta.info>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-·}
+Â·}
 
-·d RepDec class
-·{·%
+Â·d RepDec class
+Â·{Â·%
 # RepDec handles repeating decimals (repeating numerals actually)
 class RepDec
   include StateEquivalent
-  ·<RepDec class variables and constants·>
-  ·<RepDec members·>
+  Â·<RepDec class variables and constantsÂ·>
+  Â·<RepDec membersÂ·>
   #protected
-  ·<RepDec protected members·>  
+  Â·<RepDec protected membersÂ·>
 end
-·}
+Â·}
 
 We'll initialize new \cd{RepDec} instances to zero.
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def initialize(b=10)
   setZ(b)
 end
-·| initialize ·}
+Â·| initialize Â·}
 
 Member to set to the value 0.
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def setZ(b=10)
    @ip    = 0;
    @d     = [];
@@ -150,20 +150,20 @@ def setZ(b=10)
    @radix = b;
    self
 end
-·}
+Â·}
 
-·d RepDec protected members
-·{·%
+Â·d RepDec protected members
+Â·{Â·%
 attr_reader :d, :ip, :rep_i, :sign;
 attr_writer :d, :ip, :rep_i, :sign;
-·}
+Â·}
 
 We will define an exception class for errors occurring here:
-·d Auxiliar classes
-·{·%
+Â·d Auxiliar classes
+Â·{Â·%
 class RepDecError <StandardError
 end
-·}
+Â·}
 
 
 \subsection{Special values}
@@ -172,10 +172,10 @@ To handle quotients such as $1/0$ or $0/0$ we'll need special values for decimal
 infinite and indeterminate (also known as not-a-number).
 
 With respect to infinity, the kind of infinity introduced for this purpose, extending the set
-of real values, is denoted as $\infty$. 
+of real values, is denoted as $\infty$.
 Often, when working with complex numbers, a special form, the directed infinity, which has a direction
-(an argument or angle $\theta$) is used: $e^{i\theta}\infty$. 
-Two particular cases of directed infinity 
+(an argument or angle $\theta$) is used: $e^{i\theta}\infty$.
+Two particular cases of directed infinity
 are $+\infty=e^{i0}\infty$ and $-\infty=e^{i\pi}\infty$.
 
 There are two common, coherent approaches to handling this special quantities.
@@ -198,7 +198,7 @@ This approach is convenient here, because the infinities may be produced also by
 division by a small (but different from zero and signed) quantity. This approach also preservers
 the identity $1/(1/x))=x$.
 
-In our case the first approach seems more appropriate, 
+In our case the first approach seems more appropriate,
 since handling signed zeros seems too much for this simple class, and overflow is not an issue.
 
 On the other hand, it seems convenient to preserve the identity \cd{Q(x,y)==Q(r.SetQ(x,y).GetQ())},
@@ -206,33 +206,33 @@ where we denote by \cd{Q(x,y)} the rational number $x/y$.
 One simple way to do this is to have two infinities $+\infty$ and $-\infty$ and consider $0$ as the
 signed, positive zero of IEEE.
 
-So we will maintain three special values for our decimal representations; 
+So we will maintain three special values for our decimal representations;
 with the following text representations (in accordance with class \cd{Float})
-\cd{NaN} for $the indeterminate 0/0$ (not-a-number in IEEE), 
+\cd{NaN} for $the indeterminate 0/0$ (not-a-number in IEEE),
 \cd{Infinity} for $1/0$, and \cd{-Infinity} for $-1/0$.
 
-·d Write special values
-·{·%
+Â·d Write special values
+Â·{Â·%
 if !ip.is_a?(Integer) then
   str=opt.nan_txt if ip==:indeterminate;
   str=opt.inf_txt if ip==:posinfinity
   str='-'+opt.inf_txt if ip==:neginfinity
   return str;
 end
-·}
+Â·}
 
-·d Read special values
-·{·%
+Â·d Read special values
+Â·{Â·%
 str.upcase!
 if str[i,opt.nan_txt.size]==opt.nan_txt.upcase
   i_str = :indeterminate;
 elsif str[i,opt.inf_txt.size]==opt.inf_txt.upcase
   i_str = neg ? :neginfinity : :posinfinity;
 end
-·}
+Â·}
 
-·d Get special values
-·{·%
+Â·d Get special values
+Â·{Â·%
 if !ip.is_a?(Integer) then
   y = 0;
   x=0 if ip==:indeterminate;
@@ -241,10 +241,10 @@ if !ip.is_a?(Integer) then
   return x,y;
 end if
 
-·}
+Â·}
 
-·d Set special values
-·{·%
+Â·d Set special values
+Â·{Â·%
 if y==0 then
   if x==0 then
     @ip = :indeterminate
@@ -253,7 +253,7 @@ if y==0 then
   end
   return self
 end
-·}
+Â·}
 
 \section{Text representation}
 
@@ -261,34 +261,34 @@ Initially configuration parameters were kept in class variables, now
 configuration objects have been introduced so that different options
 can be used for different operations.
 
-·d RepDec class variables and constants
-·{·%
+Â·d RepDec class variables and constants
+Â·{Â·%
 class Opt # :nodoc:
   include StateEquivalent
   def initialize() #default options
-    ·<Default Options·>
-  end  
+    Â·<Default OptionsÂ·>
+  end
   attr_accessor :begin_rep, :end_rep, :auto_rep, :dec_sep, :grp_sep, :grp, :max_d
   attr_accessor :nan_txt, :inf_txt
-  ·<class Opt members·>
+  Â·<class Opt membersÂ·>
 end
-·}
+Â·}
 
 We'll have a default options object for default arguments.
 
-·d RepDec class variables and constants
-·{·%
+Â·d RepDec class variables and constants
+Â·{Â·%
 DEF_OPT=Opt.new
-·}
+Â·}
 
 We'll add some \cd{set} members to the options for the convenience of
-specifying options in a single line: 
+specifying options in a single line:
 \begin{verbatim}
 RepDec::Opt.new.set_delim('<').set_dec(',')
 \end{verbatim}
 
-·d class Opt members
-·{·%
+Â·d class Opt members
+Â·{Â·%
 def set_delim(begin_d,end_d='')
   @begin_rep = begin_d
   @end_rep = end_d
@@ -312,41 +312,41 @@ def set_special(nan_txt, inf_txt)
   @inf_txt = inf_txt
   return self
 end
-·}
+Â·}
 
 
 First we'll add methods to read a number from and to a text string.
 We'll use a special character to delimit the start of the repeating section,
 and optionally another character for the end of the section (this can be an empty string).
 
-·d Default Options
-·{·%
+Â·d Default Options
+Â·{Â·%
 @begin_rep = '<'
 @end_rep = '>'
-·}
+Â·}
 
-Also we'll use a special character at the end of a representation to specify 
+Also we'll use a special character at the end of a representation to specify
 implicit repetition (of the longest final repeated section of the number).
 Characters after this will be ignored, so if we use a dot for this purpose we
 can safely use three dots as an ellipsis.
 
-·d Default Options
-·{·%
+Â·d Default Options
+Â·{Â·%
 @auto_rep = '...'
-·}
+Â·}
 
-·d Default Options
-·{·%
+Â·d Default Options
+Â·{Â·%
 @dec_sep = '.'
 @grp_sep = ','
 @grp = [] # [3] for thousands separators
-·}
+Â·}
 
-·d Default Options
-·{·%
+Â·d Default Options
+Â·{Â·%
 @inf_txt = 'Infinity'
 @nan_txt = 'NaN'
-·}
+Â·}
 
 \subsection{Digits and base}
 
@@ -365,8 +365,8 @@ The digits define a numerical base as well (the number of digits).
 The repeating decimals have been upgraded to work in any base
 (so they shouldn't be called decimals anymore).
 
-·d Auxiliar classes
-·{·%
+Â·d Auxiliar classes
+Â·{Â·%
 class DigitsDef
   include StateEquivalent
   def initialize(ds='0123456789', cs=true)
@@ -402,19 +402,19 @@ class DigitsDef
     ch_code = ch_code.chr if ch_code.kind_of?(Numeric)
     @dncase ? ch_code.downcase[0] : ch_code.upcase[0]
   end
-end  
-·}
+end
+Â·}
 
-·d Default Options
-·{·%
+Â·d Default Options
+Â·{Â·%
 @digits = DigitsDef.new
 @digits_defined = false
-·}
+Â·}
 
-·d class Opt members
-·{·%
+Â·d class Opt members
+Â·{Â·%
 def set_digits(ds, dncase=false, casesens=false)
-  if ds  
+  if ds
     @digits_defined = true
     if ds.kind_of?(DigitsDef)
       @digits = ds
@@ -429,15 +429,15 @@ def set_digits(ds, dncase=false, casesens=false)
   end
   self
 end
-·}
+Â·}
 
-·d class Opt members
-·{·%
+Â·d class Opt members
+Â·{Â·%
 attr_accessor :digits
 def digits_defined?
   @digits_defined
 end
-·}
+Â·}
 
 The handling of bases, added late in the development is a little messy;
 here is how it works: Now the options \verb|RepDec::Opt| contain
@@ -454,9 +454,9 @@ options should be the same.
 
 \section{Reading from text}
 
-·d RepDec members
-·{·%
-def setS(str, opt=DEF_OPT) 
+Â·d RepDec members
+Â·{Â·%
+def setS(str, opt=DEF_OPT)
   setZ(opt.digits_defined? ? opt.digits.radix : @radix);
   sgn,i_str,f_str,ri,detect_rep = RepDec.parse(str,opt)
   if i_str.kind_of?(Symbol)
@@ -467,18 +467,18 @@ def setS(str, opt=DEF_OPT)
   @sign = sgn
   @rep_i = ri if ri
   f_str.each_byte{|b| @d.push opt.digits.digit_value(b)} unless f_str.nil?
-  
+
   if detect_rep then
-    ·<Detect repetition·>
+    Â·<Detect repetitionÂ·>
   end
 
-  ·<Remove trailing zeros·>  
+  Â·<Remove trailing zerosÂ·>
   self
 end
-·}
+Â·}
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def RepDec.parse(str, opt=DEF_OPT)
   sgn,i_str,f_str,ri,detect_rep = nil,nil,nil,nil,nil
 
@@ -487,10 +487,10 @@ def RepDec.parse(str, opt=DEF_OPT)
 
   detect_rep = false;
 
-  ·<Skip whitespace in \cd{str}·>
-  ·<Read integral part·>
+  Â·<Skip whitespace in \cd{str}Â·>
+  Â·<Read integral partÂ·>
   unless i_str.kind_of?(Symbol)
-    j = 0;  
+    j = 0;
     f_str = ''
     while i<l
       ch = str[i,1];
@@ -510,16 +510,16 @@ def RepDec.parse(str, opt=DEF_OPT)
   end
   return [sgn,i_str,f_str,ri,detect_rep]
 end
-·}
+Â·}
 
 
 
-·d Read integral part
-·{·%
+Â·d Read integral part
+Â·{Â·%
 neg = false;
-·<Read sign from \cd{str}·>
-·<Skip whitespace in \cd{str}·>
-·<Read special values·>
+Â·<Read sign from \cd{str}Â·>
+Â·<Skip whitespace in \cd{str}Â·>
+Â·<Read special valuesÂ·>
 unless i_str
   i_str = "0";
   while i<l && str[i,1]!=opt.dec_sep
@@ -530,34 +530,34 @@ unless i_str
   sgn = neg ? -1 : +1
   i += 1; # skip the decimal separator
 end
-·}
+Â·}
 
-·d Read sign from \cd{str}
-·{·%
+Â·d Read sign from \cd{str}
+Â·{Â·%
 neg = true if str[i,1]=='-'
 i += 1 if str[i,1]=='-' || str[i,1]=='+'
-·}
+Â·}
 
-·d Skip whitespace in \cd{str}
-·{·%
+Â·d Skip whitespace in \cd{str}
+Â·{Â·%
 i += 1 while i<str.length && str[i,1] =~/\s/
-·}
+Â·}
 
 
 % instead of reversing: for ... -> (@d.length/2).step(1,-1) do |l|
 
-·d Detect repetition
-·{·%
+Â·d Detect repetition
+Â·{Â·%
 for l in 1..(@d.length/2)
-  ·<Reverse order of checking·>
+  Â·<Reverse order of checkingÂ·>
   if @d[-l..-1]==@d[-2*l...-l]
-    ·<Reduce multiple repetitions·>         
-    ·<Remove repeated digits·>
-    ·<Find additional repetitions·>    
+    Â·<Reduce multiple repetitionsÂ·>
+    Â·<Remove repeated digitsÂ·>
+    Â·<Find additional repetitionsÂ·>
     break
   end
-end 
-·}
+end
+Â·}
 
 To detect longest repetitions instead of the shortest one,
 we reverse the order of repetition search (first long strings)
@@ -565,11 +565,11 @@ and then we must check for the possibility of having detected
 several repetitions (repeated in turn). In that case we'll
 tidy things up and use the minimal repetition.
 
-·d Reverse order of checking
-·{l = @d.length/2 + 1 - l;·}
+Â·d Reverse order of checking
+Â·{l = @d.length/2 + 1 - l;Â·}
 
-·d Reduce multiple repetitions
-·{·%
+Â·d Reduce multiple repetitions
+Â·{Â·%
 for m in 1..l
   if l.modulo(m)==0 then
     reduce_l = true;
@@ -577,15 +577,15 @@ for m in 1..l
       if @d[-m..-1]!=@d[-i*m...-i*m+m] then
          reduce_l = false;
          break;
-       end
+      end
     end
     if reduce_l then
        l = m
        break
-    end 
+    end
   end
 end
-·}
+Â·}
 
 By matching the longest possible repetition, rather than the shortest one, we can
 safely specify possibly ambiguous cases. For example,
@@ -595,45 +595,45 @@ and $1.23454523454545\cdots$ can be used to specify $1.23454523\overline{45}$.
 
 We don't need repeated digits.
 
-·d Remove repeated digits
-·{·%
+Â·d Remove repeated digits
+Â·{Â·%
 @rep_i = @d.length - 2*l;
 l.times { @d.pop }
-·}
+Â·}
 
 And finally, there may be additional previous instances of
 the repeated section.
-·d Find additional repetitions
-·{·%   
-while @d.length >= 2*l && @d[-l..-1]==@d[-2*l...-l] 
-  ·<Remove repeated digits·>
+Â·d Find additional repetitions
+Â·{Â·%
+while @d.length >= 2*l && @d[-l..-1]==@d[-2*l...-l]
+  Â·<Remove repeated digitsÂ·>
 end
-·}
+Â·}
 
 
-·d Remove trailing zeros
-·{·%
+Â·d Remove trailing zeros
+Â·{Â·%
 if @rep_i!=nil then
   if @d.length==@rep_i+1 && @d[@rep_i]==0 then
     @rep_i = nil;
     @d.pop;
-  end  
+  end
 end
 @d.pop while @d[@d.length-1]==0
-·}
+Â·}
 
 \section{Writing to text}
 
-This method will return a text representation of a number. 
+This method will return a text representation of a number.
 If the parameter is 0 (the default), the repetition will be delimited.
 If it is 1 or a greater number, the ellipsis notation is used with at least
 as many repetitions as the parameter indicates.
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def getS(nrep=0, opt=DEF_OPT)
   raise RepDecError,"Base mismatch: #{opt.digits.radix} when #{@radix} was expected." if opt.digits_defined? && @radix!=opt.digits.radix
-   ·<Write special values·>
+   Â·<Write special valuesÂ·>
    s = "";
    s += '-' if @sign<0
    s += RepDec.group_digits(@ip.to_s(@radix),opt);
@@ -651,33 +651,33 @@ def getS(nrep=0, opt=DEF_OPT)
            s << opt.digits.digit_char(@d[i])
           end
         end
-        ·<Check for ambiguity·>
+        Â·<Check for ambiguityÂ·>
         s += opt.auto_rep;
      end
    else
-     s += opt.end_rep if @rep_i!=nil;         
+     s += opt.end_rep if @rep_i!=nil;
    end
    return s;
 end
-·}
+Â·}
 
 
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def to_s()
   getS
 end
-·}
+Â·}
 
 
-·d Auxiliary functions
-·{·%
+Â·d Auxiliary functions
+Â·{Â·%
 def RepDec.group_digits(digits, opt)
   if opt.grp_sep!=nil && opt.grp_sep!='' && opt.grp.length>0
-    grouped = ''      
+    grouped = ''
     i = 0
-    while digits.length>0  
+    while digits.length>0
       l = opt.grp[i]
       l = digits.length if l>digits.length
       grouped = opt.grp_sep + grouped if grouped.length>0
@@ -688,27 +688,27 @@ def RepDec.group_digits(digits, opt)
     grouped
   else
    digits
-  end    
+  end
 end
-·| group_digits ·}
+Â·| group_digits Â·}
 
 
 
 
 We must check if additional repetitions are needed for disambiguation.
-·d Check for ambiguity
-·{·%
+Â·d Check for ambiguity
+Â·{Â·%
 check = RepDec.new;
 check.setS s+opt.auto_rep, opt;
 #print " s=",s,"\n"
 #print " self=",self.to_s,"\n"
- while check!=self
+while check!=self
   for i in @rep_i...@d.length
-   s << opt.digits.digit_char(@d[i])
+    s << opt.digits.digit_char(@d[i])
   end
   check.setS s+opt.auto_rep, opt;
 end
-·}
+Â·}
 
 Some rational numbers have two possible decimal representations; one ending in $\overline{0}$
 and another with $\overline{9}$. The first one is stored here as having no repetition
@@ -720,25 +720,25 @@ namely \cd{initialize}, \cd{setZ}, \cd{setS} and \cd{setQ}, always produce uniqu
 in the sense that the repeating sequence is as short as possible and it is the first appearance
 after the decimal point which is marked.
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def normalize!(remove_trailing_zeros=true)
   if ip.is_a?(Integer)
     if @rep_i!=nil && @rep_i==@d.length-1 && @d[@rep_i]==(@radix-1) then
       @d.pop;
       @rep_i = nil;
-      ·<Add one ulp to the decimal·>
+      Â·<Add one ulp to the decimalÂ·>
     end
-    ·<Additional normalizations·>
+    Â·<Additional normalizationsÂ·>
   end
 end
-·}
+Â·}
 
 Add one unit in the least significant digit to the decimal.
 Note that if the decimal has no decimal digits, a unit (least non-decimal digit)
 is added, rather than a unit to the least significant, non-zero digit.
-·d Add one ulp to the decimal
-·{·%
+Â·d Add one ulp to the decimal
+Â·{Â·%
 i = @d.length-1;
 carry = 1;
 while carry>0 && i>=0
@@ -750,22 +750,22 @@ while carry>0 && i>=0
     @d.pop if i==@d.length;
   end
   i -= 1;
-end 
+end
 @ip += carry;
-·}
+Â·}
 
 
 When normalizing a number we'll also avoid unnecessary repetitions.
 
-·d Additional normalizations
-·{·%
+Â·d Additional normalizations
+Â·{Â·%
 if @rep_i!=nil && @rep_i>=@d.length
   @rep_i = nil
 end
-·}
+Â·}
 
-·d Additional normalizations
-·{·%
+Â·d Additional normalizations
+Â·{Â·%
 if @rep_i!=nil && @rep_i>=0
   unless @d[@rep_i..-1].find {|x| x!=0}
     @d = @d[0...@rep_i]
@@ -777,24 +777,24 @@ if @rep_i==nil && remove_trailing_zeros
     @d.pop
   end
 end
-·}
+Â·}
 
 
 
 Comparison of decimals: comparison is done by value, i.e., normalized values are compared,
 rather than representation.
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def copy()
   c = clone
   c.d = d.clone
   return c;
 end
-·}
+Â·}
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def ==(c)
   a = copy;
   b = c.copy;
@@ -802,25 +802,25 @@ def ==(c)
   b.normalize!
   return a.ip==b.ip && a.d==b.d && a.rep_i==b.rep_i
 end
-·}
+Â·}
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 #def !=(c)
 #  return !(self==c);
 #end
-·}
+Â·}
 
-\section{Quotients} 
+\section{Quotients}
 
 
-·d Default Options
-·{·%
+Â·d Default Options
+Â·{Â·%
 @max_d = 5000
-·}
+Â·}
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 # Change the maximum number of digits that RepDec objects
 # can handle.
 def RepDec.maximum_number_of_digits=(n)
@@ -831,17 +831,17 @@ end
 def RepDec.maximum_number_of_digits
   @max_d
 end
-·}
+Â·}
 
 
 \subsection{Quotient to decimal}
 
 Convert a quotient to a repeating decimal.
-We'll use the classic long division algorithm, keeping all partial 
+We'll use the classic long division algorithm, keeping all partial
 dividends to detect repetition.
 
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def setQ(x,y, opt=DEF_OPT)
   @radix = opt.digits.radix if opt.digits_defined?
   xy_sign = x==0 ? 0 : x<0 ? -1 : +1;
@@ -852,7 +852,7 @@ def setQ(x,y, opt=DEF_OPT)
 
   @d = [];
   @rep_i = nil;
-  ·<Set special values·>
+  Â·<Set special valuesÂ·>
   k = {};
   @ip = x.div(y) #x/y;
   x -= @ip*y;
@@ -867,22 +867,22 @@ def setQ(x,y, opt=DEF_OPT)
       x *= @radix
       d,x = x.divmod(y)
       @d.push d
-      i += 1;  
+      i += 1;
     end
   end
-  self  
+  self
 end
-·| setQ ·}
+Â·| setQ Â·}
 
 \subsection{Decimal to quotient}
 
 Convert a repeating decimal to a quotient.
-·d RepDec members
-·{·%
+Â·d RepDec members
+Â·{Â·%
 def getQ(opt=DEF_OPT)
   raise RepDecError,"Base mismatch: #{opt.digits.radix} when #{@radix} was expected." if opt.digits_defined? && @radix!=opt.digits.radix
-  ·<Get special values·>
-  n = @d.length 
+  Â·<Get special valuesÂ·>
+  n = @d.length
   a = @ip
   b = a
   for i in 0...n
@@ -903,32 +903,32 @@ def getQ(opt=DEF_OPT)
   d = Nio.gcd(x,y)
   x /= d
   y /= d
- 
+
   x = -x if @sign<0
- 
-  return x,y;    
+
+  return x,y;
 end
-·| getQ ·}
+Â·| getQ Â·}
 
 
 
 We'll provisionally have this here; a function is needed to compute the
 greatest common divisor of two integers in order to simplify quotients.
 
-·d Nio functions
-·{·%
+Â·d Nio functions
+Â·{Â·%
 def gcd(a,b)
   while b!=0 do
     a,b = b, a.modulo(b)
   end
-  return a.abs;  
+  return a.abs;
 end
-·| gcd ·}
+Â·| gcd Â·}
 
 \section{Tests}
 
-·d Tests
-·{·%
+Â·d Tests
+Â·{Â·%
   def test_basic_repdec
     r = RepDec.new
     assert_equal "2.<3>", r.setQ(7,3).getS(0)
@@ -989,22 +989,22 @@ end
     assert_equal [1, 0], r.setS("Infinity").getQ
 
     assert_equal "-Infinity", r.setS("-Infinity").getS(0)
-    assert_equal [-1, 0], r.setS("-Infinity").getQ    
+    assert_equal [-1, 0], r.setS("-Infinity").getQ
   end
-·}
+Â·}
 
 % -------------------------------------------------------------------------------------
-\section{Índices}
+\section{Ãndices}
 
 
 \subsection{Archivos}
-·f
+Â·f
 
 \subsection{Fragmentos}
-·m
+Â·m
 
 \subsection{Identificadores}
-·u
+Â·u
 
 % -------------------------------------------------------------------------------------
 \begin{thebibliography}{RepDec}
@@ -1015,8 +1015,8 @@ end
    \rpub{1980}
    \red{Springer-Verlag New York Inc.}
    \risbn{0-387-90459-X}
-   
-% IEEE (Goldberg)   
+
+% IEEE (Goldberg)
 % Knuth (Euclid's GCD)
 
 \end{thebibliography}

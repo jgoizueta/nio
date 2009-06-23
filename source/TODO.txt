@@ -23,4 +23,7 @@
 
 * Replace NFmt arguments by an options hash (e.g. :fix=>4 or :mode=>:fix, :precision=>4, ...)
 
+* Remove use of prec() (Precision mixin) from rtnlzr.w (Precision was removed from Ruby 1.9
+  in revision 19430)
 
+* Add suport for Decimal

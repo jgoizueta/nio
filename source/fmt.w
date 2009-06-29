@@ -42,7 +42,7 @@
 \section{Formatting Numbers As Text}
 
 These Ruby classes handle formatting options for number of classes such
-as \cd{Integer}, \cd{Rational}, \cd{Float}, \cd{BigDecimal}.
+as \cd{Integer}, \cd{Rational}, \cd{Float}, \cd{BigDecimal}, \cd{BigFloat::Decimal}, \cd{BigFloat::BinFloat}.
 
 ·o lib/nio/fmt.rb
 ·{# Formatting numbers as text
@@ -2850,6 +2850,132 @@ end
 prc = [x.precs[0],20].max
 neutral = x.nio_r(Nio::BigTolerance.decimals(prc,:sig)).nio_write_neutral(fmt)
 converted = true if neutral.digits.length<prc
+·}
+
+\subsubsection{BigFloat}
+
+·d references
+·{·%
+require 'bigfloat'
+·}
+
+
+·d definitions
+·{·%
+class BigFloat::Num
+  include Nio::Formattable
+  def self.nio_read_neutral(neutral)
+    x = nil
+    ·<Read BigFloat::Num x from neutral·>
+    return x
+  end
+  def nio_write_neutral(fmt)
+    neutral = Nio::NeutralNum.new
+    x = self
+    ·<Write BigFloat::Num x to neutral·>
+    return neutral
+  end
+end
+·}
+
+
+·d Read BigFloat::Num x from neutral
+·{·%
+if neutral.special?
+  case neutral.special
+  when :nan
+    x = num_class.nan
+  when :inf
+    x = num_class.infinity(neutral.sign=='-' ? '-1.0' : '+1.0')
+  end
+elsif neutral.rep_pos<neutral.digits.length
+  ·<Read BigFloat::Num from repeating decimal·>
+else
+  if neutral.base==num_class.radix
+    if neutral.base==10
+	    str = neutral.sign
+	    str += neutral.digits
+	    str += "E#{(neutral.dec_pos-neutral.digits.length)}"
+	    x = num_class.new(str)
+    else
+      num_clas.new(...) neutral.to_integral_significand...
+    end
+  else
+    # uses num_clas.context.precision TODO: ?
+    x = num_class.new(neutral.digits.to_i(neutral.base).to_s)
+    x *= num_class.nw(neutral.base.to_s)**(neutral.dec_pos-neutral.digits.length)
+    x = -x if neutral.sign=='-'
+  end
+end
+·}
+
+·d Read BigFloat::Num from repeating decimal
+·{·%
+# uses num_clas.context.precision TODO: ?
+x,y = neutral.to_RepDec.getQ
+x = num_class.new(x)/y
+·}
+
+·d Write BigFloat::Num x to neutral
+·{·%
+if x.nan?
+  neutral.set_special(:nan)
+elsif x.infinite?
+  neutral.set_special(:inf, x<0 ? '-' : '+')
+else
+  converted = false
+  if fmt.get_ndig==:exact && fmt.get_approx==:simplify
+    ·<Try to convert BigFloat::Num to repeating decimal·>
+  elsif fmt.get_approx==:exact && fmt.get_base!=num_class.radix
+    # TODO: num_class.context(:precision=>fmt....
+    neutral = x.to_r.nio_write_neutral(fmt)
+    converted = true
+  end
+  if !converted
+    if fmt.get_base==num_class.radix
+      sign = x.sign==-1 ? '-' : '+'
+      txt = x.coefficient.to_s(fmt.get_base)  # TODO: can use x.digits directly?
+      dec_pos = rep_pos = x.fractional_exponent
+      neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, false ,fmt.get_round
+      converted = true
+    end
+  end
+  if !converted
+    ·<Convert BigFloat::Num Expression to Neutral base·>
+  end
+end
+·}
+
+·d Try to convert BigFloat::Num to repeating decimal
+·{·%
+prc = x.number_of_digits
+# TODO: Tolerance for Decimal, BinInt ? (from context.precision)
+neutral = x.nio_r(Nio::BigTolerance.decimals(prc,:sig)).nio_write_neutral(fmt)
+converted = true if neutral.digits.length<prc
+·}
+
+·d Convert BigFloat::Num Expression to Neutral base
+·{·%
+min_prec = 24
+min_exp  = -1000
+s,f,b,e = x.split
+e -= f.size
+sign = s<0 ? '-' : '+'
+x = -x if sign=='-'
+f_i = f.to_i
+prc = [x.precs[0],min_prec].max
+f_i *= 10**(prc-f.size)
+e -= (prc-f.size)
+
+inexact = true
+·<set rounding mode·(sign=='-'·,fmt.get_round·)·>
+# use as many digits as possible
+# TODO: use Num#format instead
+dec_pos,r,*digits = BigFloat::Support::BurgerDybvig.float_to_digits_max(x,f_i,e,rounding,[e,min_exp].min,prc,b,fmt.get_base, fmt.get_all_digits?)
+inexact = :roundup if r && fmt.get_all_digits?
+txt = ''
+digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
+neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, inexact, fmt.get_round
 ·}
 
 

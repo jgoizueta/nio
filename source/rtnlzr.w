@@ -123,8 +123,10 @@ class Float
     # Smallest value that added to 1.0 produces something different from 1.0
     EPSILON = Math.ldexp(*Math.frexp(1).collect{|e| e.kind_of?(Integer) ? e-(MANT_DIG-1) : e})
   end
-  # Decimal precision required to represent a Float and be able to recover its value
-  DECIMAL_DIG = (MANT_DIG*Math.log(RADIX)/Math.log(10)).ceil+1
+  unless const_defined?(:DECIMAL_DIG) # Now it is defined in BigFloat
+    # Decimal precision required to represent a Float and be able to recover its value
+    DECIMAL_DIG = (MANT_DIG*Math.log(RADIX)/Math.log(10)).ceil+1
+  end
 end
 ·}
 
@@ -1479,6 +1481,22 @@ class BigDecimal
   ·<rdoc commentary for BigDecimal\#nio\_r·>
   def nio_r(tol = nil)
     tol ||= BigTolerance.decimals([precs[0],Float::DIG].max,:sig)
+    case tol
+      when Integer
+        Rational(*Nio::Rtnlzr.max_denominator(self,tol,BigDecimal))
+      else
+        Rational(*Nio::Rtnlzr.new(Nio::BigTol(tol)).rationalize(self))
+    end
+  end
+end
+·}
+
+·d classes
+·{·%
+class BigFloat::Decimal
+# TODO: need tolerance...
+  def nio_r(tol = nil)
+    tol ||= BigTolerance.decimals(Decimal.context.exact? ? ...should return self.to_r... : Decimal.context.precision)
     case tol
       when Integer
         Rational(*Nio::Rtnlzr.max_denominator(self,tol,BigDecimal))

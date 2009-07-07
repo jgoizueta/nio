@@ -2948,30 +2948,33 @@ end
 
 ~d Try to convert BigFloat::Num to repeating decimal
 ~{~%
-prc = x.number_of_digits
-# TODO: BigFloat.Tolerance(Rational(1,2), :ulps) ?
-neutral = x.nio_r(BigFloat.Tolerance(prc, :sig_decimals)).nio_write_neutral(fmt)
+neutral = x.nio_r(BigFloat.Tolerance('0.5', :ulps)).nio_write_neutral(fmt)
+# TODO: find better method to accept the conversion
+prc = (fmt.get_base==num_class.radix) ? x.number_of_digits : x.coefficient.to_s(fmt.get_base).length
+prc = [prc, 8].max
 converted = true if neutral.digits.length<prc
 ~}
 
 ~d Convert BigFloat::Num Expression to Neutral base
 ~{~%
-min_prec = 24
-min_exp  = -1000
-s,f,b,e = x.split
-e -= f.size
+min_prec = num_class.context.precision
+min_exp  =  num_class.context.etiny
+n = x.number_of_digits
+s,f,e = x.split
+b = num_class.radix
 sign = s<0 ? '-' : '+'
-x = -x if sign=='-'
-f_i = f.to_i
-prc = [x.precs[0],min_prec].max
-f_i *= 10**(prc-f.size)
-e -= (prc-f.size)
+f = -f if sign=='-'
+prc = [x.number_of_digits,min_prec].max
+f = num_class.int_mult_radix_power(f, prc-n)
+e -= (prc-n)
 
 inexact = true
 ~<set rounding mode~(sign=='-'~,fmt.get_round~)~>
+
 # use as many digits as possible
 # TODO: use Num#format instead
-dec_pos,r,*digits = BigFloat::Support::BurgerDybvig.float_to_digits_max(x,f_i,e,rounding,[e,min_exp].min,prc,b,fmt.get_base, fmt.get_all_digits?)
+dec_pos,r,*digits = BigFloat::Support::BurgerDybvig.float_to_digits(
+                       x,f,e,rounding,[e,min_exp].min,prc,b,fmt.get_base, fmt.get_all_digits?)
 inexact = :roundup if r && fmt.get_all_digits?
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
@@ -3255,29 +3258,29 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 ~{~%
   def test_big_decimal_bases
 
-    assert_equal "0.1999A",(BigDec(1)/10).nio_write(Fmt.new.base(16).prec(5))
-    assert_equal "0.1999...",(BigDec(1)/10).nio_write(Fmt.mode(:gen,:exact,:round=>:inf,:approx=>:simplify).base(16))
+    assert_equal "0.1999A",(BigFloat.Decimal(1)/10).nio_write(Fmt.new.base(16).prec(5))
+    assert_equal "0.1999...",(BigFloat.Decimal(1)/10).nio_write(Fmt.mode(:gen,:exact,:round=>:inf,:approx=>:simplify).base(16))
 
     nfmt2 = Fmt[:comma].base(2).prec(:exact)
     nfmt8 = Fmt[:comma].base(8).prec(:exact)
     nfmt10 = Fmt[:comma].base(10).prec(:exact)
     nfmt16 = Fmt[:comma].base(16).prec(:exact)
     $data.each do |x|
-      x = BigDec(x.to_s)
+      x = BigFloat.Decimal(x.to_s)
       xs,xdig,xb,xe = x.split
       ndig = xdig.size
       round_dig = ndig-xe
       # note that BigDecimal.nio_read produces a BigDecimal with the exact value of the text representation
       # since the representation here is only aproximate (because of the base difference), we must
       # round the results to the precision of the original number
-      assert_equal(x,BigDecimal.nio_read(x.nio_write(nfmt2),nfmt2).round(round_dig))
-      assert_equal(x,BigDecimal.nio_read(x.nio_write(nfmt8),nfmt8).round(round_dig))
-      assert_equal(x,BigDecimal.nio_read(x.nio_write(nfmt10),nfmt10).round(round_dig))
-      assert_equal(x,BigDecimal.nio_read(x.nio_write(nfmt16),nfmt16).round(round_dig))
-      assert_equal(-x,BigDecimal.nio_read((-x).nio_write(nfmt2),nfmt2).round(round_dig))
-      assert_equal(-x,BigDecimal.nio_read((-x).nio_write(nfmt8),nfmt8).round(round_dig))
-      assert_equal(-x,BigDecimal.nio_read((-x).nio_write(nfmt10),nfmt10).round(round_dig))
-      assert_equal(-x,BigDecimal.nio_read((-x).nio_write(nfmt16),nfmt16).round(round_dig))
+      assert_equal(x,BigFloat.Decimal.nio_read(x.nio_write(nfmt2),nfmt2).round(round_dig))
+      assert_equal(x,BigFloat.Decimal.nio_read(x.nio_write(nfmt8),nfmt8).round(round_dig))
+      assert_equal(x,BigFloat.Decimal.nio_read(x.nio_write(nfmt10),nfmt10).round(round_dig))
+      assert_equal(x,BigFloat.Decimal.nio_read(x.nio_write(nfmt16),nfmt16).round(round_dig))
+      assert_equal(-x,BigFloat.Decimal.nio_read((-x).nio_write(nfmt2),nfmt2).round(round_dig))
+      assert_equal(-x,BigFloat.Decimal.nio_read((-x).nio_write(nfmt8),nfmt8).round(round_dig))
+      assert_equal(-x,BigFloat.Decimal.nio_read((-x).nio_write(nfmt10),nfmt10).round(round_dig))
+      assert_equal(-x,BigFloat.Decimal.nio_read((-x).nio_write(nfmt16),nfmt16).round(round_dig))
     end
   end
 ~}

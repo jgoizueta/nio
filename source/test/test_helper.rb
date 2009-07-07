@@ -30,3 +30,7 @@ module PrepareData
 end
 
 PrepareData.init
+
+def BigDec(x)
+  BigDecimal.new(x.to_s)
+end

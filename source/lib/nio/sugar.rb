@@ -32,8 +32,8 @@ module Nio
   # This module function can be used after <tt>import Nio</tt>
   def nio_convert(x, type, mode=:approx)
     Nio::Fmt.convert x, type, mode
-  end 
-  # :stopdoc:  
+  end
+  # :stopdoc:
   class Fmt
     def <<(x)
       x.nio_write(self)
@@ -49,7 +49,7 @@ module Nio
     end
     def >>(cls_txt)
       cls,txt = cls_txt
-      cls.nio_read(txt,self)      
+      cls.nio_read(txt,self)
     end
     def read(cls,txt)
       cls.nio_read(txt,self)
@@ -89,7 +89,12 @@ class Float
     nio_r(tol)
   end
 end
-class BigFloat
+class BigFloat::Num
+  alias to_xr to_r
+  undef :nio_xr
+  def nio_xr
+    to_xr
+  end
   def to_r(tol = nil)
     nio_r(tol)
   end

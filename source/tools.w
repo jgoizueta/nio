@@ -20,59 +20,59 @@
 \isodate
 
 \newcommand{\ProgTitle}{Ruby Tools}
-\newcommand{\ProgAuth}{Javier Goizueta} 
-\newcommand{\ProgDate}{\today} 
+\newcommand{\ProgAuth}{Javier Goizueta}
+\newcommand{\ProgDate}{\today}
 \newcommand{\ProgVer}{1.0}
 \newcommand{\ProgSource}{\ttfamily\bfseries tools.w}
 
 \title{\ProgTitle}
-\author{\ProgAuth} 
+\author{\ProgAuth}
 \date{\ProgDate}
 
 % ===========================================================================
 
 \lng{ruby}
 
-%@r∑%   this is the nuweb escape character (183) which is a centered dot in iso-8859-latin1
+%@r~%  The ASCII tilde is used as the nuweb escape character
 
 \begin{document}
 
 \section{Ruby Tools}
 
-∑o lib/nio/tools.rb
-∑{# Common Utilities
-∑<License∑>
-∑<Required Modules∑>
-∑<definitions∑>
-∑<classes∑>
+~o lib/nio/tools.rb
+~{# Common Utilities
+~<License~>
+~<Required Modules~>
+~<definitions~>
+~<classes~>
 module Nio
-  ∑<Nio classes∑>
+  ~<Nio classes~>
   module_function
-  ∑<Nio functions∑>
+  ~<Nio functions~>
 end
-∑}
+~}
 
 
-∑d License
-∑{∑%
+~d License
+~{~%
 # Copyright (C) 2003-2005, Javier Goizueta <javier@goizueta.info>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-∑}
+~}
 
-∑d Required Modules
-∑{∑%
+~d Required Modules
+~{~%
 require 'rubygems'
-∑}
+~}
 
 
 \section{Tests}
 
-∑o test/test_tools.rb
-∑{
+~o test/test_tools.rb
+~{
 #require File.dirname(__FILE__) + '/test_helper.rb'
 require 'test/unit'
 
@@ -80,17 +80,17 @@ require 'nio/repdec'
 include Nio
 require 'yaml'
 
-∑<Tests definitions∑>
+~<Tests definitions~>
 
 class TestTools < Test::Unit::TestCase
 
   def setup
-    ∑<Tests setup∑>
+    ~<Tests setup~>
   end
 
-  ∑<Tests∑> 
+  ~<Tests~>
 end
- ∑}
+ ~}
 
 
 \section{State-Equivalent Classes}
@@ -98,8 +98,8 @@ end
 This mix-in module by Robert Klemme makes a class's equality-behaviour
 be based on object state (instance variables).
 
-∑d Nio classes
-∑{∑%
+~d Nio classes
+~{~%
 module StateEquivalent
   def ==(obj); test_equal(obj); end
   def eql?(obj); test_equal(obj); end
@@ -124,12 +124,12 @@ module StateEquivalent
     true
   end
 end
-∑}
+~}
 
 \subsection{Tests}
 
-∑d Tests definitions
-∑{∑%
+~d Tests definitions
+~{~%
 class SEclass
   include StateEquivalent
   def initialize(a,b)
@@ -137,10 +137,10 @@ class SEclass
     @b = b
   end
 end
-∑}
+~}
 
-∑d Tests
-∑{∑%
+~d Tests
+~{~%
 def test_StateEquivalent
   x = SEclass.new(11,22)
   y = SEclass.new(11,22)
@@ -153,22 +153,22 @@ def test_StateEquivalent
   assert_equal(x.hash,y.hash)
   assert_equal(false,x.hash==z.hash)
 end
-∑}
+~}
 
 
 
 % -------------------------------------------------------------------------------------
-\section{Õndices}
+\section{√çndices}
 
 
 \subsection{Archivos}
-∑f
+~f
 
 \subsection{Fragmentos}
-∑m
+~m
 
 \subsection{Identificadores}
-∑u
+~u
 
 
 

@@ -81,12 +81,10 @@ require 'nio/rtnlzr'
 require 'nio/sugar'
 include Nio
 require 'yaml'
-require 'bigfloat'
-require 'bigfloat/float'
-require 'bigfloat/decimal/math'
+require 'flt'
+require 'flt/float'
+require 'flt/math'
 require 'bigdecimal/math'
-
-require 'bigfloat/float'
 
 ~<Rtnlzr tests support~>
 
@@ -123,7 +121,7 @@ require 'nio/tools'
 
 ~d Required Modules
 ~{~%
-require 'bigfloat/tolerance'
+require 'flt/tolerance'
 ~}
 
 \section{Floating point to exact fraction conversion}
@@ -228,13 +226,13 @@ class BigDecimal
 end
 ~}
 
-\subsection{BigFloat}
+\subsection{Flt}
 
 
 ~d definitions
 ~{~%
-class BigFloat::Num
-  ~<rdoc commentary for BigFloat\#nio\_xr~>
+class Flt::Num
+  ~<rdoc commentary for Flt\#nio\_xr~>
   def nio_xr
     to_r
   end
@@ -284,7 +282,7 @@ class Rtnlzr
   include StateEquivalent
 
   # Create Rationalizator with given tolerance.
-  def initialize(tol=BigFloat.Tolerance(:epsilon))
+  def initialize(tol=Flt.Tolerance(:epsilon))
     @tol = tol
   end
 
@@ -614,12 +612,12 @@ class Rtnlzr
     end
 
     def self.ip(x)
-      # Note that ceil, floor return an Integer for Float and BigFloat::Num, but not for BigDecimal
+      # Note that ceil, floor return an Integer for Float and Flt::Num, but not for BigDecimal
       (x<0 ? x.ceil : x.floor).to_i
     end
 
     def self.rnd(x)
-      # Note that round returns an Integer for Float and BigFloat::Num, but not for BigDecimal
+      # Note that round returns an Integer for Float and Flt::Num, but not for BigDecimal
       x.round.to_i
     end
 
@@ -628,7 +626,7 @@ class Rtnlzr
     end
 
     def self.ceil(x)
-      # Note that ceil returns an Integer for Float and BigFloat::Num, but not for BigDecimal
+      # Note that ceil returns an Integer for Float and Flt::Num, but not for BigDecimal
       x.ceil.to_i
     end
   end
@@ -652,7 +650,7 @@ require 'rational'
 ~{~%
 class Float
   ~<rdoc commentary for Float\#nio\_r~>
-  def nio_r(tol = BigFloat.Tolerance(:big_epsilon))
+  def nio_r(tol = Flt.Tolerance(:big_epsilon))
     case tol
       when Integer
         Rational(*Nio::Rtnlzr.max_denominator(self,tol,Float))
@@ -677,7 +675,7 @@ require 'bigdecimal'
 class BigDecimal
   ~<rdoc commentary for BigDecimal\#nio\_r~>
   def nio_r(tol = nil)
-    tol ||= BigFloat.Tolerance([precs[0],Float::DIG].max,:sig_decimals)
+    tol ||= Flt.Tolerance([precs[0],Float::DIG].max,:sig_decimals)
     case tol
       when Integer
         Rational(*Nio::Rtnlzr.max_denominator(self,tol,BigDecimal))
@@ -688,19 +686,19 @@ class BigDecimal
 end
 ~}
 
-\subsection{BigFloat to Rational conversion}
+\subsection{Flt to Rational conversion}
 
 ~d Required Modules
 ~{~%
-require 'bigfloat'
+require 'flt'
 ~}
 
 ~d classes
 ~{~%
-class BigFloat::Num
-  ~<rdoc commentary for BigFloat\#nio\_r~>
+class Flt::Num
+  ~<rdoc commentary for Flt\#nio\_r~>
   def nio_r(tol = nil)
-    tol ||= BigFloat.Tolerance(Rational(1,2),:ulps)
+    tol ||= Flt.Tolerance(Rational(1,2),:ulps)
     case tol
       when Integer
         Rational(*Nio::Rtnlzr.max_denominator(self,tol,num_class))
@@ -804,8 +802,8 @@ We'll load the data for the tests in a global variable.
     assert_equal [13,10], Rtnlzr.max_denominator(BigDecimal('1.3'),10)
     assert_equal [1,3], Rtnlzr.max_denominator(1.0/3,10)
     assert_equal [1,3], Rtnlzr.max_denominator(BigDecimal('1')/3,10)
-    assert_equal [13,10], Rtnlzr.max_denominator(BigFloat.Decimal('1.3'),10)
-    assert_equal [1,3], Rtnlzr.max_denominator(BigFloat.Decimal('1')/3,10)
+    assert_equal [13,10], Rtnlzr.max_denominator(Flt.DecNum('1.3'),10)
+    assert_equal [1,3], Rtnlzr.max_denominator(Flt.DecNum('1')/3,10)
 
     # basic tests of Float#nio_r
     assert_equal Rational(1,3), (1.0/3.0).nio_r
@@ -814,7 +812,7 @@ We'll load the data for the tests in a global variable.
     assert_equal Rational(89,217), (89.0/217.0).nio_r
 
     # rationalization of Floats using a tolerance
-    t = BigFloat.Tolerance(1e-15/2,:floating)
+    t = Flt.Tolerance(1e-15/2,:floating)
     assert_equal Rational(540429, 12500),43.23432.nio_r(t)
     assert_equal Rational(6636649, 206596193),0.032123772.nio_r(t)
     assert_equal Rational(280943, 2500000), 0.1123772.nio_r(t)
@@ -828,22 +826,22 @@ We'll load the data for the tests in a global variable.
     # rationalization with maximum denominator
     assert_equal Rational(9441014047197, 7586), (1244531247.98273123.nio_r(10000))
     assert_equal Rational(11747130449709, 9439), BigDecimal('1244531247.982731230').nio_r(10000)
-    assert_equal Rational(11747130449709, 9439), BigFloat.Decimal('1244531247.982731230').nio_r(10000)
+    assert_equal Rational(11747130449709, 9439), Flt.DecNum('1244531247.982731230').nio_r(10000)
 
 
     # approximate a value in [0.671,0.672];
     #  Float
-    assert_equal [43,64], Rtnlzr.new(BigFloat.Tolerance(0.0005)).rationalize(0.6715)
+    assert_equal [43,64], Rtnlzr.new(Flt.Tolerance(0.0005)).rationalize(0.6715)
     assert_equal [43,64], Rtnlzr.new(Rational(5,10000)).rationalize(0.6715)
-    # BinFloat
-    assert_equal [43,64], Rtnlzr.new(BigFloat.Tolerance(BigFloat.BinFloat('0.0005'))).rationalize(BigFloat::BinFloat('0.6715'))
-    assert_equal [43,64], Rtnlzr.new(BigFloat.Tolerance(Rational(5,10000))).rationalize(BigFloat::BinFloat('0.6715'))
+    # BinNum
+    assert_equal [43,64], Rtnlzr.new(Flt.Tolerance(Flt.BinNum('0.0005'))).rationalize(Flt::BinNum('0.6715'))
+    assert_equal [43,64], Rtnlzr.new(Flt.Tolerance(Rational(5,10000))).rationalize(Flt::BinNum('0.6715'))
     #  BigDecimal
-    assert_equal [43,64], Rtnlzr.new(BigFloat.Tolerance('0.0005')).rationalize(BigDecimal('0.6715'))
+    assert_equal [43,64], Rtnlzr.new(Flt.Tolerance('0.0005')).rationalize(BigDecimal('0.6715'))
     assert_equal [43,64], Rtnlzr.new(Rational(5,10000)).rationalize(BigDecimal('0.6715'))
-    # Decimal
-    assert_equal [43,64], Rtnlzr.new(BigFloat.Tolerance(BigFloat.Decimal('0.0005'))).rationalize(BigFloat::Decimal('0.6715'))
-    assert_equal [43,64], Rtnlzr.new(BigFloat.Tolerance(Rational(5,10000))).rationalize(BigFloat::Decimal('0.6715'))
+    # DecNum
+    assert_equal [43,64], Rtnlzr.new(Flt.Tolerance(Flt.DecNum('0.0005'))).rationalize(Flt::DecNum('0.6715'))
+    assert_equal [43,64], Rtnlzr.new(Flt.Tolerance(Rational(5,10000))).rationalize(Flt::DecNum('0.6715'))
     #
     assert_equal Rational(43,64), 0.6715.nio_r(0.0005)
     assert_equal Rational(43,64), 0.6715.nio_r(Rational(5,10000))
@@ -852,32 +850,32 @@ We'll load the data for the tests in a global variable.
     assert_equal Rational(2,3), 0.6715.nio_r(10)
 
     # some PI tests
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigFloat.Tolerance(BigFloat.Decimal('261E-24')))
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigFloat.Tolerance(BigFloat.Decimal('261E-24')))
-    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(BigFloat.Decimal('261E-24'))
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(Flt.Tolerance(Flt.DecNum('261E-24')))
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(Flt.Tolerance(Flt.DecNum('261E-24')))
+    assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(Flt.DecNum('261E-24'))
     assert_equal Rational(899125804609,286200632530), BgMth.PI(64).nio_r(261E-24)
 
-    assert_equal Rational(899125804609,286200632530), BigFloat::Decimal::Math.pi(64).nio_r(BigFloat.Tolerance(BigFloat.Decimal('261E-24')))
-    assert_equal Rational(899125804609,286200632530), BigFloat::Decimal::Math.pi(64).nio_r(BigFloat.Tolerance(BigFloat.Decimal('261E-24')))
-    assert_equal Rational(899125804609,286200632530), BigFloat::Decimal::Math.pi(64).nio_r(BigFloat.Decimal('261E-24'))
-    assert_equal Rational(899125804609,286200632530), BigFloat::Decimal::Math.pi(64).nio_r(261E-24)
+    assert_equal Rational(899125804609,286200632530), Flt::DecNum::Math.pi(64).nio_r(Flt.Tolerance(Flt.DecNum('261E-24')))
+    assert_equal Rational(899125804609,286200632530), Flt::DecNum::Math.pi(64).nio_r(Flt.Tolerance(Flt.DecNum('261E-24')))
+    assert_equal Rational(899125804609,286200632530), Flt::DecNum::Math.pi(64).nio_r(Flt.DecNum('261E-24'))
+    assert_equal Rational(899125804609,286200632530), Flt::DecNum::Math.pi(64).nio_r(261E-24)
 
-    # Decimal tests
-    #t = BigFloat.Tolerance(BigFloat.Decimal('1e-15'),:floating)
-    t = BigFloat.Tolerance(20,:sig_decimals)
+    # DecNum tests
+    #t = Flt.Tolerance(Flt.DecNum('1e-15'),:floating)
+    t = Flt.Tolerance(20,:sig_decimals)
     $data.each do |x|
-      x = BigFloat.BinFloat(x).to_decimal_exact
+      x = Flt.BinNum(x).to_decimal_exact
       q = x.nio_r(t)
-      assert t.eq?(x, BigFloat.Decimal(q)), "out of tolerance: #{x.inspect} #{BigFloat.Decimal(q)}"
+      assert t.eq?(x, Flt.DecNum(q)), "out of tolerance: #{x.inspect} #{Flt.DecNum(q)}"
     end
 
-    # BigFloat tests
-    #t = BigFloat.Tolerance(BigFloat.Decimal('1e-15'),:floating)
-    t = BigFloat.Tolerance(20,:sig_decimals)
+    # Flt tests
+    #t = Flt.Tolerance(Flt.DecNum('1e-15'),:floating)
+    t = Flt.Tolerance(20,:sig_decimals)
     $data.each do |x|
-      x = BigFloat.BinFloat(x)
+      x = Flt.BinNum(x)
       q = x.nio_r(t)
-      assert t.eq?(x, BigFloat.BinFloat(q)), "out of tolerance: #{x.inspect} #{BigFloat.BinFloat(q)}"
+      assert t.eq?(x, Flt.BinNum(q)), "out of tolerance: #{x.inspect} #{Flt.BinNum(q)}"
     end
 
 
@@ -887,7 +885,7 @@ We'll load the data for the tests in a global variable.
 ~D Tests
 ~{~%
     def test_compare_algorithms
-      r = Rtnlzr.new(BigFloat.Tolerance(1e-5,:floating))
+      r = Rtnlzr.new(Flt.Tolerance(1e-5,:floating))
       ($data + $data.collect{|x| -x}).each do |x|
         q1 = r.rationalize_Knuth(x)
         q2 = r.rationalize_Horn(x)
@@ -900,7 +898,7 @@ We'll load the data for the tests in a global variable.
         assert_equal q1, q3
         #assert_equal q1, q4
       end
-      r = Rtnlzr.new(BigFloat.Tolerance(:epsilon))
+      r = Rtnlzr.new(Flt.Tolerance(:epsilon))
       ($data + $data.collect{|x| -x}).each do |x|
         q1 = r.rationalize_Knuth(x)
         q2 = r.rationalize_Horn(x)

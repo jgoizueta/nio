@@ -26,8 +26,8 @@
 * Remove use of prec() (Precision mixin) from rtnlzr.w (Precision was removed from Ruby 1.9
   in revision 19430)
 
-* Add support for BigFloat types (including Tolerances...)
+* Add support for Flt types (including Tolerances...)
 
-* Rename rounding modes using BigFloat names :even->:half_even, :inf->:half_up, :zero->:half_down, :truncate->:down ?
+* Rename rounding modes using Flt names :even->:half_even, :inf->:half_up, :zero->:half_down, :truncate->:down ?
 
-* use Clinger & BurgerDybvig from BigFloat
+* use Clinger & BurgerDybvig from Flt

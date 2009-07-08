@@ -42,7 +42,7 @@
 \section{Formatting Numbers As Text}
 
 These Ruby classes handle formatting options for number of classes such
-as \cd{Integer}, \cd{Rational}, \cd{Float}, \cd{BigDecimal}, \cd{BigFloat::Decimal}, \cd{BigFloat::BinFloat}.
+as \cd{Integer}, \cd{Rational}, \cd{Float}, \cd{BigDecimal}, \cd{Flt::DecNum}, \cd{Flt::BinNum}.
 
 ~o lib/nio/fmt.rb
 ~{# Formatting numbers as text
@@ -2219,7 +2219,7 @@ Tolerance(:epsilon)
 ~d Try to convert Float to repeating decimal
 ~{~%
 if x!=0
-  q = x.nio_r(BigFloat.Tolerance(Float::DIG, :sig_decimals))
+  q = x.nio_r(Flt.Tolerance(Float::DIG, :sig_decimals))
   if q!=0
     neutral = q.nio_write_neutral(fmt)
     converted = true if neutral.digits.length<=Float::DIG
@@ -2848,38 +2848,38 @@ end
 ~d Try to convert BigDecimal to repeating decimal
 ~{~%
 prc = [x.precs[0],20].max
-neutral = x.nio_r(BigFloat.Tolerance(prc, :sig_decimals)).nio_write_neutral(fmt)
+neutral = x.nio_r(Flt.Tolerance(prc, :sig_decimals)).nio_write_neutral(fmt)
 converted = true if neutral.digits.length<prc
 ~}
 
-\subsubsection{BigFloat}
+\subsubsection{Flt}
 
 ~d references
 ~{~%
-require 'bigfloat'
+require 'flt'
 ~}
 
 
 ~d definitions
 ~{~%
-class BigFloat::Num
+class Flt::Num
   include Nio::Formattable
   def self.nio_read_neutral(neutral)
     x = nil
-    ~<Read BigFloat::Num x from neutral~>
+    ~<Read Flt::Num x from neutral~>
     return x
   end
   def nio_write_neutral(fmt)
     neutral = Nio::NeutralNum.new
     x = self
-    ~<Write BigFloat::Num x to neutral~>
+    ~<Write Flt::Num x to neutral~>
     return neutral
   end
 end
 ~}
 
 
-~d Read BigFloat::Num x from neutral
+~d Read Flt::Num x from neutral
 ~{~%
 if neutral.special?
   case neutral.special
@@ -2889,7 +2889,7 @@ if neutral.special?
     x = num_class.infinity(neutral.sign=='-' ? '-1.0' : '+1.0')
   end
 elsif neutral.rep_pos<neutral.digits.length
-  ~<Read BigFloat::Num from repeating decimal~>
+  ~<Read Flt::Num from repeating decimal~>
 else
   if neutral.base==num_class.radix
     if neutral.base==10
@@ -2909,14 +2909,14 @@ else
 end
 ~}
 
-~d Read BigFloat::Num from repeating decimal
+~d Read Flt::Num from repeating decimal
 ~{~%
 # uses num_clas.context.precision TODO: ?
 x,y = neutral.to_RepDec.getQ
 x = num_class.new(x)/y
 ~}
 
-~d Write BigFloat::Num x to neutral
+~d Write Flt::Num x to neutral
 ~{~%
 if x.nan?
   neutral.set_special(:nan)
@@ -2925,7 +2925,7 @@ elsif x.infinite?
 else
   converted = false
   if fmt.get_ndig==:exact && fmt.get_approx==:simplify
-    ~<Try to convert BigFloat::Num to repeating decimal~>
+    ~<Try to convert Flt::Num to repeating decimal~>
   elsif fmt.get_approx==:exact && fmt.get_base!=num_class.radix
     # TODO: num_class.context(:precision=>fmt....
     neutral = x.to_r.nio_write_neutral(fmt)
@@ -2941,21 +2941,21 @@ else
     end
   end
   if !converted
-    ~<Convert BigFloat::Num Expression to Neutral base~>
+    ~<Convert Flt::Num Expression to Neutral base~>
   end
 end
 ~}
 
-~d Try to convert BigFloat::Num to repeating decimal
+~d Try to convert Flt::Num to repeating decimal
 ~{~%
-neutral = x.nio_r(BigFloat.Tolerance('0.5', :ulps)).nio_write_neutral(fmt)
+neutral = x.nio_r(Flt.Tolerance('0.5', :ulps)).nio_write_neutral(fmt)
 # TODO: find better method to accept the conversion
 prc = (fmt.get_base==num_class.radix) ? x.number_of_digits : x.coefficient.to_s(fmt.get_base).length
 prc = [prc, 8].max
 converted = true if neutral.digits.length<prc
 ~}
 
-~d Convert BigFloat::Num Expression to Neutral base
+~d Convert Flt::Num Expression to Neutral base
 ~{~%
 min_prec = num_class.context.precision
 min_exp  =  num_class.context.etiny
@@ -2973,7 +2973,7 @@ inexact = true
 
 # use as many digits as possible
 # TODO: use Num#format instead
-dec_pos,r,*digits = BigFloat::Support::BurgerDybvig.float_to_digits(
+dec_pos,r,*digits = Flt::Support::BurgerDybvig.float_to_digits(
                        x,f,e,rounding,[e,min_exp].min,prc,b,fmt.get_base, fmt.get_all_digits?)
 inexact = :roundup if r && fmt.get_all_digits?
 txt = ''
@@ -3188,7 +3188,7 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 ~D Tests
 ~{~%
   def test_tol_fmt_float
-    tol = BigFloat.Tolerance(12, :sig_decimals)
+    tol = Flt.Tolerance(12, :sig_decimals)
     fmt = Fmt.prec(12,:sig)
     $data.each do |x|
        assert tol.eq?(x, Float.nio_read(x.nio_write(fmt),fmt)), "out of tolerance: #{x.inspect} #{Float.nio_read(x.nio_write(fmt),fmt)}"
@@ -3258,29 +3258,29 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 ~{~%
   def test_big_decimal_bases
 
-    assert_equal "0.1999A",(BigFloat.Decimal(1)/10).nio_write(Fmt.new.base(16).prec(5))
-    assert_equal "0.1999...",(BigFloat.Decimal(1)/10).nio_write(Fmt.mode(:gen,:exact,:round=>:inf,:approx=>:simplify).base(16))
+    assert_equal "0.1999A",(Flt.DecNum(1)/10).nio_write(Fmt.new.base(16).prec(5))
+    assert_equal "0.1999...",(Flt.DecNum(1)/10).nio_write(Fmt.mode(:gen,:exact,:round=>:inf,:approx=>:simplify).base(16))
 
     nfmt2 = Fmt[:comma].base(2).prec(:exact)
     nfmt8 = Fmt[:comma].base(8).prec(:exact)
     nfmt10 = Fmt[:comma].base(10).prec(:exact)
     nfmt16 = Fmt[:comma].base(16).prec(:exact)
     $data.each do |x|
-      x = BigFloat.Decimal(x.to_s)
+      x = Flt.DecNum(x.to_s)
       xs,xdig,xb,xe = x.split
       ndig = xdig.size
       round_dig = ndig-xe
       # note that BigDecimal.nio_read produces a BigDecimal with the exact value of the text representation
       # since the representation here is only aproximate (because of the base difference), we must
       # round the results to the precision of the original number
-      assert_equal(x,BigFloat.Decimal.nio_read(x.nio_write(nfmt2),nfmt2).round(round_dig))
-      assert_equal(x,BigFloat.Decimal.nio_read(x.nio_write(nfmt8),nfmt8).round(round_dig))
-      assert_equal(x,BigFloat.Decimal.nio_read(x.nio_write(nfmt10),nfmt10).round(round_dig))
-      assert_equal(x,BigFloat.Decimal.nio_read(x.nio_write(nfmt16),nfmt16).round(round_dig))
-      assert_equal(-x,BigFloat.Decimal.nio_read((-x).nio_write(nfmt2),nfmt2).round(round_dig))
-      assert_equal(-x,BigFloat.Decimal.nio_read((-x).nio_write(nfmt8),nfmt8).round(round_dig))
-      assert_equal(-x,BigFloat.Decimal.nio_read((-x).nio_write(nfmt10),nfmt10).round(round_dig))
-      assert_equal(-x,BigFloat.Decimal.nio_read((-x).nio_write(nfmt16),nfmt16).round(round_dig))
+      assert_equal(x,Flt.DecNum.nio_read(x.nio_write(nfmt2),nfmt2).round(round_dig))
+      assert_equal(x,Flt.DecNum.nio_read(x.nio_write(nfmt8),nfmt8).round(round_dig))
+      assert_equal(x,Flt.DecNum.nio_read(x.nio_write(nfmt10),nfmt10).round(round_dig))
+      assert_equal(x,Flt.DecNum.nio_read(x.nio_write(nfmt16),nfmt16).round(round_dig))
+      assert_equal(-x,Flt.DecNum.nio_read((-x).nio_write(nfmt2),nfmt2).round(round_dig))
+      assert_equal(-x,Flt.DecNum.nio_read((-x).nio_write(nfmt8),nfmt8).round(round_dig))
+      assert_equal(-x,Flt.DecNum.nio_read((-x).nio_write(nfmt10),nfmt10).round(round_dig))
+      assert_equal(-x,Flt.DecNum.nio_read((-x).nio_write(nfmt16),nfmt16).round(round_dig))
     end
   end
 ~}

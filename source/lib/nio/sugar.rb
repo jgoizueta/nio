@@ -89,7 +89,7 @@ class Float
     nio_r(tol)
   end
 end
-class BigFloat::Num
+class Flt::Num
   alias to_xr to_r
   undef :nio_xr
   def nio_xr

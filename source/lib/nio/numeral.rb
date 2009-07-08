@@ -10,10 +10,10 @@ module Nio
 # It is format-neutral (doesn't include or handles actual representation)
 # It handles numeric conversions and repeating digits.
 class Numeral
-  # @sign, @digits (array or integers),@radix,  @rep_pos, @pnt_pos (scale),:=>:nan, :inf (as BigFloa)
+  # @sign, @digits (array or integers),@radix,  @rep_pos, @pnt_pos (scale),:=>:nan, :inf (as Flt)
 
   # determine interpretation of pnt_pos/scale
-  # conversions: Integer, Rational, Decimal, BinFloat
+  # conversions: Integer, Rational, DecNum, BinNum
 
 end # Numeral
 

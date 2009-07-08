@@ -1,7 +1,10 @@
 == 0.2.4 2009-06-20
 
 * New features
-  - Support for Flt types
+  - Support for Flt types DecNum and BinNum.
+* Refactoring
+  - Code has been reorganized to use the Tolerance and Conversion
+    algorithms that have been moved to the Flt library.
 
 == 0.2.3 2008-12-23
 

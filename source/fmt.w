@@ -3267,8 +3267,8 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     nfmt16 = Fmt[:comma].base(16).prec(:exact)
     $data.each do |x|
       x = Flt.DecNum(x.to_s)
-      xs,xdig,xb,xe = x.split
-      ndig = xdig.size
+      xs,xdig,xe = x.split
+      ndig = x.number_of_digits
       round_dig = ndig-xe
       # note that BigDecimal.nio_read produces a BigDecimal with the exact value of the text representation
       # since the representation here is only aproximate (because of the base difference), we must

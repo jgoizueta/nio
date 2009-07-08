@@ -65,6 +65,7 @@ require 'test/unit'
 require 'nio/rtnlzr'
 require 'nio/repdec'
 require 'nio/fmt'
+require 'flt/bigdecimal'
 include Nio
 require 'yaml'
 ~<Auxiliar methods for testing~>
@@ -2962,8 +2963,12 @@ min_exp  =  num_class.context.etiny
 n = x.number_of_digits
 s,f,e = x.split
 b = num_class.radix
-sign = s<0 ? '-' : '+'
-f = -f if sign=='-'
+if s < 0
+  sign = '-'
+  x = -x
+else
+  sign = '+'
+end
 prc = [x.number_of_digits,min_prec].max
 f = num_class.int_mult_radix_power(f, prc-n)
 e -= (prc-n)
@@ -3197,22 +3202,6 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
   end
 ~}
 
-~D Tests
-~{~%
-  def test_BigDec
-    assert_equal "0",BigDec(0).nio_write
-    fmt = Fmt.mode(:gen,:exact)
-    assert_equal "0",BigDec(0).nio_write(fmt)
-    $data.each do |x|
-      x = BigDecimal(x.to_s)
-      assert_equal x,BigDecimal.nio_read(x.nio_write(fmt),fmt)
-    end
-    assert_equal "1E500",BigDec('1E500').nio_write
-    assert_equal "1E-500",BigDec('1E-500').nio_write
-    assert_equal "-1E500",BigDec('-1E500').nio_write
-    assert_equal "-1E-500",BigDec('-1E-500').nio_write
-  end
-~}
 
 ~D Tests
 ~{~%
@@ -3267,9 +3256,7 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     nfmt16 = Fmt[:comma].base(16).prec(:exact)
     $data.each do |x|
       x = Flt.DecNum(x.to_s)
-      xs,xdig,xe = x.split
-      ndig = x.number_of_digits
-      round_dig = ndig-xe
+      round_dig = x.number_of_digits - x.adjusted_exponent - 1
       # note that BigDecimal.nio_read produces a BigDecimal with the exact value of the text representation
       # since the representation here is only aproximate (because of the base difference), we must
       # round the results to the precision of the original number

@@ -84,6 +84,7 @@ require 'yaml'
 require 'flt'
 require 'flt/float'
 require 'flt/math'
+require 'flt/bigdecimal'
 require 'bigdecimal/math'
 
 ~<Rtnlzr tests support~>

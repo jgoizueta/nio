@@ -31,7 +31,13 @@ namespace :nuweb do
     NUWEB_SOURCES.concat sources
     NUWEB_PRODUCTS.concat sources.map{|s| s.sub("source/#{dir}/","#{dir}/")}
     rule(/\A#{dir}\/.*/ =>[proc{|tn| tn.sub(/\A#{dir}\//, "source/#{dir}/") }])  do |t|
-      cp t.source, t.name  if t.source
+      if t.source
+        if File.directory?(t.source)
+          cp_r t.source, t.name
+        else
+          cp t.source, t.name
+        end
+      end
     end
   end
 

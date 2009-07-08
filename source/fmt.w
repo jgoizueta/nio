@@ -3273,14 +3273,14 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
       # note that BigDecimal.nio_read produces a BigDecimal with the exact value of the text representation
       # since the representation here is only aproximate (because of the base difference), we must
       # round the results to the precision of the original number
-      assert_equal(x,Flt.DecNum.nio_read(x.nio_write(nfmt2),nfmt2).round(round_dig))
-      assert_equal(x,Flt.DecNum.nio_read(x.nio_write(nfmt8),nfmt8).round(round_dig))
-      assert_equal(x,Flt.DecNum.nio_read(x.nio_write(nfmt10),nfmt10).round(round_dig))
-      assert_equal(x,Flt.DecNum.nio_read(x.nio_write(nfmt16),nfmt16).round(round_dig))
-      assert_equal(-x,Flt.DecNum.nio_read((-x).nio_write(nfmt2),nfmt2).round(round_dig))
-      assert_equal(-x,Flt.DecNum.nio_read((-x).nio_write(nfmt8),nfmt8).round(round_dig))
-      assert_equal(-x,Flt.DecNum.nio_read((-x).nio_write(nfmt10),nfmt10).round(round_dig))
-      assert_equal(-x,Flt.DecNum.nio_read((-x).nio_write(nfmt16),nfmt16).round(round_dig))
+      assert_equal(x,Flt::DecNum.nio_read(x.nio_write(nfmt2),nfmt2).round(round_dig))
+      assert_equal(x,Flt::DecNum.nio_read(x.nio_write(nfmt8),nfmt8).round(round_dig))
+      assert_equal(x,Flt::DecNum.nio_read(x.nio_write(nfmt10),nfmt10).round(round_dig))
+      assert_equal(x,Flt::DecNum.nio_read(x.nio_write(nfmt16),nfmt16).round(round_dig))
+      assert_equal(-x,Flt::DecNum.nio_read((-x).nio_write(nfmt2),nfmt2).round(round_dig))
+      assert_equal(-x,Flt::DecNum.nio_read((-x).nio_write(nfmt8),nfmt8).round(round_dig))
+      assert_equal(-x,Flt::DecNum.nio_read((-x).nio_write(nfmt10),nfmt10).round(round_dig))
+      assert_equal(-x,Flt::DecNum.nio_read((-x).nio_write(nfmt16),nfmt16).round(round_dig))
     end
   end
 ~}

@@ -90,7 +90,7 @@ end
 ~o test/test_repdec.rb
 ~{
 ~<License~>
-#require File.dirname(__FILE__) + '/test_helper.rb'
+#require File.dirname(__FILE__) + '/helper.rb'
 require 'test/unit'
 
 require 'nio/repdec'

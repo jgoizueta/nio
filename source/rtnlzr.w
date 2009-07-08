@@ -102,12 +102,6 @@ end
 
 ~d Rtnlzr tests support
 ~{~%
-class BigDecimal
-  def self.Num(x)
-    BigDecimal.new(x.to_s)
-  end
-end
-
 require 'bigdecimal/math'
 
 module BgMth

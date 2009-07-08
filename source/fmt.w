@@ -60,7 +60,7 @@ end
 ~o test/test_fmt.rb
 ~{
 ~<License~>
-#require File.dirname(__FILE__) + '/test_helper.rb'
+require File.dirname(__FILE__) + '/helper.rb'
 require 'test/unit'
 require 'nio/rtnlzr'
 require 'nio/repdec'
@@ -3394,7 +3394,7 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
   def test_special
     assert BigDecimal.nio_read("NaN").nan?
     assert Float.nio_read("NaN").nan?
-    assert_equal "NAN", BigDec("NaN").nio_write.upcase
+    assert_equal "NAN", Flt.DecNum("NaN").nio_write.upcase
     assert_equal "NAN", BigDecimal.nio_read("NaN").nio_write.upcase
     assert_equal "NAN", Float.nio_read("NaN").nio_write.upcase
     assert_raises ZeroDivisionError do Rational.nio_read("NaN") end
@@ -3431,7 +3431,7 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     assert_equal Fmt.convert(x_d,Float,:exact), x_f
     assert_equal Fmt.convert(x_d,Float,:approx), x_f
 
-    x_d = BigDec(355)/226
+    x_d = BigDecimal('355')/226
     x_f = Float(355)/226
     assert_equal Fmt.convert(x_d,Float,:exact), x_f
     assert_equal Fmt.convert(x_d,Float,:approx), x_f

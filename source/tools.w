@@ -73,7 +73,7 @@ require 'rubygems'
 
 ~o test/test_tools.rb
 ~{
-#require File.dirname(__FILE__) + '/test_helper.rb'
+#require File.dirname(__FILE__) + '/helper.rb'
 require 'test/unit'
 
 require 'nio/repdec'

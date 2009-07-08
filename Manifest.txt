@@ -14,7 +14,7 @@ lib/nio/sugar.rb
 setup.rb
 tasks/nuweb.rake
 test/data.yaml
-test/test_helper.rb
+test/helper.rb
 test/test_tools.rb
 test/test_repdec.rb
 test/test_rtnlzr.rb

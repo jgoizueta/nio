@@ -7,7 +7,6 @@ Rakefile
 lib/nio.rb
 lib/nio/version.rb
 lib/nio/repdec.rb
-lib/nio/flttol.rb
 lib/nio/tools.rb
 lib/nio/rtnlzr.rb
 lib/nio/fmt.rb

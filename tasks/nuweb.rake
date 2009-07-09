@@ -138,8 +138,7 @@ end
 task :clobber=>'nuweb:clean'
 task :clean=>'nuweb:clean'
 
-# Next makes rake gem fail: REVIEW
-gem_package_prerequisites = Rake::Task['gem:package'].prerequisites
+gem_package_prerequisites = Rake::Task['gem:package'].prerequisites.dup
 Rake::Task['gem:package'].clear_prerequisites.enhance ['nuweb:tangle']+gem_package_prerequisites
 
 desc 'Generate code and documentation from nuweb sources'

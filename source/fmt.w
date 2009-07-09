@@ -2077,7 +2077,7 @@ Now we'll implement correct rounding.
 f = neutral.digits.to_i(neutral.base)
 e = neutral.dec_pos-neutral.digits.length
 ~<set rounding mode~(neutral.sign=='-'~,neutral.rounding~)~>
-x = Nio::Clinger::algM(f,e,rounding,neutral.base,Float::RADIX,Float::MANT_DIG,Float::MIN_EXP-Float::MANT_DIG,Float::MAX_EXP-Float::MANT_DIG)
+x, exact = Flt::Support::Clinger.algM(Float, f, e, rounding, neutral.base)
 x = -x if neutral.sign=='-'
 ~}
 
@@ -2088,110 +2088,6 @@ This was the provisional, simplistic old method:
 x = neutral.digits.to_i(neutral.base).to_f
 x *= Float(neutral.base)**(neutral.dec_pos-neutral.digits.length)
 x = -x if neutral.sign=='-'
-~}
-
-
-This is Clinger's \cd{AlgorithmM} modified to handle denormalized
-numbers and cope with overflow.
-It is a first step to experiment with exact rounding: this
-method rounds correctly but it's slow.
-
-~d Nio private functions
-~{~%
-module Clinger # :nodoc: all
-module_function
-~<Clinger functions~>
-end
-~}
-
-~d Clinger functions
-~{~%
-def algM(f,e,round_mode,eb=10,beta=Float::RADIX,n=Float::MANT_DIG,min_e=Float::MIN_EXP-Float::MANT_DIG,max_e=Float::MAX_EXP-Float::MANT_DIG)
-
-  if e<0
-   u,v,k = f,eb**(-e),0
-  else
-    u,v,k = f*(eb**e),1,0
-  end
-
-  loop do
-     x = u.div(v)
-     # overflow if k>=max_e
-     if (x>=beta**(n-1) && x<beta**n) || k==min_e || k==max_e
-        return ratio_float(u,v,k,round_mode,beta,n)
-     elsif x<beta**(n-1)
-       u *= beta
-       k -= 1
-     elsif x>=beta**n
-       v *= beta
-       k += 1
-     end
-  end
-
-end
-~}
-
-
-% To add support for IEEE rounding modes:
-% case round_mode
-%   when :inf    # to nearest, ties away from zero
-%     z  = nextfloat(z) if r>=v_r
-%   when :zero  # to nearest, ties toward zero
-%     z  = nextfloat(z) if r>v_r
-%   when :even # to nearest, ties to even
-%     z = nextfloat(z) if r>v_r ||( r==v_r && !q.even?)
-%   when :ieee_down # toward minus infinite
-%   when :ieee_up # toward positive infinite
-%     z = nextfloat(z) if r>0
-%   when :ieee_zero # truncation
-%     # equivalent to :ieee_down, since z>0
-%  end
-
-~d Clinger functions
-~{~%
-def ratio_float(u,v,k,round_mode,beta=Float::RADIX,n=Float::MANT_DIG)
-  q,r = u.divmod(v)
-  v_r = v-r
-  z = Math.ldexp(q,k)
-  if r<v_r
-    z
-  elsif r>v_r
-    nextfloat z
-  elsif (round_mode==:even && q.even?) || (round_mode==:zero)
-    z
-  else
-    nextfloat z
-  end
-end
-~}
-
-~d Clinger functions
-~{~%
-# valid only for non-negative x
-def nextfloat(x)
-  f,e = Math.frexp(x)
-  e = Float::MIN_EXP if f==0
-  e = [Float::MIN_EXP,e].max
-  dx = Math.ldexp(1,e-Float::MANT_DIG) #Math.ldexp(Math.ldexp(1.0,-Float::MANT_DIG),e)
-  if f==(1.0 - Math.ldexp(1,-Float::MANT_DIG))
-    x + dx*2
-  else
-    x + dx
-  end
-end
-
-# valid only for non-negative x
-def prevfloat(x)
-  f,e = Math.frexp(x)
-  e = Float::MIN_EXP if f==0
-  e = [Float::MIN_EXP,e].max
-  dx = Math.ldexp(1,e-Float::MANT_DIG) #Math.ldexp(Math.ldexp(1.0,-Float::MANT_DIG),e)
-  if e==Float::MIN_EXP || f!=0.5 #0.5==Math.ldexp(2**(bits-1),-Float::MANT_DIG)
-    x - dx
-  else
-    x - dx/2 # x - Math.ldexp(Math.ldexp(1.0,-Float::MANT_DIG),e-1)
-  end
-end
 ~}
 
 
@@ -2281,14 +2177,10 @@ end
 f = f.to_i
 inexact = true
 ~<set rounding mode~(sign=='-'~,fmt.get_round~)~>
-if fmt.get_all_digits?
-  # use as many digits as possible
-  dec_pos,r,*digits = Nio::BurgerDybvig::float_to_digits_max(x,f,e,rounding,Float::MIN_EXP-Float::MANT_DIG,Float::MANT_DIG,Float::RADIX,fmt.get_base)
-  inexact = :roundup if r
-else
-  # use as few digits as possible
-  dec_pos,*digits = Nio::BurgerDybvig::float_to_digits(x,f,e,rounding,Float::MIN_EXP-Float::MANT_DIG,Float::MANT_DIG,Float::RADIX,fmt.get_base)
-end
+dec_pos,r,*digits = Flt::Support::BurgerDybvig::float_to_digits(x, f, e, rounding,
+                        Float::MIN_EXP-Float::MANT_DIG, Float::MANT_DIG,Float::RADIX,
+                        fmt.get_base, fmt.get_all_digits?)
+inexact = :roundup if r
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
 neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, inexact, fmt.get_round
@@ -2296,268 +2188,17 @@ neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, inexact, fmt.get_round
 
 ~d set rounding mode
 ~{~%
-rounding = ~2
-~}
-
-
-Burger and Dybvig free formatting algorithm, translated directly from Scheme;
-after some testing, of the three different implementations in their
-paper, the second seems to be more efficient in Ruby.
-
-
-~d Nio private functions
-~{~%
-module BurgerDybvig # :nodoc: all
-module_function
-~<Burger-Dybvig functions~>
-end
-~}
-
-~d Burger-Dybvig functions
-~{~%
-def float_to_digits(v,f,e,round_mode,min_e,p,b,_B)
- ~<set rounding low and high flags~>
-    if e >= 0
-      if f != exptt(b,p-1)
-        be = exptt(b,e)
-        r,s,m_p,m_m,k = scale(f*be*2,2,be,be,0,_B,roundl ,roundh,v)
-      else
-        be = exptt(b,e)
-        be1 = be*b
-        r,s,m_p,m_m,k = scale(f*be1*2,b*2,be1,be,0,_B,roundl ,roundh,v)
-      end
-    else
-      if e==min_e or f != exptt(b,p-1)
-        r,s,m_p,m_m,k = scale(f*2,exptt(b,-e)*2,1,1,0,_B,roundl ,roundh,v)
-      else
-        r,s,m_p,m_m,k = scale(f*b*2,exptt(b,1-e)*2,b,1,0,_B,roundl ,roundh,v)
-      end
-    end
-    [k]+generate(r,s,m_p,m_m,_B,roundl ,roundh)
-end
-~}
-
-% to support IEEE rounding modes (see algM) here,
-% the m_p,m_m passed to generate should be modified when the rounding
-% is :ieee_up,:ieee_down or :ieee_zero (here equivalent to :ieee_down since numbers as positive)
-% The should be substituted in those cases by r and r+1, and roundl,roundh would take
-% the values [true,false] for :ieee_down/:ieee_zero and [false,true] for :ieee_up
-
-
-The \cd{roundl} and \cd{roundh} flags indicate if the lower and upper
-rounding limits are rounded to the number.
-Note that we handle only non-negative numbers.
-
-The rounding mode is the one that is used in the floating
-point numbers.
-
-The rounding used here are symmetrical around zero; if we'd wanted to use
-asymetrical rounding, such as to $-\infty$ or to $+\infty$, we would have
-to chose the variables \cd{roundl} and \cd{roundh} according to the round
-mode and the sign of the number.
-
-~d set rounding low and high flags
-~{~%
-case round_mode
-  when :even
-    roundl = roundh = f.even?
-  when :inf
-    roundl = true
-    roundh = false
-  when :zero
-    roundl = false
-    roundh = true
-  else
-    # here we don't assume any rounding in the floating point numbers
-    # the result is valid for any rounding but may produce more digits
-    # than stricly necessary for specifica rounding modes.
-    roundl = false
-    roundh = false
-end
-~}
-
-~d Burger-Dybvig functions
-~{~%
-def scale(r,s,m_p,m_m,k,_B,low_ok ,high_ok,v)
-  return scale2(r,s,m_p,m_m,k,_B,low_ok ,high_ok) if v==0
-  est = (logB(_B,v)-1E-10).ceil.to_i
-  if est>=0
-    fixup(r,s*exptt(_B,est),m_p,m_m,est,_B,low_ok,high_ok)
-  else
-    sc = exptt(_B,-est)
-    fixup(r*sc,s,m_p*sc,m_m*sc,est,_B,low_ok,high_ok)
-  end
-end
-
-def fixup(r,s,m_p,m_m,k,_B,low_ok,high_ok)
-  if (high_ok ? (r+m_p >= s) : (r+m_p > s)) # too low?
-    [r,s*_B,m_p,m_m,k+1]
-  else
-    [r,s,m_p,m_m,k]
-  end
-end
-~}
-
-Esta es la versión original iterativa: la usaremos para  el valor 0.
-~d Burger-Dybvig functions
-~{~%
-def scale2(r,s,m_p,m_m,k,_B,low_ok ,high_ok)
-  loop do
-    if (high_ok ? (r+m_p >= s) : (r+m_p > s)) # k is too low
-      s *= _B
-      k += 1
-    elsif (high_ok ? ((r+m_p)*_B<s) : ((r+m_p)*_B<=s)) # k is too high
-      r *= _B
-      m_p *= _B
-      m_m *= _B
-      k -= 1
-    else
-      break
-    end
-  end
-  [r,s,m_p,m_m,k]
-end
-~}
-
-
-~d Burger-Dybvig functions
-~{~%
-def generate(r,s,m_p,m_m,_B,low_ok ,high_ok)
-  list = []
-  loop do
-    d,r = (r*_B).divmod(s)
-    m_p *= _B
-    m_m *= _B
-    tc1 = low_ok ? (r<=m_m) : (r<m_m)
-    tc2 = high_ok ? (r+m_p >= s) : (r+m_p > s)
-
-    if not tc1
-      if not tc2
-        list << d
-      else
-        list << d+1
-        break
-      end
-    else
-      if not tc2
-        list << d
-        break
-      else
-        if r*2 < s
-          list << d
-          break
-        else
-          list << d+1
-          break
-        end
-      end
-    end
-
-  end
-  list
-end
-~}
-
-~d Burger-Dybvig functions
-~{~%
-$exptt_table = Array.new(326)
-(0...326).each{|i| $exptt_table[i]=10**i}
-def exptt(_B, k)
-  if _B==10 && k>=0 && k<326
-    $exptt_table[k]
-  else
-    _B**k
-  end
-end
-
-$logB_table = Array.new(37)
-(2...37).each{|b| $logB_table[b]=1.0/Math.log(b)}
-def logB(_B, x)
-  if _B>=2 && _B<37
-    Math.log(x)*$logB_table[_B]
-  else
-    Math.log(x)/Math.log(_B)
-  end
-end
-~}
-
-
-We need an additional method \cd{even?} for numeric quantities;
-we'll also add \cd{odd?} for completeness.
-
-~d definitions
-~{~%
-class Numeric
-  unless method_defined?(:even?)
-    def even?
-      self.modulo(2)==0
-    end
-  end
-  unless method_defined?(:odd?)
-    def odd?
-      self.modulo(2)!=0
-    end
-  end
-end
-~}
-
-
-We'll derive, from the previous method, another one to generate all
-significant digits, i.e. all digits that, if used on input, cannot
-arbitrarily change its value and preserve the parsed value of the
-floating point number.
-This will be useful to generate a fixed number of digits or if
-as many digits as possible are required.
-
-This method returns an additional logical value that
-tells if the last digit should be rounded-up.
-
-~d Burger-Dybvig functions
-~{~%
-def float_to_digits_max(v,f,e,round_mode,min_e,p,b,_B)
- ~<set rounding low and high flags~>
-    if e >= 0
-      if f != exptt(b,p-1)
-        be = exptt(b,e)
-        r,s,m_p,m_m,k = scale(f*be*2,2,be,be,0,_B,roundl ,roundh,v)
-      else
-        be = exptt(b,e)
-        be1 = be*b
-        r,s,m_p,m_m,k = scale(f*be1*2,b*2,be1,be,0,_B,roundl ,roundh,v)
-      end
-    else
-      if e==min_e or f != exptt(b,p-1)
-        r,s,m_p,m_m,k = scale(f*2,exptt(b,-e)*2,1,1,0,_B,roundl ,roundh,v)
-      else
-        r,s,m_p,m_m,k = scale(f*b*2,exptt(b,1-e)*2,b,1,0,_B,roundl ,roundh,v)
-      end
-    end
-    [k]+generate_max(r,s,m_p,m_m,_B,roundl ,roundh)
-end
-~}
-
-
-
-~d Burger-Dybvig functions
-~{~%
-def generate_max(r,s,m_p,m_m,_B,low_ok ,high_ok)
-  list = [false]
-  loop do
-    d,r = (r*_B).divmod(s)
-    m_p *= _B
-    m_m *= _B
-
-    list << d
-
-    tc1 = low_ok ? (r<=m_m) : (r<m_m)
-    tc2 = high_ok ? (r+m_p >= s) : (r+m_p > s)
-
-    if tc1 && tc2
-      list[0] = true if r*2 >= s
-      break
-    end
-  end
-  list
+rounding = case ~2
+when :truncate
+  ~1 ? :up : :down
+when :even
+  :half_even
+when :zero
+  :half_down
+when :inf
+  :half_up
+else
+  nil
 end
 ~}
 
@@ -2816,14 +2457,10 @@ e -= (prc-f.size)
 
 inexact = true
 ~<set rounding mode~(sign=='-'~,fmt.get_round~)~>
-if fmt.get_all_digits?
-  # use as many digits as possible
-  dec_pos,r,*digits = Nio::BurgerDybvig::float_to_digits_max(x,f_i,e,rounding,[e,min_exp].min,prc,b,fmt.get_base)
-  inexact = :roundup if r
-else
-  # use as few digits as possible
-  dec_pos,*digits = Nio::BurgerDybvig::float_to_digits(x,f_i,e,rounding,[e,min_exp].min,prc,b,fmt.get_base)
-end
+dec_pos,r,*digits = Flt::Support::BurgerDybvig::float_to_digits(x, f_i, e, rounding,
+                                  [e,min_exp].min, prc, b,fmt.get_base,
+                                  fmt.get_all_digits?)
+inexact = :roundup if r
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
 neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, inexact, fmt.get_round

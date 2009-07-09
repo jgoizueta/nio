@@ -2537,18 +2537,25 @@ elsif neutral.rep_pos<neutral.digits.length
 else
   if neutral.base==num_class.radix
     if neutral.base==10
-	    str = neutral.sign
-	    str += neutral.digits
-	    str += "E#{(neutral.dec_pos-neutral.digits.length)}"
-	    x = num_class.new(str)
+      str = neutral.sign
+      str += neutral.digits
+      str += "E#{(neutral.dec_pos-neutral.digits.length)}"
+      x = num_class.new(str)
     else
-      # x = num_clas.Num(...) neutral.to_integral_significand...
+      f = neutral.digits.to_i(neutral.base)
+      e = neutral.dec_pos-neutral.digits.length
+      s = neutral.sign=='-' ? -1 : +1
+      x = num_class.Num(s, f, e)
     end
   else
     # uses num_clas.context.precision TODO: ?
-    x = num_class.Num(neutral.digits.to_i(neutral.base).to_s)
-    x *= num_class.Num(neutral.base.to_s)**(neutral.dec_pos-neutral.digits.length)
-    x = -x if neutral.sign=='-'
+    if num_class.respond_to?(:power)
+      x = num_class.Num(neutral.digits.to_i(neutral.base).to_s)
+      x *= num_class.Num(neutral.base.to_s)**(neutral.dec_pos-neutral.digits.length)
+      x = -x if neutral.sign=='-'
+    else
+      ~<Read Flt::Num from repeating decimal~>
+    end
   end
 end
 ~}
@@ -2556,8 +2563,7 @@ end
 ~d Read Flt::Num from repeating decimal
 ~{~%
 # uses num_clas.context.precision TODO: ?
-x,y = neutral.to_RepDec.getQ
-x = num_class.new(x)/y
+x = num_class.new Rational(*neutral.to_RepDec.getQ)
 ~}
 
 ~d Write Flt::Num x to neutral

@@ -2189,14 +2189,20 @@ neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, inexact, fmt.get_round
 ~d set rounding mode
 ~{~%
 rounding = case ~2
-when :truncate
-  ~1 ? :up : :down
 when :even
   :half_even
 when :zero
   :half_down
 when :inf
   :half_up
+when :truncate
+  :down
+when :directed_up
+  :up
+when :floor
+  ~1 ? :up : :down
+when :ceil
+  ~1 ? :down : :up
 else
   nil
 end

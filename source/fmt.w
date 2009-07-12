@@ -2179,7 +2179,7 @@ inexact = true
 
 formatter = Flt::Support::BurgerDybvig.new(Float::RADIX,  Float::MIN_EXP-Float::MANT_DIG, fmt.get_base)
 formatter.format(x, f, e, rounding, Float::MANT_DIG, fmt.get_all_digits?)
-indexact = :roundup if formatter.round_up
+inexact = :roundup if formatter.round_up
 dec_pos, digits = formatter.digits
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
@@ -2450,26 +2450,8 @@ for larg BigDecimals.
 
 ~d Convert BigDecimal Expression to Neutral base
 ~{~%
-min_prec = 24
-min_exp  = -1000
-s,f,b,e = x.split
-e -= f.size
-sign = s<0 ? '-' : '+'
-x = -x if sign=='-'
-f_i = f.to_i
-prc = [x.precs[0],min_prec].max
-f_i *= 10**(prc-f.size)
-e -= (prc-f.size)
-
-inexact = true
-~<set rounding mode~(fmt.get_round~)~>
-dec_pos,r,*digits = Flt::Support::BurgerDybvig::float_to_digits(x, f_i, e, rounding,
-                                  [e,min_exp].min, prc, b,fmt.get_base,
-                                  fmt.get_all_digits?)
-inexact = :roundup if r
-txt = ''
-digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
-neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, inexact, fmt.get_round
+x = Flt::DecNum(x.to_s)
+~<Convert Flt::Num Expression to Neutral base~>
 ~}
 
 
@@ -2614,7 +2596,6 @@ s,f,e = x.split
 b = num_class.radix
 if s < 0
   sign = '-'
-  x = -x
 else
   sign = '+'
 end
@@ -2627,9 +2608,10 @@ inexact = true
 
 # use as many digits as possible
 # TODO: use Num#format instead
-dec_pos,r,*digits = Flt::Support::BurgerDybvig.float_to_digits(
-                       x,f,e,rounding,[e,min_exp].min,prc,b,fmt.get_base, fmt.get_all_digits?)
-inexact = :roundup if r && fmt.get_all_digits?
+formatter = Flt::Support::BurgerDybvig.new(num_class.radix, num_class.context.etiny, fmt.get_base)
+formatter.format(x, f, e, rounding, prc, fmt.get_all_digits?)
+inexact = :roundup if formatter.round_up
+dec_pos,digits = formatter.digits
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
 neutral.set sign, txt, dec_pos, nil, fmt.get_base_digits, inexact, fmt.get_round

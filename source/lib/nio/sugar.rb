@@ -67,38 +67,3 @@ end
 
 # to be considered: for cls in [Float,BigDecimal,Integer,Rational]
 # def cls.<<(txt_fmt); txt,fmt=txt_fmt; cls.nio_read(txt,fmt); end
-
-# :stopdoc:
-
-#~ class Numeric
-  #~ def to_xr
-    #~ nio_xr
-  #~ end
-#~ end
-
-for cls in [Integer,Rational,Float,BigDecimal]
-  cls.class_eval {
-    def to_xr
-      nio_xr
-    end
-  }
-end
-
-class Float
-  def to_r(tol = Nio::Tolerance.big_epsilon)
-    nio_r(tol)
-  end
-end
-class Flt::Num
-  alias to_xr to_r
-  undef :nio_xr
-  def nio_xr
-    to_xr
-  end
-  def to_r(tol = nil)
-    nio_r(tol)
-  end
-end
-
-# :startdoc:
-

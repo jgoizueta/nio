@@ -27,9 +27,7 @@ Nio has some interesting features, though:
   (insignificant digits are those that can take any value without altering the Float value they specify.)
 
 All definitions are inside the module Nio that acts as a namespace, and methods added
-to classes outside of Nio have names that begin with the prefix <tt>nio_</tt>. Only
-the module nio/sugar.rb, which must be required separately, breaks this rule by defining
-some methods such as Float#to_r.
+to classes outside of Nio have names that begin with the prefix <tt>nio_</tt>.
 
 Limitations:
 *  The current version does not support UTF-8 or other multi-byte encodings (digits and separators must be one-byte characters).

@@ -62,9 +62,6 @@ end
 ~<License~>
 require File.dirname(__FILE__) + '/helper.rb'
 require 'test/unit'
-require 'nio/rtnlzr'
-require 'nio/repdec'
-require 'nio/fmt'
 require 'flt/bigdecimal'
 include Nio
 require 'yaml'
@@ -2593,7 +2590,6 @@ converted = true if neutral.digits.length<prc
 
 ~d Convert Flt::Num Expression to Neutral base
 ~{~%
-min_prec = num_class.context.precision
 min_exp  =  num_class.context.etiny
 n = x.number_of_digits
 s,f,e = x.split
@@ -2603,7 +2599,7 @@ if s < 0
 else
   sign = '+'
 end
-prc = [x.number_of_digits,min_prec].max
+prc = x.number_of_digits
 f = num_class.int_mult_radix_power(f, prc-n)
 e -= (prc-n)
 
@@ -2883,7 +2879,7 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 ~{~%
   def test_big_decimal_bases
 
-    assert_equal "0.1999A",(Flt.DecNum(1)/10).nio_write(Fmt.new.base(16).prec(5))
+    assert_equal "0.1999A",(Flt.DecNum(1)/10).normalize.nio_write(Fmt.new.base(16).prec(5))
     assert_equal "0.1999...",(Flt.DecNum(1)/10).nio_write(Fmt.mode(:gen,:exact,:round=>:inf,:approx=>:simplify).base(16))
 
     nfmt2 = Fmt[:comma].base(2).prec(:exact)
@@ -2937,6 +2933,25 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 
   end
 ~}
+
+~D Tests
+~{~%
+  def test_float_bin_num_coherence
+    Flt::BinNum.context(Flt::BinNum::FloatContext) do
+      [0.1, Float::MIN_D, Float::MIN_N, Float::MAX, 0.0, 1.0, 1.0/3].each do |x|
+        y = Flt::BinNum(x)
+        assert_equal x.split, y.split unless x.zero?
+        assert_equal x.nio_write(Fmt.prec(:exact)), y.nio_write(Fmt.prec(:exact))
+        assert_equal x.nio_write(Fmt.prec(:exact).show_all_digits), y.nio_write(Fmt.prec(:exact).show_all_digits)
+        assert_equal x.nio_write(Fmt.prec(:exact).approx_mode(:exact)), y.nio_write(Fmt.prec(:exact).approx_mode(:exact))
+        assert_equal x.nio_write(Fmt.mode(:fix,20).insignificant_digits('#')), y.nio_write(Fmt.mode(:fix,20).insignificant_digits('#'))
+        assert_equal x.nio_write(Fmt.mode(:fix,20)), y.nio_write(Fmt.mode(:fix,20))
+        assert_equal x.nio_write(Fmt.mode(:fix,20,:approx_mode=>:exact)), y.nio_write(Fmt.mode(:fix,20,:approx_mode=>:exact))
+      end
+    end
+  end
+~}
+
 
 ~D Tests
 ~{~%

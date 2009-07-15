@@ -2077,8 +2077,10 @@ Now we'll implement correct rounding.
 f = neutral.digits.to_i(neutral.base)
 e = neutral.dec_pos-neutral.digits.length
 ~<set rounding mode~(neutral.rounding~)~>
-x, exact = Flt::Support::Clinger.algM(Float, f, e, rounding, neutral.base)
-x = -x if neutral.sign=='-'
+reader = Flt::Support::Reader.new
+sign = neutral.sign == '-' ? -1 : +1
+x = reader.read(Float, rounding, sign, f, e, neutral.base)
+exact = reader.exact?
 ~}
 
 This was the provisional, simplistic old method:
@@ -2177,9 +2179,11 @@ f = f.to_i
 inexact = true
 ~<set rounding mode~(fmt.get_round~)~>
 
-formatter = Flt::Support::BurgerDybvig.new(Float::RADIX,  Float::MIN_EXP-Float::MANT_DIG, fmt.get_base)
+# Note: it is assumed that fmt will be used for for input too, otherwise
+# rounding should be Float.context.rounding (input rounding for Float) rather than fmt.get_round (output)
+formatter = Flt::Support::Formatter.new(Float::RADIX,  Float::MIN_EXP-Float::MANT_DIG, fmt.get_base)
 formatter.format(x, f, e, rounding, Float::MANT_DIG, fmt.get_all_digits?)
-inexact = :roundup if formatter.round_up
+inexact = :roundup if formatter.round_up && (fmt.get_round != :truncate)
 dec_pos, digits = formatter.digits
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
@@ -2606,11 +2610,12 @@ e -= (prc-n)
 inexact = true
 ~<set rounding mode~(fmt.get_round~)~>
 
-# use as many digits as possible
 # TODO: use Num#format instead
-formatter = Flt::Support::BurgerDybvig.new(num_class.radix, num_class.context.etiny, fmt.get_base)
+# Note: it is assumed that fmt will be used for for input too, otherwise
+# rounding should be Float.context.rounding (input rounding for Float) rather than fmt.get_round (output)
+formatter = Flt::Support::Formatter.new(num_class.radix, num_class.context.etiny, fmt.get_base)
 formatter.format(x, f, e, rounding, prc, fmt.get_all_digits?)
-inexact = :roundup if formatter.round_up
+inexact = :roundup if formatter.round_up && (fmt.get_round != :truncate)
 dec_pos,digits = formatter.digits
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}

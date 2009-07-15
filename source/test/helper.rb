@@ -1,5 +1,6 @@
 require 'test/unit'
 require File.dirname(__FILE__) + '/../lib/nio'
+require File.dirname(__FILE__) + '/../lib/nio/sugar'
 require 'yaml'
 
 module PrepareData

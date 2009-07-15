@@ -75,10 +75,7 @@ end
 ~o test/test_rtnlzr.rb
 ~{
 ~<License~>
-require 'test/unit'
-
-require 'nio/rtnlzr'
-require 'nio/sugar'
+require File.dirname(__FILE__) + '/helper.rb'
 include Nio
 require 'yaml'
 require 'flt'

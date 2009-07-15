@@ -92,8 +92,6 @@ end
 ~<License~>
 #require File.dirname(__FILE__) + '/helper.rb'
 require 'test/unit'
-
-require 'nio/repdec'
 include Nio
 require 'yaml'
 

@@ -2080,15 +2080,6 @@ x = reader.read(Float, rounding, sign, f, e, neutral.base)
 exact = reader.exact?
 ~}
 
-This was the provisional, simplistic old method:
-
-~d Read Float from text OLD
-~{~%
-x = neutral.digits.to_i(neutral.base).to_f
-x *= Float(neutral.base)**(neutral.dec_pos-neutral.digits.length)
-x = -x if neutral.sign=='-'
-~}
-
 
 ~d references
 ~{~%

@@ -2074,7 +2074,7 @@ Now we'll implement correct rounding.
 f = neutral.digits.to_i(neutral.base)
 e = neutral.dec_pos-neutral.digits.length
 ~<set rounding mode~(neutral.rounding~)~>
-reader = Flt::Support::Reader.new
+reader = Flt::Support::Reader.new(:mode=>:fixed)
 sign = neutral.sign == '-' ? -1 : +1
 x = reader.read(Float, rounding, sign, f, e, neutral.base)
 exact = reader.exact?

@@ -15,6 +15,7 @@ require File.join(File.dirname(__FILE__),'source/lib/nio/version')
 
 task :default => 'spec:run'
 
+depend_on 'flt', '1.0.0'
 
 PROJ.name = 'nio'
 PROJ.description = "Numeric input/output"

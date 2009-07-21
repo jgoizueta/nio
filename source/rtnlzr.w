@@ -910,7 +910,7 @@ We'll load the data for the tests in a global variable.
 
 
 % -------------------------------------------------------------------------------------
-\section{Indices}
+\section{Index}
 
 
 \subsection{Files}

@@ -3124,16 +3124,16 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
 \end{thebibliography}
 
 % -------------------------------------------------------------------------------------
-\section{Índices}
+\section{Index}
 
 
-\subsection{Archivos}
+\subsection{Files}
 ~f
 
-\subsection{Fragmentos}
+\subsection{Chunks}
 ~m
 
-\subsection{Identificadores}
+\subsection{Identifiers}
 ~u
 
 

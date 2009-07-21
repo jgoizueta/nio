@@ -158,16 +158,16 @@ end
 
 
 % -------------------------------------------------------------------------------------
-\section{Índices}
+\section{Index}
 
 
-\subsection{Archivos}
+\subsection{Files}
 ~f
 
-\subsection{Fragmentos}
+\subsection{Chunks}
 ~m
 
-\subsection{Identificadores}
+\subsection{Identifiers}
 ~u
 
 

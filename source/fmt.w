@@ -245,8 +245,8 @@ the rounding mode and the direction of rounding.
 For \cd{:exact} rounding, all available digits are preserved
 and rounding is only necessary, in the last digit for
 inexact quantities, that may have been flagged as needing
-a round-up of the last digit by having the value \cd{:roundup}
-in the \cd{inexact} property.
+a round-up of the last digit by having one of the values \cd{:lo}, \cd{:hi}, \cd{:tie}
+in the \cd{inexact} property.g
 
 ~d class NeutralNum
 ~{~%
@@ -321,7 +321,8 @@ what kind of final digit we have: low, hi or just-in-the-middle (a tie).
 adj = 0
 dv = :tie
 if @inexact && n==@digits.size
-  dv = @inexact==:roundup ? :hi : :lo
+  # TODO: the combination of the value true with the values of Formatter#round_up makes this ugly
+  dv = @inexact.is_a?(Symbol) ? @inexact : :lo
 else
   v = dig_value(n)
   v2 = 2*v
@@ -330,7 +331,11 @@ else
   elsif v2 > @base # v>(@base/2)
     dv = :hi
   else
-   ~<Look at trailing digits and try to resolve the tie~>
+    if @inexact
+      dv = :hi
+    else
+     ~<Look at trailing digits and try to resolve the tie~>
+    end
     dv = :hi if dv==:tie && @rep_pos<=n
   end
 end
@@ -2171,7 +2176,7 @@ inexact = true
 # rounding should be Float.context.rounding (input rounding for Float) rather than fmt.get_round (output)
 formatter = Flt::Support::Formatter.new(Float::RADIX,  Float::MIN_EXP-Float::MANT_DIG, fmt.get_base)
 formatter.format(x, f, e, rounding, Float::MANT_DIG, fmt.get_all_digits?)
-inexact = :roundup if formatter.round_up && (fmt.get_round != :truncate)
+inexact = formatter.round_up if formatter.round_up.is_a?(Symbol)
 dec_pos, digits = formatter.digits
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}
@@ -2602,7 +2607,7 @@ inexact = true
 # rounding should be Float.context.rounding (input rounding for Float) rather than fmt.get_round (output)
 formatter = Flt::Support::Formatter.new(num_class.radix, num_class.context.etiny, fmt.get_base)
 formatter.format(x, f, e, rounding, prc, fmt.get_all_digits?)
-inexact = :roundup if formatter.round_up && (fmt.get_round != :truncate)
+inexact = formatter.round_up if formatter.round_up.is_a?(Symbol)
 dec_pos,digits = formatter.digits
 txt = ''
 digits.each{|d| txt << fmt.get_base_digits.digit_char(d)}

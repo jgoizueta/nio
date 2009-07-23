@@ -58,7 +58,6 @@ For a general introduction and some details, read on below.
 * For <b>type conversions</b> see Fmt.convert().
 * For some notational <b>shortcuts</b> see nio/sugar.rb[link:files/lib/nio/sugar_rb.html].
 * To *extend* the formatting to other types see the documentation for the module Nio::Formattable.
-* The function <b>BigDec()</b> is a convenient constructor to define/convert BigDecimals, also described in module Nio.
 
 =Basic use
 
@@ -121,7 +120,6 @@ fmt = Fmt.mode(:fix,2)
   puts 11.2.nio_write(fmt.width(8,:left,'*'))               -> 11.20***
   puts 11.2.nio_write(fmt.width(8,:center,'*'))             -> *11.20**
   puts 11.2.nio_write(fmt.pad0s(8))                         -> 00011.20
-  puts BigDec(11.2).nio_write(fmt.pad0s(8))                 -> 00011.20
   puts Rational(112,10).nio_write(fmt.pad0s(8))             -> 00011.20
   puts 112.nio_write(fmt.pad0s(8))                          -> 00112.00
 
@@ -402,40 +400,6 @@ We just requested for 0 as the number of repetitions (the default is 2) and got 
 This is shorter and would allow to show the number better with special typography
 (e.g. a bar over the repeated digits, a different color, etc.)
 
-===BigDec()
-
-BigDec() is a handy convenience to define BigDecimals; it permits us
-to use BigDec(1) instead of BigDecimal('1')
-(I find it tedious to type all those quotes.)
-It can also be used with Float arguments, e.g.:
-  BigDec(0.5)
-But this is a questionable use (for example it has been disregarded in Python Decimal.)
-It is allowed here because BigDec's purpose is to be a shortcut notation
-(BigDecimal() on the other hand should probably not accept Floats).
-
-Users must be aware of the problems and details of the implementation.
-Currently BigDec(x) for float x doesn't try to convert the exact value of x,
-which can be achieved with <tt>BigDec(0.1,:exact)</tt>,  but tries instead to produce
-a simple value.
-
---
-  Dilemma: leav BigDec as now (simplify) o change to use default fmt conversion
-  a) => BigDec(1.0/3) == BigDec(Rational(1)/3)
-  b) => BigDec(1.0/3) == BigDec("0.3333333333333333")
-  in a, can we assure that NFmt.convert(BigDec(x),Float)==x ?
-++
-
-Since a floating point literal will, in general, convert to a Float of slightly different value,
-and several distinct literals can convert to the same value, there will always be some compromise.
-Here we've chosen to simplify values so that <tt>BigDec(0.1)==BigDecimal('0.1')</tt>,
-but this implies that, for example, <tt>BigDecimal('0.10000000000000001')</tt> cannot be defined
-with BigDec(), because <tt>Float(0.10000000000000001)==Float(0.1)</tt>.
-
-In any case using BigDec on Floats have some risks because it relies on the Ruby interpreter
-to parse floating point literal, and its behaviour is not stricly specified; in the usual case
-(IEEE Double Floats and round-to-even) BigDec() will behave well, but some platforms may
-behave differently.
-
 ===Rounding
 
 Rounding is performed on both input and output.
@@ -500,8 +464,8 @@ round, the best solution would be to avoid using Float literals and use Float#ni
 ===Conversions
 
 Accurate conversion between numerical types can be performed with Nio.convert.
-It takes three arguments: the value to convert, the class to convert it to (Float,BigDecimal,
-Integer or Rational) and the conversion mode, either :exact, which is..., well, quite exact,
+It takes three arguments: the value to convert, the class to convert it to (Float, BigDecimal,
+Flt::Num, Integer or Rational) and the conversion mode, either :exact, which is..., well, quite exact,
 and :approx which tries to find a simpler value (e.g. 0.1 rather than 0.10000000000000001...)
 within the accuray of the original value.
 The :approx mode may be pretty slow in some cases.
@@ -511,14 +475,14 @@ The :approx mode may be pretty slow in some cases.
 
 We can check out the accuracy of the conversions:
 
-    Nio.convert(BigDec('1.234567890123456'),Float)==1.234567890123456 -> true
-    Nio.convert(BigDec(355)/226,Float)==(355.0/226)                   -> true
+    Nio.convert(BigDecimal('1.234567890123456'),Float)==1.234567890123456   -> true
+    Nio.convert(BigDecimal('355')/226,Float)==(355.0/226)                   -> true
 
 Thay may not look very impressive, but is much more accurate than BigDecimal#to_f
 (at least in Ruby versions up to 1.8.6, mswin32 (specially) and linux) for which:
 
      BigDecimal('1.234567890123456').to_f == 1.234567890123456  -> false
-     (BigDecimal("355")/226).to_f == (355.0/226.0)              -> false
+     (BigDecimal('355')/226).to_f == (355.0/226.0)              -> false
 
 =License
 

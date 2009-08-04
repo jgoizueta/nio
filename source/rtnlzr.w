@@ -556,11 +556,11 @@ error when using \cd{Float} make the method return $16/135$.
 # using Float values.
 def Rtnlzr.max_denominator(f, max_den=1000000000, num_class=nil)
   return nil if max_den<1
-  num_class ||= Flt.Num(f).num_class
-  num_class = Flt.NumClass(num_class)
+  num_class ||= f.class
+  context = num_class.context
   return mth.ip(f),1 if mth.fp(f)==0
 
-  cast = (num_class==BigDecimal) ? lambda{|x| BigDecimal.new(x.to_s) } : lambda{|x| num_class.Num(x) }
+  cast = lambda{|x| context.Num(x)}
 
   one = cast.call(1)
 

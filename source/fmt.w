@@ -2081,7 +2081,7 @@ e = neutral.dec_pos-neutral.digits.length
 ~<set rounding mode~(neutral.rounding~)~>
 reader = Flt::Support::Reader.new(:mode=>:fixed)
 sign = neutral.sign == '-' ? -1 : +1
-x = reader.read(Float, rounding, sign, f, e, neutral.base)
+x = reader.read(Float.context, rounding, sign, f, e, neutral.base)
 exact = reader.exact?
 ~}
 
@@ -2936,7 +2936,8 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     Flt::BinNum.context(Flt::BinNum::FloatContext) do
       [0.1, Float::MIN_D, Float::MIN_N, Float::MAX, 0.0, 1.0, 1.0/3].each do |x|
         y = Flt::BinNum(x)
-        assert_equal x.split, y.split unless x.zero?
+        c = Float.context
+        assert_equal c.split(x), c.split(y) unless x.zero?
         assert_equal x.nio_write(Fmt.prec(:exact)), y.nio_write(Fmt.prec(:exact))
         assert_equal x.nio_write(Fmt.prec(:exact).show_all_digits), y.nio_write(Fmt.prec(:exact).show_all_digits)
         assert_equal x.nio_write(Fmt.prec(:exact).approx_mode(:exact)), y.nio_write(Fmt.prec(:exact).approx_mode(:exact))

@@ -694,8 +694,9 @@ class Fmt
   include StateEquivalent
   ~<Fmt error classes~>
   @@default_rounding_mode = :even
-  def initialize()
+  def initialize(options=nil)
     ~<Initialize Fmt~>
+    set! options if options
     yield self if block_given?
   end
   ~<class Fmt~>
@@ -1918,9 +1919,33 @@ end
 def self.[]=(tag,fmt_def)
   @@fmts[tag.to_sym]=fmt_def.freeze
 end
-# Retrieves a named format from the repository.
+# Retrieves a named format from the repository or constructs a new
+# format with the passed options.
 def self.[](tag)
+if tag.is_a?(Hash)
+  Fmt(tag)
+else
   @@fmts[tag.to_sym]
+end
+end
+~}
+
+We'll also use the \verb|[]| operator as a convenient shortcut to set individual properties
+of a format passing an options hash.
+
+~d class Fmt
+~{~%
+def [](options)
+  dup.set! options
+end
+~}
+
+And we'll add a constructor for convenience, too.
+
+~d Nio functions
+~{~%
+def Fmt(options=nil)
+  Fmt.new(options)
 end
 ~}
 
@@ -2762,6 +2787,21 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     assert_equal '0.1', x.nio_write(Fmt.prec(10,  :all_digits=>false))
     assert_equal '0.10000', x.nio_write(Fmt.prec(5).mode(:gen,  :all_digits=>true))
     assert_equal '1.0000E-1', x.nio_write(Fmt.prec(5).mode(:sci,  :all_digits=>true))
+  end
+~}
+
+~D Tests
+~{~%
+  def test_fmt_constructor
+    x = 0.1
+    assert_equal '0.10000000000000001', x.nio_write(Fmt[:all_digits=>true])
+    assert_equal '0.1', x.nio_write(Fmt(:all_digits=>false))
+    assert_equal '0.10000000000000001', x.nio_write(Fmt(:all_digits=>true))
+    assert_equal '0.1', x.nio_write(Fmt.prec(5)[:all_digits=>false])
+    assert_equal '0.10000', x.nio_write(Fmt.prec(5)[:all_digits=>true])
+    assert_equal '0,1', x.nio_write(Fmt[:comma])
+    assert_equal '0.10000000000000001', x.nio_write(Fmt[:all_digits=>true])
+    assert_equal '0,10000000000000001', x.nio_write(Fmt[:comma][:all_digits=>true])
   end
 ~}
 

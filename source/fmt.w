@@ -927,8 +927,8 @@ define the value.
 #      (significance precision) is like :fix but using significant digits
 #   [<tt>:sci</tt>]
 #      (scientific) is the exponential form 1.234E2
-# - <tt>precision</tt> (number of digits or :exact, only used for output)
-#   [<tt>exact</tt>]
+# - <tt>precision</tt> (optional), number of digits or :exact, only used for output
+#   [<tt>:exact</tt>]
 #      means that as many digits as necessary to unambiguosly define the
 #      value are used; this is the default.
 #
@@ -959,11 +959,12 @@ define the value.
 #   zeros of exact types or non-signficative digits of inexact types.
 # - <tt>:nonsignficative_digits</tt> assigns a character to display
 #   insignificant digits, # by default
-def mode(mode,precision=nil,options={})
+def mode(mode, precision=nil, options={})
   dup.mode!(mode,precision,options)
 end
 # This is the mutator version of #mode().
-def mode!(mode,precision=nil,options={})
+def mode!(mode, precision=nil, options={})
+  precision, options = nil, precision if options.empty? && precision.is_a?(Hash)
   set! options.merge(:mode=>mode, :ndig=>precision)
 end
 ~}
@@ -983,11 +984,12 @@ end
 # Defines the formatting mode like #mode() but using a different
 # order of the first two parameters parameters, which is useful
 # to change the precision only. Refer to #mode().
-def prec(precision,mode=nil, options={})
+def prec(precision, mode=nil, options={})
   dup.prec! precision, mode, options
 end
 # This is the mutator version of #prec().
-def prec!(precision,mode=:gen, options={})
+def prec!(precision, mode=nil, options={})
+  mode, options = nil, mode if options.empty? && mode.is_a?(Hash)
   set! options.merge(:mode=>mode, :ndig=>precision)
 end
 ~}
@@ -2748,6 +2750,18 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     assert_equal "123456789.25",123456789.25.nio_write
     assert_equal "123456789.25",BigDecimal('123456789.25').nio_write
     assert_equal "123456789.25",(Rational(123456789)+Rational(1,4)).nio_write
+  end
+~}
+
+~D Tests
+~{~%
+  def test_optional_mode_prec_parameters
+    x = 0.1
+    assert_equal '0.1000000000', x.nio_write(Fmt.prec(10,  :all_digits=>true))
+    assert_equal '1.000000000E-1', x.nio_write(Fmt.prec(10,  :sci, :all_digits=>true))
+    assert_equal '0.1', x.nio_write(Fmt.prec(10,  :all_digits=>false))
+    assert_equal '0.10000', x.nio_write(Fmt.prec(5).mode(:gen,  :all_digits=>true))
+    assert_equal '1.0000E-1', x.nio_write(Fmt.prec(5).mode(:sci,  :all_digits=>true))
   end
 ~}
 

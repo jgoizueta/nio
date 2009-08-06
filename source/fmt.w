@@ -1903,8 +1903,9 @@ mantain a formats repository:
   :def=>Fmt.new.freeze
 }
 # Returns the current default format.
-def self.default
+def self.default(options=nil)
   d = self[:def]
+  d = d[options] if options
   if block_given?
     d = d.dup
     yield d
@@ -1945,7 +1946,7 @@ And we'll add a constructor for convenience, too.
 ~d Nio functions
 ~{~%
 def Fmt(options=nil)
-  Fmt.new(options)
+  Fmt.default(options)
 end
 ~}
 

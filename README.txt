@@ -305,6 +305,18 @@ we would use, for example:
   puts 0.1234567.nio_write(fmt.prec(5))  -> 0.12346
   puts 0.1234567.nio_write(fmt)              -> 0.123
 
+We can use the constructor Fmt() instead of Fmt.default, and pass options to it:
+
+  fmt = Fmt(:ndig=>3, :dec_sep=>',')
+  fmt = Fmt(:ndig=>3) { |f|  f.sep! ',' }
+
+And the [] operator can be used not only to access predefined formats, but also to
+set individual properties easily, either applied to Fmt or to a format object:
+
+  fmt = Fmt[:dec_sep=>','].prec(3)[:all_digits=>true]
+
+Note that Fmt[...] is simply equivalent to Fmt(...).
+
 ===Exact and aproximate values
 
 Float and BigDecimal are approximate in the sense that

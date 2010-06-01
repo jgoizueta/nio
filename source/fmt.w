@@ -3134,7 +3134,7 @@ MIN_D = Math.ldexp(1,Float::MIN_EXP-Float::MANT_DIG);
     assert_equal Fmt.convert(x_d,Float,:exact), x_f
     assert_equal Fmt.convert(x_d,Float,:approx), x_f
 
-    x_d = BigDecimal('355')/226
+    x_d = BigDecimal('355').div(226,20)
     x_f = Float(355)/226
     assert_equal Fmt.convert(x_d,Float,:exact), x_f
     assert_equal Fmt.convert(x_d,Float,:approx), x_f

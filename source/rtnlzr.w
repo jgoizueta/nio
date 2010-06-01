@@ -75,7 +75,7 @@ end
 ~o test/test_rtnlzr.rb
 ~{
 ~<License~>
-require File.dirname(__FILE__) + '/helper.rb'
+require File.expand_path(File.join(File.dirname(__FILE__),'helper.rb'))
 include Nio
 require 'yaml'
 require 'flt'

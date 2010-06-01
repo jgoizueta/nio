@@ -90,7 +90,7 @@ end
 ~o test/test_repdec.rb
 ~{
 ~<License~>
-#require File.dirname(__FILE__) + '/helper.rb'
+require File.expand_path(File.join(File.dirname(__FILE__),'helper.rb'))
 require 'test/unit'
 include Nio
 require 'yaml'

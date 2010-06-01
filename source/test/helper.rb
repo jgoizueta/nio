@@ -1,3 +1,4 @@
+$: << "." unless $:.include?(".") # for Ruby 1.9.2
 require 'test/unit'
 require File.dirname(__FILE__) + '/../lib/nio'
 require File.dirname(__FILE__) + '/../lib/nio/sugar'

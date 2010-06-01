@@ -750,15 +750,15 @@ def set!(properties={}) # :nodoc:
 
  ~<initialize valid properties~>
 
+ aliased_properties = {}
  properties.each do |k,v|
    al = ALIAS_PROPERTIES[k]
-   if al
-     properties[al] = v
-     properties.delete k
-   elsif !@@valid_properties.include?(k)
+   if al.nil? && !@@valid_properties.include?(k)
      raise InvalidOption, "Invalid option: #{k}"
    end
+   aliased_properties[al || k] = v
  end
+ properties = aliased_properties
 
  ~<adjust format options~>
 

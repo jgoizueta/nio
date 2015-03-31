@@ -1,3 +1,7 @@
+=This has been superseded by Numerals
+
+Please use the Numerals gem instead: https://github.com/jgoizueta/numerals
+
 =Description
 
 Nio (Numeric input/output) is a Ruby package for text-formatted input/output
